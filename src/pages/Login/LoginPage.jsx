@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../auth/AuthContext';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../auth/AuthContext'
 import './LoginPage.css'
 
 const LoginPage = () => {
@@ -7,13 +8,16 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const { login } = useAuth();
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         try {
-            await login(email, password);
-            //alert('Успішний вхід!');
+            const success = await login(email, password);
+            if (success) {
+                navigate('/'); 
+            }
         } catch (err) {
             setError('Неправильний логін або пароль');
         }

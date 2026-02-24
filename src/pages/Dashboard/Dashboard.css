@@ -1,0 +1,44 @@
+.dashboard-layout {
+    display: flex;
+    background-color: #EDE4F5;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 80px;
+    background-color: #5D2E8E;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 40px 0;
+    position: fixed;
+    height: 100vh;
+}
+
+.main-content {
+    margin-left: 80px;
+    padding: 40px 60px;
+    flex: 1;
+}
+
+.header {
+    margin-bottom: 40px;
+}
+
+.greeting {
+    color: #7A49B7;
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.welcome-text {
+    color: #4B2C92;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 30px;
+}

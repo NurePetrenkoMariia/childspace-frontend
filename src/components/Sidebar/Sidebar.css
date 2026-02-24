@@ -1,0 +1,24 @@
+.sidebar-custom-icon {
+    width: 28px;  /* Підберіть ідеальний розмір під ваш макет */
+    height: 28px;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+.nav-item {
+    padding: 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+    transition: background 0.3s;
+}
+
+.nav-item:hover .sidebar-custom-icon {
+    transform: scale(1.1); /* Легка анімація при наведенні */
+}
+
+.nav-item.active {
+    background-color: rgba(255, 255, 255, 0.2); /* Підсвітка активного пункту */
+}

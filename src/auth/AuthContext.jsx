@@ -21,12 +21,18 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = async (email, password) => {
-        const response = await api.post('/auth/login', { email, password });
-        const { token, ...userData } = response.data;
-        
-        localStorage.setItem('token', token); 
-        setUser(userData);
-        return userData;
+        try {
+            const response = await api.post('/auth/login', { email, password });
+            const { token, ...userData } = response.data;
+            if (token) {
+                localStorage.setItem('token', token);
+                setUser(userData);
+                return true
+            }
+        } catch (error) {
+            console.error("Login context error:", error);
+            throw error;
+        }
     };
 
     const logout = async () => {

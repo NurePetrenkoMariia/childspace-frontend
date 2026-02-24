@@ -1,0 +1,37 @@
+.course-card {
+    background: white;
+    border-radius: 25px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(93, 46, 142, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.course-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-image {
+    height: 180px;
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+}
+
+.card-footer {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-title {
+    color: #4B2C92;
+    font-weight: 600;
+    font-size: 16px;
+    max-width: 80%;
+}
+
+.card-arrow {
+    color: #5D2E8E;
+    font-size: 24px;
+}
