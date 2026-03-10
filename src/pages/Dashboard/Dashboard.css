@@ -4,17 +4,6 @@
     min-height: 100vh;
 }
 
-.sidebar {
-    width: 80px;
-    background-color: #5D2E8E;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 40px 0;
-    position: fixed;
-    height: 100vh;
-}
-
 .main-content {
     margin-left: 80px;
     padding: 40px 60px;

@@ -1,0 +1,76 @@
+.details-page {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.details-main-card {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 30px;
+}
+
+.details-container {
+    background: white;
+    border-radius: 30px;
+    padding: 40px;
+}
+
+.back-button {
+    background-color: #A384D6; 
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 25px;
+}
+
+.back-button:hover {
+    background-color: #8E6BCB;
+}
+
+.details-image {
+    width: 100%;
+    border-radius: 20px;
+    object-fit: cover;
+}
+
+.details-info-text {
+    color: #7A49B7; 
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 25px;
+}
+
+.details-full-description h3 {
+    color: #4B2C92;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 15px;
+}
+
+.details-title {
+    color: #4B2C92;
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.enroll-button {
+    background-color: #5D2E8E;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 15px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.enroll-button:hover {
+    transform: scale(1.02);
+}

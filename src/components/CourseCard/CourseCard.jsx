@@ -1,8 +1,15 @@
 import './CourseCard.css'
+import { useNavigate } from 'react-router-dom'
 
-const CourseCard = ({ title, image }) => {
+const CourseCard = ({ id, title, image }) => {
+    const navigate = useNavigate();
+
+    const handleCardClick = () => {
+        navigate(`/subject/${id}`);
+    };
+
     return (
-        <div className="course-card">
+        <div className="course-card" onClick={handleCardClick}>
             <div className="card-image-container" style={{ height: '180px', overflow: 'hidden' }}>
                 <img 
                     src={image} 

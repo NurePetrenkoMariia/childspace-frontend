@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard/Dashboard'
 import ProtectedRoute from './components/ProtectedRoute'
+import SubjectDetailsPage from './pages/SubjectDetailsPage/SubjectDetailsPage'
 
 function App() {
 
@@ -12,14 +13,12 @@ function App() {
     <Router>
       <AuthProvider>
         <Routes>
-
           <Route path="/login" element={<LoginPage />} />
           <Route element={
-            
-              <Layout />
-            
+            <Layout />
           }>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/subject/:id" element={<SubjectDetailsPage />} />
           </Route>
         </Routes>
       </AuthProvider>

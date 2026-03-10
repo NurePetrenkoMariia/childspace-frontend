@@ -1,4 +1,5 @@
 import { useAuth } from '../../auth/AuthContext';
+import { useNavigate } from "react-router-dom";
 import './Sidebar.css';
 
 import homeIcon from '../../assets/icons/home.png';
@@ -7,10 +8,16 @@ import scheduleIcon from '../../assets/icons/schedule.png';
 import attendanceIcon from '../../assets/icons/tick.png';
 import chatIcon from '../../assets/icons/chat.png';
 import materialsIcon from '../../assets/icons/books.png';
-import logoutIcon from '../../assets/icons/logout.png';
+import logoutIcon from '../../assets/icons/logout-48.png';
 
 const Sidebar = () => {
     const { logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        await logout();
+        navigate("/login");
+    };
 
     return (
         <div className="sidebar">
@@ -35,7 +42,7 @@ const Sidebar = () => {
                 </div>
             </div>
             
-            <button className="logout-btn" onClick={logout}>
+            <button className="logout-btn" onClick={handleLogout}>
                 <img src={logoutIcon} alt="Logout" className="sidebar-custom-icon" />
             </button>
         </div>

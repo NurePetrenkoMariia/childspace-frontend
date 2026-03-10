@@ -39,6 +39,7 @@ const Dashboard = () => {
                     {subjects.map((subject) => (
                         <CourseCard 
                             key={subject.id} 
+                            id={subject.id}
                             title={subject.name} 
                             image={subject.imageUrl || defaultCourseImg} 
                         />
