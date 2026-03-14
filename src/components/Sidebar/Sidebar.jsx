@@ -22,10 +22,10 @@ const Sidebar = () => {
     return (
         <div className="sidebar">
             <div className="nav-icons">
-                <div className="nav-item active">
+                <div className="nav-item active" onClick={() => navigate("/")}>
                     <img src={homeIcon} alt="Home" className="sidebar-custom-icon" />
                 </div>
-                <div className="nav-item">
+                <div className="nav-item" onClick={() => navigate("/admin")}>
                     <img src={adminIcon} alt="Admin" className="sidebar-custom-icon" />
                 </div>
                 <div className="nav-item">

@@ -28,7 +28,7 @@ const Dashboard = () => {
     return (
         <div className="dashboard-content">
             <header className="dashboard-header">
-                <p className="greeting">Привіт, {user?.userName || 'Користувач'} 👋</p>
+                <p className="greeting">Привіт, {user?.firstName || 'Користувач'} 👋</p>
                 <h1 className="welcome-text">Вас вітає центр дитячого розвитку “Сонечко”</h1>
             </header>
 

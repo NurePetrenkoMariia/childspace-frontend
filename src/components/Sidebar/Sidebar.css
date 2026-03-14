@@ -1,6 +1,6 @@
 .sidebar-custom-icon {
-    width: 28px;  
-    height: 28px;
+    width: 39px;  
+    height: 39px;
     object-fit: contain;
     transition: transform 0.2s ease;
 }
@@ -25,7 +25,7 @@
 
 .sidebar {
     width: 80px;
-    background-color: #5D2E8E;
+    background-color: #4F169E;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
