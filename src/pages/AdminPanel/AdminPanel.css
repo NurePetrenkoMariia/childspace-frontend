@@ -144,3 +144,96 @@
     background-color: #FF0000;
     border: none;
 }
+
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 25px;
+    width: 450px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.add-entity-btn {
+    background-color: #4F169E;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s;
+    height: 43px;
+    margin-top: 15px;
+}
+
+.table-first-row{
+    display: flex;
+    justify-content: space-between;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 5px;
+    color: #4B2C92;
+    font-weight: 500;
+}
+
+.form-group input {
+    padding: 10px;
+    border: 1.5px solid #EDE4F5;
+    border-radius: 10px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.modal-actions button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 15px;       
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.confirm-btn {
+    background-color: #4CAF50; 
+    color: white;
+    box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2);
+}
+
+.confirm-btn:hover {
+    background-color: #43A047;
+    transform: translateY(-2px); 
+    box-shadow: 0 6px 15px rgba(76, 175, 80, 0.3);
+}
+
+.cancel-btn {
+    background-color: #EDE4F5; 
+    color: #5D2E8E;           
+}
+
+.cancel-btn:hover {
+    background-color: #E2D5F0;
+    color: #4B2C92;
+    transform: translateY(-2px);
+}
+

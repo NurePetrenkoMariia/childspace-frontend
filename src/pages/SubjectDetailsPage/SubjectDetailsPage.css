@@ -1,13 +1,14 @@
 .details-page {
     padding: 20px;
-    max-width: 1200px;
+    max-width: 95%;
     margin: 0 auto;
 }
 
 .details-main-card {
     display: flex;
-    gap: 40px;
+    gap: 50px;
     margin-bottom: 30px;
+    align-items: center;
 }
 
 .details-container {
@@ -37,11 +38,24 @@
     object-fit: cover;
 }
 
+.details-image-container {
+    flex: 1; 
+}
+
+.details-info-short {
+    flex: 1.5;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; 
+    justify-content: center;
+}
+
 .details-info-text {
     color: #7A49B7; 
     font-size: 18px;
     font-weight: 500;
     margin-bottom: 25px;
+    line-height: 1.6;
 }
 
 .details-full-description h3 {
@@ -53,7 +67,7 @@
 
 .details-title {
     color: #4B2C92;
-    font-size: 32px;
+    font-size: 22px;
     font-weight: 800;
     margin-bottom: 20px;
     line-height: 1.2;
@@ -68,7 +82,10 @@
     font-size: 16px;
     font-weight: 700;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.3s ease;
+    max-width: 350px;
+    align-self: flex-start;
+
 }
 
 .enroll-button:hover {

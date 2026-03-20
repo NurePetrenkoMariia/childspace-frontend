@@ -44,6 +44,8 @@ const AdminPanel = () => {
     const [loading, setLoading] = useState(true);
     const [editingId, setEditingId] = useState(null);
     const [editFormData, setEditFormData] = useState({});
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [newData, setNewData] = useState({});
 
     const endpointMap = {
         'Центри': '/center',
@@ -117,9 +119,26 @@ const AdminPanel = () => {
         });
     };
 
+    const handleAddClick = () => {
+        setNewData({});
+        setIsModalOpen(true);
+    };
+
+    const handleCreateSave = async () => {
+        try {
+            const response = await api.post(endpointMap[activeTab], newData);
+            setData([...data, response.data]);
+            setIsModalOpen(false);
+        } catch (error) {
+            console.error("Помилка при створенні:", error);
+            alert("Не вдалося створити запис. Перевірте обов'язкові поля.");
+        }
+    };
+
     return (
         <div className='admin-container'>
             <h1 className='admin-title'>Адмін-панель</h1>
+
             <div className='admin-card'>
                 <div className='admin-tabs'>
                     {tabs.map(tab => (
@@ -140,9 +159,15 @@ const AdminPanel = () => {
                         Застосувати
                     </button>
                 </div>
-                <div className="table-container">
-                    <h2 className="table-title">{activeTab}</h2>
-                    <table className="admin-table">
+
+                <div className='table-container'>
+                    <div className='table-first-row'>
+                    <h2 className='table-title'>{activeTab}</h2>
+                    <button className='add-entity-btn' onClick={handleAddClick}>
+                        + Додати запис
+                    </button>
+                    </div>
+                    <table className='admin-table'>
                         <thead>
                             <tr>
                                 {currentConfig.headers.map(h => <th key={h}>{h}</th>)}
@@ -165,22 +190,22 @@ const AdminPanel = () => {
                                             )}
                                         </td>
                                     ))}
-                                    <td className="actions-cell">
+                                    <td className='actions-cell'>
                                         {editingId == item.id ? (
-                                            <div className="actions-wrapper">
-                                                <button className="action-btn confirm-btn" onClick={() => handleSaveClick(item.id)}>
+                                            <div className='actions-wrapper'>
+                                                <button className='action-btn confirm-btn' onClick={() => handleSaveClick(item.id)}>
                                                     <img src={confirmIcon} alt="Confirm" className="confirm-btn-icon" />
                                                 </button>
-                                                <button className="action-btn cancel-btn" onClick={handleCancelClick}>
+                                                <button className='action-btn cancel-btn' onClick={handleCancelClick}>
                                                     <img src={cancelIcon} alt="Cancel" className="cancel-btn-icon" />
                                                 </button>
                                             </div>
                                         ) : (
                                             <>
-                                                <button className="action-btn edit-btn" onClick={() => handleEditClick(item)}>
+                                                <button className='action-btn edit-btn' onClick={() => handleEditClick(item)}>
                                                     <img src={editIcon} alt="Edit" className="edit-btn-icon" />
                                                 </button>
-                                                <button className="action-btn delete-btn">
+                                                <button className='action-btn delete-btn'>
                                                     <img src={deleteIcon} alt="Delete" className="delete-btn-icon" />
                                                 </button>
                                             </>
@@ -193,6 +218,32 @@ const AdminPanel = () => {
                     </table>
                 </div>
             </div>
+            {isModalOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2>Заповніть необхідну інформацію</h2>
+                        <div className="modal-form">
+                            {currentConfig.keys
+                                .filter(key => key !== 'id' && !key.includes('At'))
+                                .map(key => (
+
+                                    <div key={key} className="form-group">
+                                        <label>{currentConfig.headers[currentConfig.keys.indexOf(key)]}</label>
+                                        <input
+                                            type="text"
+                                            placeholder={`Введіть ${key}...`}
+                                            onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                        />
+                                    </div>
+                                ))}
+                        </div>
+                        <div className="modal-actions">
+                            <button className="confirm-btn" onClick={handleCreateSave}>Зберегти</button>
+                            <button className="cancel-btn" onClick={() => setIsModalOpen(false)}>Скасувати</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
