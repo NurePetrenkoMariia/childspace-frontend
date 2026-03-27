@@ -1,16 +1,23 @@
-import React, { useState } from 'react';
-import searchIcon from '../../assets/icons/search.png';
-import groupIcon from '../../assets/icons/icons8-group.png'; 
+import React, { useState, useEffect, useRef } from 'react';
+import searchIcon from '../../assets/icons/search-white.png';
+import groupIcon from '../../assets/icons/icons8-group.png';
 import { useAuth } from '../../auth/AuthContext';
 import './ChatsPage.css';
 
 const ChatsPage = () => {
     const { user } = useAuth();
-    
+
     const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
 
     const [activeChatId, setActiveChatId] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
+    const [newMessageText, setNewMessageText] = useState("");
+
+    const messagesEndRef = useRef(null);
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
 
     const chatsList = [
         { id: 1, name: "Бісер Група 1", lastMessage: "Софія (викладач): Всім доброго дня, за...", participants: 6 },
@@ -25,6 +32,11 @@ const ChatsPage = () => {
         { id: 3, sender: "Денис", text: "Lorem ipsum", time: "20:25", isMine: false },
         { id: 4, sender: "Софія (викладач)", text: "Lorem ipsum", time: "20:25", isMine: false },
     ];
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [currentMessages, activeChatId]);
+
 
     return (
         <div className="chats-container">
@@ -47,12 +59,10 @@ const ChatsPage = () => {
                         Застосувати
                     </button>
                 </div>
+                <button className="add-entity-btn create-chat-btn">
+                    Створити новий чат
+                </button>
 
-                {isAdmin && (
-                    <button className="add-entity-btn create-chat-btn">
-                        + Створити новий чат
-                    </button>
-                )}
             </div>
             <div className="chats-layout">
                 <div className="chats-sidebar">
@@ -88,10 +98,33 @@ const ChatsPage = () => {
                                 </div>
                             </div>
                         ))}
+                        <div ref={messagesEndRef} />
                     </div>
 
                     <div className="chat-input-area">
-                        <input type="text" placeholder="Напишіть повідомлення..." className="chat-input-field" />
+                        <input
+                            type="text"
+                            placeholder="Напишіть повідомлення..."
+                            className="chat-input-field"
+                            value={newMessageText}
+                            onChange={(e) => setNewMessageText(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && newMessageText.trim() !== '') {
+                                    console.log("Відправка:", newMessageText);
+                                    setNewMessageText(""); 
+                                }
+                            }}
+                        />
+                        <button
+                            className="send-msg-btn"
+                            disabled={newMessageText.trim() === ""} 
+                            onClick={() => {
+                                console.log("Відправка:", newMessageText);
+                                setNewMessageText(""); 
+                            }}
+                        >
+                            Надіслати
+                        </button>
                     </div>
                 </div>
 

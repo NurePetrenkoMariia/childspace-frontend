@@ -6,11 +6,11 @@
     box-sizing: border-box;
 }
 
-.chats-title-row {
+.chat-title-row {
     margin-bottom: 20px;
 }
 
-.chats-title {
+.chat-title {
     color: #4F169E;
     font-size: 28px;
     font-weight: 800;
@@ -18,10 +18,10 @@
 
 .chats-action-bar {
     display: flex;
-    justify-content: space-between; 
-    align-items: center;          
-    width: 100%;                   
-    margin-bottom: 25px;           
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 25px;
 }
 
 .chats-search-group {
@@ -31,23 +31,34 @@
 }
 
 .chats-search-input {
-    flex: 1; 
-    margin: 0; 
+    flex: 1;
+    margin: 0;
 }
 
-.chats-apply-btn{
-background-color: #A779E6;
+.chats-apply-btn {
+    background-color: #7245B1;
+    color: white;
+}
+
+.filter-input{
+   border: 1.5px solid #A779E6;
+   outline: none;
+   transition: border-color 0.2s ease;
+}
+
+.filter-input:focus{
+    border-color: #4B2C92; 
 }
 
 .chats-layout {
     display: flex;
     gap: 25px;
-    flex: 1; 
-    overflow: hidden; 
+    flex: 1;
+    overflow: hidden;
 }
 
 .chats-sidebar {
-    width: 350px;
+    width: 304px;
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -56,7 +67,7 @@ background-color: #A779E6;
 }
 
 .chats-list-item {
-    border: 1.5px solid #7A49B7;
+    border: 1.5px solid #4B2C92;
     border-radius: 20px;
     padding: 15px;
     cursor: pointer;
@@ -65,7 +76,7 @@ background-color: #A779E6;
 }
 
 .chats-list-item.active {
-    background-color: #7A49B7;
+    background-color: #7245B1;
     color: white;
 }
 
@@ -82,10 +93,10 @@ background-color: #A779E6;
 
 .chat-preview {
     font-size: 13px;
-    color: #694899;
+    color: #9384A6;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; 
+    text-overflow: ellipsis;
 }
 
 .chats-list-item.active .chat-preview {
@@ -98,13 +109,13 @@ background-color: #A779E6;
     border-radius: 20px;
     display: flex;
     flex-direction: column;
-    border: 1px solid #A384D6; 
+    border: 1px solid #4B2C92;
     height: 100%;
     overflow: hidden;
 }
 
 .chat-window-header {
-    background-color: #A779E6;
+    background-color: #7245B1;
     color: white;
     padding: 15px 25px;
     border-radius: 20px 20px 0 0;
@@ -148,7 +159,7 @@ background-color: #A779E6;
 }
 
 .message-wrapper.mine {
-    justify-content: flex-end; 
+    justify-content: flex-end;
 }
 
 .message-bubble {
@@ -161,7 +172,7 @@ background-color: #A779E6;
 }
 
 .message-sender {
-    color: #4B2C92;
+    color: #4F169E;
     font-weight: 700;
     font-size: 14px;
     margin-bottom: 5px;
@@ -169,38 +180,81 @@ background-color: #A779E6;
 
 .message-text {
     font-size: 14px;
-    color: #000;
+    color: black;
     line-height: 1.4;
 }
 
 .message-time {
     text-align: right;
     font-size: 12px;
-    color: #A384D6;
+    color: #9384A6;
     margin-top: 5px;
 }
 
 .chat-input-area {
     padding: 20px;
+    background-color: white;
+    border-top: 1px solid #EDE4F5; 
+    display: flex;
+    gap: 15px; 
+    align-items: center;
 }
 
 .chat-input-field {
-    width: 100%;
-    border: 1.5px solid #4B2C92;
+    flex: 1;
+    border: 1.5px solid #A779E6;
     border-radius: 30px;
     padding: 15px 25px;
     font-size: 15px;
     outline: none;
     box-sizing: border-box;
+    transition: border-color 0.2s;
 }
 
-.chat-input-field::placeholder {
-    color: #000;
+.chat-input-field:focus {
+    border-color: #4B2C92; 
 }
 
-.create-chat-btn{
-    margin: 0; 
-    height: 43px; 
+.create-chat-btn {
+    margin: 0;
+    height: 43px;
     white-space: nowrap;
 }
 
+.chats-search-input::placeholder,
+.chat-input-field::placeholder {
+    color: #9384A6; 
+    opacity: 1;    
+}
+
+.send-msg-btn {
+    background-color: #4F169E; 
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 0 25px;
+    height: 52px; 
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.send-msg-btn:not(:disabled):hover {
+    background-color: #431387;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(167, 121, 230, 0.4);
+}
+
+.send-msg-btn:not(:disabled):active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.send-msg-btn:disabled {
+    background-color: #F3F0F7; 
+    color: #A89CB8;
+    cursor: not-allowed;  
+    transform: none; 
+    box-shadow: none;
+}
