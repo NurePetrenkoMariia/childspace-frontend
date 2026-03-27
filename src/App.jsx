@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard/Dashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 import SubjectDetailsPage from './pages/SubjectDetailsPage/SubjectDetailsPage'
 import AdminPanel from './pages/AdminPanel/AdminPanel'
+import ChatsPage from './pages/ChatsPage/ChatsPage'
 
 function App() {
 
@@ -21,6 +22,7 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/subject/:id" element={<SubjectDetailsPage />} />
             <Route path="/admin" element={<AdminPanel />} />
+            <Route path="/chats" element={<ChatsPage />} />
           </Route>
         </Routes>
       </AuthProvider>
