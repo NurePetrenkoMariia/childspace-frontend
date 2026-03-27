@@ -55,9 +55,21 @@
 .apply-search-btn{
     background-color: #A779E6;
     font-size: 15px;
-    border-radius: 13px;
+    border-radius: 15px;
     border: none;
-    padding: 0px 8px;
+    padding: 0 14px;
+    transition: all 0.25s ease;
+}
+
+.apply-search-btn:hover {
+    background-color: #9162D4;
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 12px rgba(167, 121, 230, 0.4); 
+}
+
+.apply-search-btn:active {
+    transform: translateY(0); 
+    box-shadow: 0 2px 6px rgba(167, 121, 230, 0.2);
 }
 
 .search-btn-icon{
@@ -73,7 +85,7 @@
     padding: 5px 10px;
     color: #4B2C92;
     background-color: #F9F5FF;
-     box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 .actions-cell{
@@ -130,7 +142,7 @@
     background-color: #F9F5FF;
 }
 
-.edit-btn-icon, .delete-btn-icon{
+.edit-btn-icon, .delete-btn-icon, .confirm-btn-icon, .cancel-btn-icon{
     width: 27px;
     height: 27px;
 }
@@ -138,11 +150,27 @@
 .edit-btn{
     background-color: #FF7D43;
     border: none;
+    border-radius: 9px;
+    transition: all 0.2s ease;
+}
+
+.edit-btn:hover{
+    background-color: #E66A30; 
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 8px rgba(255, 125, 67, 0.3);
 }
 
 .delete-btn{
     background-color: #FF0000;
     border: none;
+    border-radius: 9px;
+    transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+    background-color: #D30000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3);
 }
 
 .modal-overlay {
@@ -170,11 +198,21 @@
     border-radius: 15px;
     font-weight: 700;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: all 0.25s ease;
     height: 43px;
     margin-top: 15px;
+    padding: 0 15px;
+}
+.add-entity-btn:hover {
+    background-color: #5D1DBF; 
+    transform: translateY(-2px); 
+    box-shadow: 0 6px 15px rgba(79, 22, 158, 0.4); 
 }
 
+.add-entity-btn:active {
+    transform: translateY(0); 
+    box-shadow: 0 2px 6px rgba(79, 22, 158, 0.2);
+}
 .table-first-row{
     display: flex;
     justify-content: space-between;
@@ -218,6 +256,8 @@
     background-color: #4CAF50; 
     color: white;
     box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2);
+    border: none;
+    border-radius: 9px;
 }
 
 .confirm-btn:hover {
@@ -227,13 +267,14 @@
 }
 
 .cancel-btn {
-    background-color: #EDE4F5; 
-    color: #5D2E8E;           
+    background-color: #5D2E8E;   
+    border: none;      
+    border-radius: 9px;  
+    color: white;
 }
 
 .cancel-btn:hover {
-    background-color: #E2D5F0;
-    color: #4B2C92;
+    background-color: #4B2C92;
     transform: translateY(-2px);
 }
 

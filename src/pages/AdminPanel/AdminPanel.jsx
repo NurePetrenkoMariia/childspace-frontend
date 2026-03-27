@@ -46,6 +46,8 @@ const AdminPanel = () => {
     const [editFormData, setEditFormData] = useState({});
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newData, setNewData] = useState({});
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filteredData, setFilteredData] = useState([]);
 
     const endpointMap = {
         'Центри': '/center',
@@ -65,6 +67,8 @@ const AdminPanel = () => {
             try {
                 const response = await api.get(endpointMap[activeTab]);
                 setData(response.data);
+                setFilteredData(response.data);
+                setSearchTerm("");
             } catch (error) {
                 console.error(`Помилка завантаження ${activeTab}:`, error);
                 setData([]);
@@ -85,7 +89,7 @@ const AdminPanel = () => {
 
         if (key === 'id' || key.includes('Id')) {
             if (!value) return '—';
-            return `${value.substring(0, 8)}...`;
+            return `${value}...`;
         }
 
         return value || '—';
@@ -135,6 +139,24 @@ const AdminPanel = () => {
         }
     };
 
+    const handleSearch = () => {
+        if (!searchTerm) {
+            setFilteredData(data);
+            return;
+        }
+
+        const lowerCaseSearch = searchTerm.toLowerCase();
+
+        const filtered = data.filter(item => {
+
+            return Object.values(item).some(value =>
+                value && value.toString().toLowerCase().includes(lowerCaseSearch)
+            );
+        });
+
+        setFilteredData(filtered);
+    };
+
     return (
         <div className='admin-container'>
             <h1 className='admin-title'>Адмін-панель</h1>
@@ -152,29 +174,35 @@ const AdminPanel = () => {
                     )}
 
                 </div>
-                <div className="admin-filters">
-                    <input type="text" placeholder="Пошук..." className="filter-input" />
-                    <button className="apply-search-btn">
-                        <img src={searchIcon} alt="Search" className="search-btn-icon" />
+                <div className='admin-filters'>
+                    <input type="text" placeholder="Пошук..."
+                        className="filter-input"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    />
+
+                    <button className='apply-search-btn' onClick={handleSearch}>
+                        <img src={searchIcon} alt='Search' className='search-btn-icon' />
                         Застосувати
-                    </button>
+                    </button> 
                 </div>
 
                 <div className='table-container'>
                     <div className='table-first-row'>
-                    <h2 className='table-title'>{activeTab}</h2>
-                    <button className='add-entity-btn' onClick={handleAddClick}>
-                        + Додати запис
-                    </button>
+                        <h2 className='table-title'>{activeTab}</h2>
+                        <button className='add-entity-btn' onClick={handleAddClick}>
+                            + Додати запис
+                        </button>
                     </div>
                     <table className='admin-table'>
-                        <thead>
+                        <thead >
                             <tr>
                                 {currentConfig.headers.map(h => <th key={h}>{h}</th>)}
                             </tr>
                         </thead>
                         <tbody>
-                            {!loading && data.map((item) => (
+                            {!loading && filteredData.map((item) => (
                                 <tr key={item.id} className={editingId === item.id ? 'row-editing' : ''}>
                                     {currentConfig.keys.map(key => (
                                         <td key={key}>
@@ -201,14 +229,14 @@ const AdminPanel = () => {
                                                 </button>
                                             </div>
                                         ) : (
-                                            <>
+                                            <div className='actions-wrapper'>
                                                 <button className='action-btn edit-btn' onClick={() => handleEditClick(item)}>
                                                     <img src={editIcon} alt="Edit" className="edit-btn-icon" />
                                                 </button>
                                                 <button className='action-btn delete-btn'>
                                                     <img src={deleteIcon} alt="Delete" className="delete-btn-icon" />
                                                 </button>
-                                            </>
+                                            </div>
                                         )
                                         }
                                     </td>
@@ -231,7 +259,6 @@ const AdminPanel = () => {
                                         <label>{currentConfig.headers[currentConfig.keys.indexOf(key)]}</label>
                                         <input
                                             type="text"
-                                            placeholder={`Введіть ${key}...`}
                                             onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
                                         />
                                     </div>
