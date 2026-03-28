@@ -148,7 +148,6 @@ const AdminPanel = () => {
         const lowerCaseSearch = searchTerm.toLowerCase();
 
         const filtered = data.filter(item => {
-
             return Object.values(item).some(value =>
                 value && value.toString().toLowerCase().includes(lowerCaseSearch)
             );
