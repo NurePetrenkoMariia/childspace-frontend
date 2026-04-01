@@ -234,6 +234,10 @@
     justify-content: flex-end;
 }
 
+.message-wrapper.others {
+    justify-content: flex-start;
+}
+
 .message-bubble {
     border: 1.5px solid #A779E6;
     border-radius: 25px;

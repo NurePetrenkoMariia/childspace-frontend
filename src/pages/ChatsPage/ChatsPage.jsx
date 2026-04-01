@@ -12,7 +12,7 @@ const ChatsPage = () => {
 
     const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
 
-    const [activeChatId, setActiveChatId] = useState(1);
+    const [activeChatId, setActiveChatId] = useState(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [newMessageText, setNewMessageText] = useState("");
     const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false);
@@ -29,12 +29,8 @@ const ChatsPage = () => {
     const [chatsList, setChatsList] = useState([]);
     const [isLoadingChats, setIsLoadingChats] = useState(false);
 
-    const currentMessages = [
-        { id: 1, sender: "Олена", text: "Lorem ipsum", time: "20:15", isMine: false },
-        { id: 2, sender: "Ви", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean eu imperdiet metus. Nunc placerat venenatis arcu at sagittis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. mi a sagittis scelerisque.", time: "20:25", isMine: true },
-        { id: 3, sender: "Денис", text: "Lorem ipsum", time: "20:25", isMine: false },
-        { id: 4, sender: "Софія (викладач)", text: "Lorem ipsum", time: "20:25", isMine: false },
-    ];
+    const [messages, setMessages] = useState([]);
+    const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
     const [currentParticipants, setCurrentParticipants] = useState([
         { id: 1, name: "Софія" },
@@ -67,7 +63,7 @@ const ChatsPage = () => {
 
     useEffect(() => {
         scrollToBottom();
-    }, [currentMessages, activeChatId]);
+    }, [messages, activeChatId]);
 
     useEffect(() => {
         const fetchChats = async () => {
@@ -148,6 +144,44 @@ const ChatsPage = () => {
         } catch (error) {
             console.error("Помилка редагування чату:", error);
             alert("Не вдалося оновити назву чату.");
+        }
+    };
+
+    useEffect(() => {
+        const fetchMessages = async () => {
+            if (!activeChatId) return;
+
+            setIsLoadingMessages(true);
+            try {
+                const response = await api.get(`/message/chat/${activeChatId}`);
+                console.log("Отримані повідомлення:", response.data);
+                setMessages(response.data);
+            } catch (error) {
+                console.error("Помилка завантаження повідомлень:", error);
+            } finally {
+                setIsLoadingMessages(false);
+            }
+        };
+
+        fetchMessages();
+    }, [activeChatId]);
+
+    const handleSendMessage = async () => {
+        if (newMessageText.trim() === "") return;
+
+        try {
+            const response = await api.post('/message/send', {
+                chatId: activeChatId,
+                content: newMessageText
+            });
+
+            setMessages([...messages, response.data]);
+
+            setNewMessageText("");
+            scrollToBottom();
+        } catch (error) {
+            console.error("Помилка відправки:", error);
+            alert("Не вдалося відправити повідомлення.");
         }
     };
 
@@ -252,12 +286,14 @@ const ChatsPage = () => {
 
                     <div className="chat-messages-area">
                         <div className="chat-date-separator">10 квітня</div>
-                        {currentMessages.map(msg => (
-                            <div key={msg.id} className={`message-wrapper ${msg.isMine ? 'mine' : 'others'}`}>
+                        {messages.map(msg => (
+                            <div key={msg.id} className={`message-wrapper ${msg.senderId === user?.id ? 'mine' : 'others'}`}>
                                 <div className="message-bubble">
-                                    {!msg.isMine && <div className="message-sender">{msg.sender}</div>}
-                                    <div className="message-text">{msg.text}</div>
-                                    <div className="message-time">{msg.time}</div>
+                                    {msg.senderId !== user?.id && <div className="message-sender">{msg.senderName}</div>}
+                                    <div className="message-text">{msg.content}</div>
+                                    <div className="message-time">
+                                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -272,19 +308,13 @@ const ChatsPage = () => {
                             value={newMessageText}
                             onChange={(e) => setNewMessageText(e.target.value)}
                             onKeyDown={(e) => {
-                                if (e.key === 'Enter' && newMessageText.trim() !== '') {
-                                    console.log("Відправка:", newMessageText);
-                                    setNewMessageText("");
-                                }
+                                if (e.key === 'Enter') handleSendMessage();
                             }}
                         />
                         <button
                             className="send-msg-btn"
                             disabled={newMessageText.trim() === ""}
-                            onClick={() => {
-                                console.log("Відправка:", newMessageText);
-                                setNewMessageText("");
-                            }}
+                                onClick={handleSendMessage}
                         >
                             Надіслати
                         </button>
