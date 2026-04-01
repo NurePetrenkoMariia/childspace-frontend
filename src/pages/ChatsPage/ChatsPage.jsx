@@ -1,8 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import groupIcon from '../../assets/icons/icons8-group.png';
-import editIcon from '../../assets/icons/pencil-black.png';
+
+import editIcon from '../../assets/icons/pencil-white.png';
 import confirmIcon from '../../assets/icons/checkmark.png';
 import cancelIcon from '../../assets/icons/cancel.png';
+import deleteIcon from '../../assets/icons/trash.png';
+
+import editIconDark from '../../assets/icons/pencil-black.png';
+import deleteIconDark from '../../assets/icons/trash-black.png';
+import confirmIconDark from '../../assets/icons/tick-black.png';
+import cancelIconDark from '../../assets/icons/cancel-black.png';
+
 import { useAuth } from '../../auth/AuthContext';
 import api from '../../../api/axios';
 import './ChatsPage.css';
@@ -72,8 +80,8 @@ const ChatsPage = () => {
                 const response = await api.get('/chat');
                 const formattedChats = response.data.map(chat => ({
                     ...chat,
-                    lastMessage: "Немає повідомлень",
-                    participants: 0
+                    lastMessage: chat.lastMessage || null,
+                    participants: chat.participants || 0
                 }));
 
                 formattedChats.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -147,6 +155,22 @@ const ChatsPage = () => {
         }
     };
 
+    const handleDeleteChat = async (id, e) => {
+        e.stopPropagation();
+        if (window.confirm("Ви впевнені, що хочете видалити цей чат? Всі повідомлення будуть втрачені!")) {
+            try {
+                await api.delete(`/chat/${id}`);
+                setChatsList(prevChats => prevChats.filter(chat => chat.id !== id));
+                if (activeChatId === id) {
+                    setActiveChatId(null);
+                    setMessages([]);
+                }
+            } catch (error) {
+                console.error("Помилка видалення чату:", error);
+                alert("Не вдалося видалити чат.");
+            }
+        }
+    }
     useEffect(() => {
         const fetchMessages = async () => {
             if (!activeChatId) return;
@@ -175,10 +199,22 @@ const ChatsPage = () => {
                 content: newMessageText
             });
 
-            setMessages([...messages, response.data]);
+            const newMsg = response.data;
+
+            setMessages([...messages, newMsg]);
 
             setNewMessageText("");
             scrollToBottom();
+
+            setChatsList(prevChats => prevChats.map(chat => {
+            if (chat.id === activeChatId) {
+                return { 
+                    ...chat, 
+                    lastMessage: newMsg 
+                };
+            }
+            return chat;
+        }));
         } catch (error) {
             console.error("Помилка відправки:", error);
             alert("Не вдалося відправити повідомлення.");
@@ -215,54 +251,85 @@ const ChatsPage = () => {
                     </div>
                     <div className="chats-sidebar-list">
                         {filteredChats.length > 0 ? (
-                            filteredChats.map(chat => (
-                                <div
-                                    key={chat.id}
-                                    className={`chats-list-item ${activeChatId === chat.id ? 'active' : ''}`}
-                                    onClick={() => setActiveChatId(chat.id)}
-                                >
-                                    <div className="chat-item-header">
-                                        {editingChatId === chat.id ? (
-                                            <div className="chat-edit-mode" onClick={e => e.stopPropagation()}>
-                                                <input
-                                                    type="text"
-                                                    value={editedChatName}
-                                                    onChange={(e) => setEditedChatName(e.target.value)}
-                                                    className="chat-inline-input"
-                                                    autoFocus
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter') saveChatEdit(chat.id, e);
-                                                        if (e.key === 'Escape') cancelEditingChat(e);
-                                                    }}
-                                                />
-                                                <button className="chat-inline-btn" onClick={(e) => saveChatEdit(chat.id, e)}>
-                                                    <img src={confirmIcon} alt="Save" />
-                                                </button>
-                                                <button className="chat-inline-btn" onClick={cancelEditingChat}>
-                                                    <img src={cancelIcon} alt="Cancel" />
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <>
-                                                <h3 className="chat-name">{chat.name}</h3>
-                                                {isAdmin && (
-                                                    <button
-                                                        className="chat-edit-icon-btn"
-                                                        onClick={(e) => startEditingChat(chat, e)}
-                                                        title="Редагувати назву"
-                                                    >
-                                                        <img src={editIcon} alt="Edit" />
+                            filteredChats.map(chat => {
+                                const isActive = activeChatId === chat.id;
+
+                                return (
+                                    <div
+                                        key={chat.id}
+                                        className={`chats-list-item ${isActive ? 'active' : ''}`}
+                                        onClick={() => setActiveChatId(chat.id)}
+                                    >
+                                        <div className="chat-item-header">
+                                            {editingChatId === chat.id ? (
+                                                <div className="chat-edit-mode" onClick={e => e.stopPropagation()}>
+                                                    <input
+                                                        type="text"
+                                                        value={editedChatName}
+                                                        onChange={(e) => setEditedChatName(e.target.value)}
+                                                        className="chat-inline-input"
+                                                        autoFocus
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') saveChatEdit(chat.id, e);
+                                                            if (e.key === 'Escape') cancelEditingChat(e);
+                                                        }}
+                                                    />
+                                                    <button className="chat-inline-btn" onClick={(e) => saveChatEdit(chat.id, e)}>
+                                                        <img src={isActive ? confirmIcon : confirmIconDark} alt="Save" />
                                                     </button>
+                                                    <button className="chat-inline-btn" onClick={cancelEditingChat}>
+                                                        <img src={isActive ? cancelIcon : cancelIconDark} alt="Cancel" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <h3 className="chat-name">{chat.name}</h3>
+                                                    {isAdmin && (
+                                                        <div className='chat-actions-container'>
+                                                            <button
+                                                                className="chat-edit-icon-btn"
+                                                                onClick={(e) => startEditingChat(chat, e)}
+                                                                title="Редагувати назву"
+                                                            >
+                                                                <img src={isActive ? editIcon : editIconDark} alt="Edit" />
+                                                            </button>
+                                                            <button
+                                                                className="chat-edit-icon-btn chat-delete-icon-btn"
+                                                                onClick={(e) => handleDeleteChat(chat.id, e)}
+                                                                title="Видалити чат"
+                                                            >
+                                                                <img src={isActive ? deleteIcon : deleteIconDark} alt="Delete" />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+
+                                        {editingChatId !== chat.id && (
+                                            <p className="chat-preview">
+                                                {chat.lastMessage && chat.lastMessage !== "Чат створено" ? (
+                                                    <>
+                                                        <span style={{ fontWeight: 600, marginRight: '4px' }}>
+                                                            {chat.lastMessage.senderId === user?.id
+                                                                ? "Ви:"
+                                                                : (chat.lastMessage.senderName ? `${chat.lastMessage.senderName}:` : "")
+                                                            }
+                                                        </span>
+                                                        <span>
+                                                            {chat.lastMessage.content || chat.lastMessage}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <span style={{ fontStyle: 'italic', opacity: 0.7 }}>
+                                                        {chat.lastMessage === "Чат створено" ? "Чат створено" : "Немає повідомлень"}
+                                                    </span>
                                                 )}
-                                            </>
+                                            </p>
                                         )}
                                     </div>
-
-                                    {editingChatId !== chat.id && (
-                                        <p className="chat-preview">{chat.lastMessage}</p>
-                                    )}
-                                </div>
-                            ))
+                                );
+                            })
                         ) : (
                             <div style={{ textAlign: 'center', color: '#9384A6', marginTop: '20px' }}>
                                 Чати не знайдені
@@ -314,7 +381,7 @@ const ChatsPage = () => {
                         <button
                             className="send-msg-btn"
                             disabled={newMessageText.trim() === ""}
-                                onClick={handleSendMessage}
+                            onClick={handleSendMessage}
                         >
                             Надіслати
                         </button>

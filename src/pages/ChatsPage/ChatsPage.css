@@ -531,3 +531,12 @@
     color: white;
     transform: scale(1.05);
 }
+
+.chat-actions-container{
+    display: flex;
+    gap: 4px;
+}
+
+.delete-chat-btn:hover img {
+    transform: scale(1.1);
+}
