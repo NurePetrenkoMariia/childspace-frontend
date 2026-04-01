@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import groupIcon from '../../assets/icons/icons8-group.png';
+import editIcon from '../../assets/icons/pencil-black.png';
+import confirmIcon from '../../assets/icons/checkmark.png';
+import cancelIcon from '../../assets/icons/cancel.png';
 import { useAuth } from '../../auth/AuthContext';
+import api from '../../../api/axios';
 import './ChatsPage.css';
 
 const ChatsPage = () => {
@@ -14,18 +18,16 @@ const ChatsPage = () => {
     const [isParticipantsModalOpen, setIsParticipantsModalOpen] = useState(false);
     const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
     const [userSearchTerm, setUserSearchTerm] = useState("");
+    const [editingChatId, setEditingChatId] = useState(null);
+    const [editedChatName, setEditedChatName] = useState("");
 
     const messagesEndRef = useRef(null);
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    const [chatsList, setChatsList] = useState([
-        { id: 1, name: "Бісер Група 1", lastMessage: "Софія (викладач): Всім доброго дня, за...", participants: 6 },
-        { id: 2, name: "Англійська Група 3", lastMessage: "Олена: Доброго вечора, підкажіть будь...", participants: 8 },
-        { id: 3, name: "Укр. мова Група 1", lastMessage: "Дарина (викладач): Сьогодні буде робо...", participants: 5 },
-        { id: 4, name: "Малювання Група 2", lastMessage: "Олексій: Найкраще підходять фарби д...", participants: 7 },
-    ]);
+    const [chatsList, setChatsList] = useState([]);
+    const [isLoadingChats, setIsLoadingChats] = useState(false);
 
     const currentMessages = [
         { id: 1, sender: "Олена", text: "Lorem ipsum", time: "20:15", isMine: false },
@@ -67,21 +69,86 @@ const ChatsPage = () => {
         scrollToBottom();
     }, [currentMessages, activeChatId]);
 
-    const handleCreateChat = () => {
-        if (newChatName.trim() === "") return;
+    useEffect(() => {
+        const fetchChats = async () => {
+            setIsLoadingChats(true);
+            try {
+                const response = await api.get('/chat');
+                const formattedChats = response.data.map(chat => ({
+                    ...chat,
+                    lastMessage: "Немає повідомлень",
+                    participants: 0
+                }));
 
-        const newChat = {
-            id: Date.now(),
-            name: newChatName,
-            lastMessage: "Чат створено",
-            participants: 1
+                formattedChats.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                setChatsList(formattedChats);
+
+                if (formattedChats.length > 0) {
+                    setActiveChatId(formattedChats[0].id);
+                }
+            } catch (error) {
+                console.error("Помилка завантаження чатів:", error);
+            } finally {
+                setIsLoadingChats(false);
+            }
         };
 
-        setChatsList([newChat, ...chatsList]);
+        fetchChats();
+    }, []);
 
-        setNewChatName("");
-        setIsModalOpen(false);
-        setActiveChatId(newChat.id);
+    const handleCreateChat = async () => {
+        if (newChatName.trim() === "") return;
+
+        try {
+            const response = await api.post('/chat', {
+                name: newChatName
+            });
+
+            const newChat = response.data;
+
+            newChat.lastMessage = "Чат створено";
+            newChat.participants = 1;
+
+            setChatsList([newChat, ...chatsList]);
+
+            setNewChatName("");
+            setIsModalOpen(false);
+            setActiveChatId(newChat.id);
+        } catch (error) {
+            console.error("Помилка при створенні чату:", error);
+            alert("Не вдалося створити чат.");
+        }
+    };
+
+    const startEditingChat = (chat, e) => {
+        e.stopPropagation();
+        setEditingChatId(chat.id);
+        setEditedChatName(chat.name);
+    };
+
+    const cancelEditingChat = (e) => {
+        e.stopPropagation();
+        setEditingChatId(null);
+        setEditedChatName("");
+    };
+
+    const saveChatEdit = async (id, e) => {
+        e.stopPropagation();
+        if (editedChatName.trim() === "") return;
+
+        try {
+            await api.put(`/chat/${id}`, { name: editedChatName });
+
+            setChatsList(prevChats => prevChats.map(chat =>
+                chat.id === id ? { ...chat, name: editedChatName } : chat
+            ));
+
+            setEditingChatId(null);
+        } catch (error) {
+            console.error("Помилка редагування чату:", error);
+            alert("Не вдалося оновити назву чату.");
+        }
     };
 
     return (
@@ -120,8 +187,46 @@ const ChatsPage = () => {
                                     className={`chats-list-item ${activeChatId === chat.id ? 'active' : ''}`}
                                     onClick={() => setActiveChatId(chat.id)}
                                 >
-                                    <h3 className="chat-name">{chat.name}</h3>
-                                    <p className="chat-preview">{chat.lastMessage}</p>
+                                    <div className="chat-item-header">
+                                        {editingChatId === chat.id ? (
+                                            <div className="chat-edit-mode" onClick={e => e.stopPropagation()}>
+                                                <input
+                                                    type="text"
+                                                    value={editedChatName}
+                                                    onChange={(e) => setEditedChatName(e.target.value)}
+                                                    className="chat-inline-input"
+                                                    autoFocus
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') saveChatEdit(chat.id, e);
+                                                        if (e.key === 'Escape') cancelEditingChat(e);
+                                                    }}
+                                                />
+                                                <button className="chat-inline-btn" onClick={(e) => saveChatEdit(chat.id, e)}>
+                                                    <img src={confirmIcon} alt="Save" />
+                                                </button>
+                                                <button className="chat-inline-btn" onClick={cancelEditingChat}>
+                                                    <img src={cancelIcon} alt="Cancel" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <h3 className="chat-name">{chat.name}</h3>
+                                                {isAdmin && (
+                                                    <button
+                                                        className="chat-edit-icon-btn"
+                                                        onClick={(e) => startEditingChat(chat, e)}
+                                                        title="Редагувати назву"
+                                                    >
+                                                        <img src={editIcon} alt="Edit" />
+                                                    </button>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+
+                                    {editingChatId !== chat.id && (
+                                        <p className="chat-preview">{chat.lastMessage}</p>
+                                    )}
                                 </div>
                             ))
                         ) : (
@@ -281,16 +386,16 @@ const ChatsPage = () => {
             {isAddUserModalOpen && (
                 <div className="modal-overlay" style={{ zIndex: 1001 }} onClick={() => setIsAddUserModalOpen(false)}>
                     <div className="modal-content participants-modal" onClick={e => e.stopPropagation()}>
-                        
+
                         <div className="participants-header" style={{ marginBottom: '15px' }}>
                             <h2 className="modal-title">Додати користувача</h2>
                         </div>
 
                         <div className="form-group" style={{ marginBottom: '15px' }}>
-                            <input 
-                                type="text" 
-                                placeholder="Пошук за іменем..." 
-                                className="chat-input-field" 
+                            <input
+                                type="text"
+                                placeholder="Пошук за іменем..."
+                                className="chat-input-field"
                                 value={userSearchTerm}
                                 onChange={(e) => setUserSearchTerm(e.target.value)}
                                 autoFocus
@@ -307,8 +412,8 @@ const ChatsPage = () => {
                                             </div>
                                             <span className="participant-name">{user.name}</span>
                                         </div>
-    
-                                        <button 
+
+                                        <button
                                             className="add-participant-btn"
                                             onClick={() => {
                                                 console.log("Додаємо користувача:", user.name);
@@ -327,11 +432,11 @@ const ChatsPage = () => {
                         </div>
 
                         <div className="modal-actions">
-                            <button 
-                                className="cancel-btn" 
+                            <button
+                                className="cancel-btn"
                                 onClick={() => {
                                     setIsAddUserModalOpen(false);
-                                    setUserSearchTerm(""); 
+                                    setUserSearchTerm("");
                                 }}
                             >
                                 Назад

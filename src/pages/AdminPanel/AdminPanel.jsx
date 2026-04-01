@@ -13,8 +13,8 @@ const tableConfig = {
         keys: ['id', 'name', 'address', 'phone', 'email']
     },
     'Користувачі': {
-        headers: ['ID', 'Ім\'я', 'Прізвище', 'Email', 'ID Центру', 'Дії'],
-        keys: ['id', 'firstName', 'lastName', 'email', 'centerId']
+        headers: ['ID', 'Ім\'я', 'Прізвище', 'Email', 'ID Центру', 'Роль', 'Дії'],
+        keys: ['id', 'firstName', 'lastName', 'email', 'centerId', 'role']
     },
     'Діти': {
         headers: ['ID', 'Ім\'я', 'Прізвище', 'Дата народження', 'ID Батька', 'Дії'],
@@ -36,6 +36,13 @@ const tableConfig = {
         headers: ['ID', 'Батько', 'Дитина', 'Телефон', 'Дата', 'Дії'],
         keys: ['id', 'parentName', 'childName', 'phone', 'createdAt']
     }
+};
+
+const roleTranslations = {
+    'SuperAdmin': 'Суперадмін',
+    'CenterAdmin': 'Адмін центру',
+    'Teacher': 'Вчитель',
+    'Parent': 'Батько/Мати'
 };
 
 const AdminPanel = () => {
@@ -81,6 +88,17 @@ const AdminPanel = () => {
 
     const currentConfig = tableConfig[activeTab];
     const formatCellValue = (item, key) => {
+
+        if (key === 'role') {
+            const translateRole = (roleKey) => roleTranslations[roleKey] || roleKey;
+
+           if (item.roles && Array.isArray(item.roles) && item.roles.length > 0) {
+                return item.roles.map(translateRole).join(', ');
+            }
+
+            return translateRole(item[key]) || '—';
+        }
+
         const value = item[key];
 
         if (key.includes('Date') || key.includes('At')) {
@@ -130,11 +148,37 @@ const AdminPanel = () => {
 
     const handleCreateSave = async () => {
         try {
-            const response = await api.post(endpointMap[activeTab], newData);
-            setData([...data, response.data]);
+            let payload = { ...newData };
+
+            if (activeTab === 'Користувачі') {
+                if (payload.role) {
+                    payload.roles = [payload.role];
+                    delete payload.role;
+                }
+
+                if (!payload.centerId || payload.centerId.trim() === "") {
+                    payload.centerId = null;
+                }
+
+                if (!payload.password) {
+                    alert("Пароль є обов'язковим для створення користувача!");
+                    return;
+                }
+            }
+
+            const response = await api.post(endpointMap[activeTab], payload);
+
+            const savedItem = response.data;
+            if (activeTab === 'Користувачі') {
+            savedItem.role = (savedItem.roles && savedItem.roles.length > 0) 
+                ? savedItem.roles[0] 
+                : payload.roles[0]; 
+        }
+
+            setData([...data, savedItem]);
             setIsModalOpen(false);
         } catch (error) {
-            console.error("Помилка при створенні:", error);
+            console.error("Помилка при створенні:", error.response?.data || error.message);
             alert("Не вдалося створити запис. Перевірте обов'язкові поля.");
         }
     };
@@ -184,7 +228,7 @@ const AdminPanel = () => {
                     <button className='apply-search-btn' onClick={handleSearch}>
                         <img src={searchIcon} alt='Search' className='search-btn-icon' />
                         Застосувати
-                    </button> 
+                    </button>
                 </div>
 
                 <div className='table-container'>
@@ -253,15 +297,42 @@ const AdminPanel = () => {
                             {currentConfig.keys
                                 .filter(key => key !== 'id' && !key.includes('At'))
                                 .map(key => (
-
                                     <div key={key} className="form-group">
                                         <label>{currentConfig.headers[currentConfig.keys.indexOf(key)]}</label>
-                                        <input
-                                            type="text"
-                                            onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
-                                        />
+                                        {activeTab === 'Користувачі' && key === 'role' ? (
+                                            <select
+                                                className="filter-input"
+                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                value={newData[key] || ""}
+                                            >
+                                                <option value="" disabled>Оберіть роль...</option>
+                                                <option value="SuperAdmin">SuperAdmin</option>
+                                                <option value="CenterAdmin">CenterAdmin</option>
+                                                <option value="Teacher">Вчитель (Teacher)</option>
+                                                <option value="Parent">Батько/Мати (Parent)</option>
+                                            </select>
+                                        ) : (
+                                            <input
+                                                type="text"
+                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                value={newData[key] || ""}
+                                            />
+                                        )}
                                     </div>
                                 ))}
+
+                            {activeTab === 'Користувачі' && (
+                                <div className="form-group">
+                                    <label>Пароль</label>
+                                    <input
+                                        type="text"
+                                        className="filter-input"
+                                        onChange={(e) => setNewData({ ...newData, password: e.target.value })}
+                                        value={newData.password || ""}
+                                        placeholder="Введіть надійний пароль"
+                                    />
+                                </div>
+                            )}
                         </div>
                         <div className="modal-actions">
                             <button className="confirm-btn" onClick={handleCreateSave}>Зберегти</button>
