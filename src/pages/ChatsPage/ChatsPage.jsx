@@ -40,26 +40,14 @@ const ChatsPage = () => {
     const [messages, setMessages] = useState([]);
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
-    const [currentParticipants, setCurrentParticipants] = useState([
-        { id: 1, name: "Софія" },
-        { id: 2, name: "Олена" },
-        { id: 3, name: "Денис" },
-        { id: 4, name: "Олексій" },
-        { id: 5, name: "Марія" },
-        { id: 6, name: "Іван" }
-    ]);
+    const [participants, setParticipants] = useState([]);
+    const [isLoadingParticipants, setIsLoadingParticipants] = useState(false);
 
-    const allSystemUsers = [
-        { id: 101, name: "Анна (викладач)" },
-        { id: 102, name: "Максим" },
-        { id: 103, name: "Катерина" },
-        { id: 104, name: "Олександр (викладач)" },
-        { id: 105, name: "Вікторія" },
-        { id: 106, name: "Дмитро" }
-    ];
+    const [availableUsers, setAvailableUsers] = useState([]);
+    const [isLoadingAvailableUsers, setIsLoadingAvailableUsers] = useState(false);
 
-    const filteredUsersToAdd = allSystemUsers.filter(user =>
-        user.name.toLowerCase().includes(userSearchTerm.toLowerCase())
+    const filteredUsersToAdd = availableUsers.filter(u =>
+        (u.firstName + " " + u.lastName).toLowerCase().includes(userSearchTerm.toLowerCase())
     );
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -69,6 +57,38 @@ const ChatsPage = () => {
         chat.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const formatDateSeparator = (dateString) => {
+        const date = new Date(dateString);
+
+        return date.toLocaleDateString('uk-UA', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    };
+    const getMessagesWithSeparators = (messagesList) => {
+        const result = [];
+        let currentDateLabel = null;
+
+        messagesList.forEach((msg) => {
+            const dateLabel = formatDateSeparator(msg.createdAt);
+
+            if (dateLabel !== currentDateLabel) {
+                result.push({
+                    isSeparator: true,
+                    label: dateLabel,
+                    id: `sep-${msg.id}`
+                });
+                currentDateLabel = dateLabel;
+            }
+            result.push({
+                isSeparator: false,
+                data: msg
+            });
+        });
+
+        return result;
+    };
     useEffect(() => {
         scrollToBottom();
     }, [messages, activeChatId]);
@@ -81,7 +101,7 @@ const ChatsPage = () => {
                 const formattedChats = response.data.map(chat => ({
                     ...chat,
                     lastMessage: chat.lastMessage || null,
-                    participants: chat.participants || 0
+                    participants: chat.participantsCount || 0
                 }));
 
                 formattedChats.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -207,17 +227,56 @@ const ChatsPage = () => {
             scrollToBottom();
 
             setChatsList(prevChats => prevChats.map(chat => {
-            if (chat.id === activeChatId) {
-                return { 
-                    ...chat, 
-                    lastMessage: newMsg 
-                };
-            }
-            return chat;
-        }));
+                if (chat.id === activeChatId) {
+                    return {
+                        ...chat,
+                        lastMessage: newMsg
+                    };
+                }
+                return chat;
+            }));
         } catch (error) {
             console.error("Помилка відправки:", error);
             alert("Не вдалося відправити повідомлення.");
+        }
+    };
+
+    const handleOpenParticipantsModal = async () => {
+        if (!activeChatId) return;
+
+        setIsParticipantsModalOpen(true);
+        setIsLoadingParticipants(true);
+
+        try {
+            const response = await api.get(`/chat/${activeChatId}/participants`);
+            setParticipants(response.data);
+            setChatsList(prevChats => prevChats.map(chat =>
+                chat.id === activeChatId
+                    ? { ...chat, participants: response.data.length }
+                    : chat
+
+            ));
+
+        } catch (error) {
+            console.error("Помилка завантаження учасників чату:", error);
+        } finally {
+            setIsLoadingParticipants(false);
+        }
+    };
+
+    const fetchAvailableUsers = async () => {
+        setIsLoadingAvailableUsers(true);
+        try {
+            const response = await api.get('/user/available-for-chat');
+
+            const existingParticipantIds = participants.map(p => p.id);
+            const usersToAdd = response.data.filter(u => !existingParticipantIds.includes(u.id));
+
+            setAvailableUsers(usersToAdd);
+        } catch (error) {
+            console.error("Помилка завантаження користувачів:", error);
+        } finally {
+            setIsLoadingAvailableUsers(false);
         }
     };
 
@@ -343,7 +402,7 @@ const ChatsPage = () => {
                         <h2>{chatsList.find(c => c.id === activeChatId)?.name}</h2>
                         <div
                             className="chat-participants"
-                            onClick={() => setIsParticipantsModalOpen(true)}
+                            onClick={handleOpenParticipantsModal}
                             style={{ cursor: 'pointer' }}
                         >
                             <img src={groupIcon} alt="Group" className="group-icon" />
@@ -352,18 +411,27 @@ const ChatsPage = () => {
                     </div>
 
                     <div className="chat-messages-area">
-                        <div className="chat-date-separator">10 квітня</div>
-                        {messages.map(msg => (
-                            <div key={msg.id} className={`message-wrapper ${msg.senderId === user?.id ? 'mine' : 'others'}`}>
-                                <div className="message-bubble">
-                                    {msg.senderId !== user?.id && <div className="message-sender">{msg.senderName}</div>}
-                                    <div className="message-text">{msg.content}</div>
-                                    <div className="message-time">
-                                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {getMessagesWithSeparators(messages).map(item => {
+                            if (item.isSeparator) {
+                                return (
+                                    <div key={item.id} className="chat-date-separator">
+                                        {item.label}
+                                    </div>
+                                );
+                            }
+                            const msg = item.data;
+                            return (
+                                <div key={msg.id} className={`message-wrapper ${msg.senderId === user?.id ? 'mine' : 'others'}`}>
+                                    <div className="message-bubble">
+                                        {msg.senderId !== user?.id && <div className="message-sender">{msg.senderName}</div>}
+                                        <div className="message-text">{msg.content}</div>
+                                        <div className="message-time">
+                                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                         <div ref={messagesEndRef} />
                     </div>
 
@@ -436,34 +504,46 @@ const ChatsPage = () => {
                     <div className="modal-content participants-modal" onClick={e => e.stopPropagation()}>
                         <div className="participants-header">
                             <h2 className="modal-title">Учасники чату</h2>
-                            <button className="add-entity-btn  add-user-btn"
-                                onClick={() => setIsAddUserModalOpen(true)}
-                            >
-                                + Додати користувача
-                            </button>
+                            {isAdmin && (
+                                <button className="add-entity-btn  add-user-btn"
+                                    onClick={() => {
+                                        setIsAddUserModalOpen(true);
+                                        fetchAvailableUsers();
+                                    }}
+                                >
+                                    + Додати користувача
+                                </button>
+                            )}
                         </div>
 
                         <div className="participants-list">
-                            {currentParticipants.map(participant => (
-                                <div key={participant.id} className="participant-item">
-                                    <div className="participant-info">
-                                        <div className="participant-avatar">
-                                            {participant.name.charAt(0)}
+                            {isLoadingParticipants ? (
+                                <p style={{ textAlign: 'center', color: '#9384A6' }}>Завантаження...</p>
+                            ) : participants.length > 0 ? (
+                                participants.map(participant => (
+                                    <div key={participant.id} className="participant-item">
+                                        <div className="participant-info">
+                                            <div className="participant-avatar">
+                                                {participant.firstName ? participant.firstName.charAt(0).toUpperCase() : '?'}
+                                            </div>
+                                            <span className="participant-name">
+                                                {participant.firstName} {participant.lastName}
+                                            </span>
                                         </div>
-                                        <span className="participant-name">{participant.name}</span>
+                                        {participant.email !== 'superadmin@childspace.com' && (
+                                            <button
+                                                className="remove-participant-btn"
+                                                onClick={() => {
+                                                    // логіка видалення
+                                                    console.log("Видалити користувача з ID:", participant.id);
+                                                }}
+                                            >
+                                                Видалити
+                                            </button>
+                                        )}
                                     </div>
-                                    <button
-                                        className="remove-participant-btn"
-                                        onClick={() => {
-                                            setCurrentParticipants(prev => prev.filter(p => p.id !== participant.id));
-                                        }}
-                                    >
-                                        Видалити
-                                    </button>
-                                </div>
-                            ))}
-
-                            {currentParticipants.length === 0 && (
+                                ))
+                            ) : (
                                 <p style={{ textAlign: 'center', color: '#9384A6' }}>Немає учасників</p>
                             )}
                         </div>
@@ -500,32 +580,35 @@ const ChatsPage = () => {
                         </div>
 
                         <div className="participants-list">
-                            {filteredUsersToAdd.length > 0 ? (
-                                filteredUsersToAdd.map(user => (
-                                    <div key={user.id} className="participant-item">
-                                        <div className="participant-info">
-                                            <div className="participant-avatar">
-                                                {user.name.charAt(0)}
+                            {isLoadingAvailableUsers ? (
+                                <p style={{ textAlign: 'center', color: '#9384A6', margin: '20px 0' }}>Завантаження списку...</p>
+                            ) :
+                                filteredUsersToAdd.length > 0 ? (
+                                    filteredUsersToAdd.map(user => (
+                                        <div key={user.id} className="participant-item">
+                                            <div className="participant-info">
+                                                <div className="participant-avatar">
+                                                    {user.firstName.charAt(0)}
+                                                </div>
+                                                <span className="participant-name">{user.firstName} {user.lastName}</span>
                                             </div>
-                                            <span className="participant-name">{user.name}</span>
-                                        </div>
 
-                                        <button
-                                            className="add-participant-btn"
-                                            onClick={() => {
-                                                console.log("Додаємо користувача:", user.name);
-                                                // логіка додавання
-                                            }}
-                                        >
-                                            Додати
-                                        </button>
-                                    </div>
-                                ))
-                            ) : (
-                                <p style={{ textAlign: 'center', color: '#9384A6', margin: '20px 0' }}>
-                                    Користувачів не знайдено
-                                </p>
-                            )}
+                                            <button
+                                                className="add-participant-btn"
+                                                onClick={() => {
+                                                    console.log("Додаємо користувача:", user.name);
+                                                    // логіка додавання
+                                                }}
+                                            >
+                                                Додати
+                                            </button>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p style={{ textAlign: 'center', color: '#9384A6', margin: '20px 0' }}>
+                                        Користувачів не знайдено
+                                    </p>
+                                )}
                         </div>
 
                         <div className="modal-actions">
