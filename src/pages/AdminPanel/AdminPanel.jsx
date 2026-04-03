@@ -17,7 +17,7 @@ const tableConfig = {
         keys: ['id', 'firstName', 'lastName', 'email', 'centerId', 'role']
     },
     'Діти': {
-        headers: ['ID', 'Ім\'я', 'Прізвище', 'Дата народження', 'ID Батька', 'Дії'],
+        headers: ['ID', 'Ім\'я', 'Прізвище', 'Дата народження', 'Представник дитини', 'Дії'],
         keys: ['id', 'firstName', 'lastName', 'birthDate', 'parentId']
     },
     'Матеріали': {
@@ -33,8 +33,8 @@ const tableConfig = {
         keys: ['id', 'name', 'description', 'centerId']
     },
     'Заявки': {
-        headers: ['ID', 'Батько', 'Дитина', 'Телефон', 'Дата', 'Дії'],
-        keys: ['id', 'parentName', 'childName', 'phone', 'createdAt']
+        headers: ['ID', 'Центр', 'Представник дитини', 'Дитина', 'Телефон', 'Дата', 'Дії'],
+        keys: ['id', 'centerId', 'parentName', 'childName', 'phone', 'createdAt']
     }
 };
 
@@ -55,6 +55,8 @@ const AdminPanel = () => {
     const [newData, setNewData] = useState({});
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredData, setFilteredData] = useState([]);
+    const [centersList, setCentersList] = useState([]);
+    const [groupsList, setGroupsList] = useState([]);
 
     const endpointMap = {
         'Центри': '/center',
@@ -86,17 +88,37 @@ const AdminPanel = () => {
         fetchData();
     }, [activeTab]);
 
+    useEffect(() => {
+        const fetchLists = async () => {
+            try {
+                const response = await api.get('/center');
+                setCentersList(response.data);
+
+                const groupsResponse = await api.get('/group');
+                setGroupsList(groupsResponse.data)
+            } catch (error) {
+                console.error("Помилка завантаження списків", error);
+            }
+        };
+        fetchLists();
+    }, []);
+
     const currentConfig = tableConfig[activeTab];
     const formatCellValue = (item, key) => {
 
         if (key === 'role') {
             const translateRole = (roleKey) => roleTranslations[roleKey] || roleKey;
 
-           if (item.roles && Array.isArray(item.roles) && item.roles.length > 0) {
+            if (item.roles && Array.isArray(item.roles) && item.roles.length > 0) {
                 return item.roles.map(translateRole).join(', ');
             }
 
             return translateRole(item[key]) || '—';
+        }
+
+        if (key === 'groupId') {
+            const group = groupsList.find(g => g.id === item[key]);
+            return group ? `${group.name} (${group.id})` : item[key] || '—';
         }
 
         const value = item[key];
@@ -170,10 +192,10 @@ const AdminPanel = () => {
 
             const savedItem = response.data;
             if (activeTab === 'Користувачі') {
-            savedItem.role = (savedItem.roles && savedItem.roles.length > 0) 
-                ? savedItem.roles[0] 
-                : payload.roles[0]; 
-        }
+                savedItem.role = (savedItem.roles && savedItem.roles.length > 0)
+                    ? savedItem.roles[0]
+                    : payload.roles[0];
+            }
 
             setData([...data, savedItem]);
             setIsModalOpen(false);
@@ -306,10 +328,35 @@ const AdminPanel = () => {
                                                 value={newData[key] || ""}
                                             >
                                                 <option value="" disabled>Оберіть роль...</option>
-                                                <option value="SuperAdmin">SuperAdmin</option>
                                                 <option value="CenterAdmin">CenterAdmin</option>
                                                 <option value="Teacher">Вчитель (Teacher)</option>
                                                 <option value="Parent">Батько/Мати (Parent)</option>
+                                            </select>
+                                        ) : key === 'centerId' ? (
+                                            <select
+                                                className="filter-input"
+                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                value={newData[key] || ""}
+                                            >
+                                                <option value="">Оберіть центр розвитку</option>
+                                                {centersList.map(center => (
+                                                    <option key={center.id} value={center.id}>
+                                                        {center.name} (ID: {center.id})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : key == 'groupId' ? (
+                                            <select
+                                                className="filter-input"
+                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                value={newData[key] || ""}
+                                            >
+                                                <option value="">Оберіть групу</option>
+                                                {groupsList.map(group => (
+                                                    <option key={group.id} value={group.id}>
+                                                        {group.name} (ID: {group.id})
+                                                    </option>
+                                                ))}
                                             </select>
                                         ) : (
                                             <input
