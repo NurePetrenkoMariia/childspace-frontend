@@ -1,11 +1,11 @@
 import './CourseCard.css'
 import { useNavigate } from 'react-router-dom'
 
-const CourseCard = ({ id, title, image }) => {
+const CourseCard = ({ id, title, image, redirectUrl }) => {
     const navigate = useNavigate();
 
     const handleCardClick = () => {
-        navigate(`/subject/${id}`);
+        navigate(redirectUrl);
     };
 
     return (

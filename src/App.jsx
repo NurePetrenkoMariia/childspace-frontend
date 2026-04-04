@@ -9,6 +9,7 @@ import SubjectDetailsPage from './pages/SubjectDetailsPage/SubjectDetailsPage'
 import AdminPanel from './pages/AdminPanel/AdminPanel'
 import ChatsPage from './pages/ChatsPage/ChatsPage'
 import SchedulePage from './pages/SchedulePage/SchedulePage'
+import MaterialsPage from './pages/MaterialsPage/MaterialsPage'
 
 function App() {
 
@@ -24,7 +25,8 @@ function App() {
             <Route path="/subject/:id" element={<SubjectDetailsPage />} />
             <Route path="/admin" element={<AdminPanel />} />
             <Route path="/chats" element={<ChatsPage />} />
-             <Route path="/schedule" element={<SchedulePage />} />
+            <Route path="/schedule" element={<SchedulePage />} />
+            <Route path="/materials" element={<MaterialsPage />} />
           </Route>
         </Routes>
       </AuthProvider>
