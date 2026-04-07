@@ -280,6 +280,54 @@ const ChatsPage = () => {
         }
     };
 
+    const handleAddParticipant = async (userToAdd) => {
+        if (!activeChatId) {
+            return;
+        }
+
+        try {
+            await api.post(`/chat/${activeChatId}/participants/${userToAdd.id}`);
+            setParticipants(prevParticipants => [...prevParticipants, userToAdd]);
+            setAvailableUsers(prevAvailable => prevAvailable.filter(u => u.id !== userToAdd.id));
+            setChatsList(prevChats => prevChats.map(chat =>
+                chat.id === activeChatId
+                    ? { ...chat, participants: chat.participants + 1 }
+                    : chat
+            ));
+
+        } catch (error) {
+            console.error("Помилка при додаванні користувача:", error);
+            alert(error.response?.data?.message || "Не вдалося додати користувача до чату.");
+        }
+
+    };
+
+    const handleRemoveParticipant = async (userIdToRemove) => {
+        if (!activeChatId){
+return;
+        } 
+        
+        if (window.confirm("Ви впевнені, що хочете видалити цього користувача з чату?")) {
+            try {
+                await api.delete(`/chat/${activeChatId}/participants/${userIdToRemove}`);
+
+                setParticipants(prevParticipants =>
+                    prevParticipants.filter(p => p.id !== userIdToRemove)
+                );
+
+                setChatsList(prevChats => prevChats.map(chat =>
+                    chat.id === activeChatId
+                        ? { ...chat, participants: Math.max(0, chat.participants - 1) }
+                        : chat
+                ));
+
+            } catch (error) {
+                console.error("Помилка при видаленні користувача:", error);
+                alert(error.response?.data?.message || "Не вдалося видалити користувача з чату.");
+            }
+        }
+    };
+
     return (
         <div className="chats-container">
             <div className="chat-title-row">
@@ -533,10 +581,7 @@ const ChatsPage = () => {
                                         {participant.email !== 'superadmin@childspace.com' && (
                                             <button
                                                 className="remove-participant-btn"
-                                                onClick={() => {
-                                                    // логіка видалення
-                                                    console.log("Видалити користувача з ID:", participant.id);
-                                                }}
+                                                onClick={() => handleRemoveParticipant(participant.id)}
                                             >
                                                 Видалити
                                             </button>
@@ -595,10 +640,7 @@ const ChatsPage = () => {
 
                                             <button
                                                 className="add-participant-btn"
-                                                onClick={() => {
-                                                    console.log("Додаємо користувача:", user.name);
-                                                    // логіка додавання
-                                                }}
+                                                onClick={() => handleAddParticipant(user)}
                                             >
                                                 Додати
                                             </button>
