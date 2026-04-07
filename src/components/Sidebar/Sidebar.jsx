@@ -42,7 +42,7 @@ const Sidebar = () => {
                 <div className={getNavItemClass("/chats")} onClick={() => navigate("/chats")}>
                     <img src={chatIcon} alt="Chat" className="sidebar-custom-icon" />
                 </div>
-                <div className="nav-item">
+                <div className={getNavItemClass("/materials")} onClick={() => navigate("/materials")}>
                     <img src={materialsIcon} alt="Materials" className="sidebar-custom-icon" />
                 </div>
             </div>

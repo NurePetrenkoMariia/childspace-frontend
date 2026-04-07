@@ -1,5 +1,5 @@
 import './CourseCard.css'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate} from 'react-router-dom'
 
 const CourseCard = ({ id, title, image, redirectUrl }) => {
     const navigate = useNavigate();

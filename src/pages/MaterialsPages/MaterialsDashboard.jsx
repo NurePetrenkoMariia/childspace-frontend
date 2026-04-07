@@ -1,6 +1,6 @@
 import SubjectGrid from '../../components/SubjectGrid/SubjectGrid';
 
-const MaterialsPage = () => {
+const MaterialsDashboard = () => {
     const title = (
         <header className="materials-header">
             <h1 className="materials-title">Матеріали</h1>
@@ -20,4 +20,4 @@ const MaterialsPage = () => {
 
 };
 
-export default MaterialsPage;
+export default MaterialsDashboard;

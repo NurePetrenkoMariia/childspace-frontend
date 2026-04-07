@@ -17,8 +17,8 @@ const tableConfig = {
         keys: ['id', 'firstName', 'lastName', 'email', 'centerId', 'role']
     },
     'Діти': {
-        headers: ['ID', 'Ім\'я', 'Прізвище', 'Дата народження', 'Представник дитини', 'Дії'],
-        keys: ['id', 'firstName', 'lastName', 'birthDate', 'parentId']
+        headers: ['ID', 'Ім\'я', 'Прізвище', 'Дата народження', 'Представник дитини', 'Нотатки', 'Дії'],
+        keys: ['id', 'firstName', 'lastName', 'birthDate', 'parentId', 'notes']
     },
     'Матеріали': {
         headers: ['ID', 'Заголовок', 'Тип', 'ID Групи', 'Створено', 'Дії'],
@@ -57,6 +57,7 @@ const AdminPanel = () => {
     const [filteredData, setFilteredData] = useState([]);
     const [centersList, setCentersList] = useState([]);
     const [groupsList, setGroupsList] = useState([]);
+    const [parentsList, setParentsList] = useState([]);
 
     const endpointMap = {
         'Центри': '/center',
@@ -95,7 +96,11 @@ const AdminPanel = () => {
                 setCentersList(response.data);
 
                 const groupsResponse = await api.get('/group');
-                setGroupsList(groupsResponse.data)
+                setGroupsList(groupsResponse.data);
+
+                const parentsResponse = await api.get('/user/parents');
+                setParentsList(parentsResponse.data);
+
             } catch (error) {
                 console.error("Помилка завантаження списків", error);
             }
@@ -355,6 +360,19 @@ const AdminPanel = () => {
                                                 {groupsList.map(group => (
                                                     <option key={group.id} value={group.id}>
                                                         {group.name} (ID: {group.id})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : activeTab === 'Діти' && key === 'parentId' ? (
+                                            <select
+                                                className="filter-input"
+                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                value={newData[key] || ""}
+                                            >
+                                                <option value="">Оберіть представника</option>
+                                                {parentsList.map(parent => (
+                                                    <option key={parent.id} value={parent.id}>
+                                                        {parent.firstName} {parent.lastName} ({parent.email})
                                                     </option>
                                                 ))}
                                             </select>
