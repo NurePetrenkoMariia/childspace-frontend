@@ -303,10 +303,10 @@ const ChatsPage = () => {
     };
 
     const handleRemoveParticipant = async (userIdToRemove) => {
-        if (!activeChatId){
-return;
-        } 
-        
+        if (!activeChatId) {
+            return;
+        }
+
         if (window.confirm("Ви впевнені, що хочете видалити цього користувача з чату?")) {
             try {
                 await api.delete(`/chat/${activeChatId}/participants/${userIdToRemove}`);
@@ -341,20 +341,21 @@ return;
                         <div className="chats-search-group">
                             <input
                                 type="text"
-                                placeholder="Пошук..."
+                                placeholder="Введіть назву чату"
                                 className="filter-input chats-search-input"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <button
-                            className="create-chat-btn"
-                            onClick={() => setIsModalOpen(true)}
-                            title="Створити новий чат"
-                        >
-                            +
-                        </button>
-
+                        {isAdmin && (
+                            <button
+                                className="create-chat-btn"
+                                onClick={() => setIsModalOpen(true)}
+                                title="Створити новий чат"
+                            >
+                                +
+                            </button>
+                        )}
                     </div>
                     <div className="chats-sidebar-list">
                         {filteredChats.length > 0 ? (
@@ -439,7 +440,7 @@ return;
                             })
                         ) : (
                             <div style={{ textAlign: 'center', color: '#9384A6', marginTop: '20px' }}>
-                                Чати не знайдені
+                                У вас поки що немає чатів
                             </div>
                         )}
                     </div>
@@ -568,31 +569,35 @@ return;
                             {isLoadingParticipants ? (
                                 <p style={{ textAlign: 'center', color: '#9384A6' }}>Завантаження...</p>
                             ) : participants.length > 0 ? (
-                                participants.map(participant => (
-                                    <div key={participant.id} className="participant-item">
-                                        <div className="participant-info">
-                                            <div className="participant-avatar">
-                                                {participant.firstName ? participant.firstName.charAt(0).toUpperCase() : '?'}
+                                participants.map(participant => {
+                                    const isMe = user?.id && participant?.id && String(participant.id).toLowerCase() === String(user.id).toLowerCase();
+
+                                    return (
+                                        <div key={participant.id} className="participant-item">
+                                            <div className="participant-info">
+                                                <div className="participant-avatar">
+                                                    {participant.firstName ? participant.firstName.charAt(0).toUpperCase() : '?'}
+                                                </div>
+                                                <span className="participant-name">
+                                                    {participant.firstName} {participant.lastName} {isMe && "(Ви)"}
+                                                </span>
                                             </div>
-                                            <span className="participant-name">
-                                                {participant.firstName} {participant.lastName}
-                                            </span>
+
+                                            {isAdmin && participant.email !== 'superadmin@childspace.com' && !isMe && (
+                                                <button
+                                                    className="remove-participant-btn"
+                                                    onClick={() => handleRemoveParticipant(participant.id)}
+                                                >
+                                                    Видалити
+                                                </button>
+                                            )}
                                         </div>
-                                        {participant.email !== 'superadmin@childspace.com' && (
-                                            <button
-                                                className="remove-participant-btn"
-                                                onClick={() => handleRemoveParticipant(participant.id)}
-                                            >
-                                                Видалити
-                                            </button>
-                                        )}
-                                    </div>
-                                ))
+                                    );
+                                })
                             ) : (
                                 <p style={{ textAlign: 'center', color: '#9384A6' }}>Немає учасників</p>
                             )}
                         </div>
-
                         <div className="modal-actions">
                             <button
                                 className="cancel-btn"
