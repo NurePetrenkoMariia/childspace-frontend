@@ -1,18 +1,66 @@
 import React, { useState, useEffect } from 'react';
 import './SchedulePage.css';
 import api from '../../../api/axios';
+import { useAuth } from '../../auth/AuthContext';
 
 const SchedulePage = () => {
+    const { user } = useAuth();
     const [currentDate, setCurrentDate] = useState(new Date('2026-03-29'));
     const [selectedCenter, setSelectedCenter] = useState("1");
+    const [centers, setCenters] = useState([]);
+    const [schedules, setSchedules] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        const fetchCenters = async () => {
+            try {
+                const response = await api.get('/center');
+                const availableCenters = response.data;
+
+                setCenters(availableCenters);
+                if (availableCenters.length > 0) {
+                    setSelectedCenter(availableCenters[0].id);
+                }
+            } catch (error) {
+                console.error("Помилка завантаження центрів:", error);
+            }
+        };
+
+        fetchCenters();
+    }, []);
 
     useEffect(() => {
         const fetchSchedules = async () => {
+            if (!user || !user.roles) {
+                return;
+            }
+
             setIsLoading(true);
             try {
-                const response = await api.get('/schedule');
+                let response;
 
-                setSchedules(response.data);
+                if (user.roles.includes('Teacher')) {
+                    response = await api.get('/schedule/my');
+                }
+
+                else if (user.roles.includes('Parent')) {
+                    response = await api.get('/schedule/children');
+                }
+
+                else if (user.roles.includes('SuperAdmin') || user.roles.includes('CenterAdmin')) {
+
+                    if (!selectedCenter) {
+                        return;
+                    }
+
+                    response = await api.get('/schedule', {
+                        params: { centerId: selectedCenter }
+                    });
+                }
+
+                if (response && response.data) {
+                    setSchedules(response.data);
+                }
             } catch (error) {
                 console.error("Помилка завантаження розкладу:", error);
             } finally {
@@ -21,16 +69,13 @@ const SchedulePage = () => {
         };
 
         fetchSchedules();
-    }, [selectedCenter]); 
+    }, [user, selectedCenter]);
 
     const getMonthYearString = (date) => {
         const options = { month: 'long', year: 'numeric' };
         let str = date.toLocaleDateString('uk-UA', options);
         return str.charAt(0).toUpperCase() + str.slice(1);
     };
-
-    const [schedules, setSchedules] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
 
     const getWeekDays = (date) => {
         const week = [];
@@ -68,7 +113,6 @@ const SchedulePage = () => {
     };
 
     const dayNames = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота", "Неділя"];
-    const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
 
     const getEventForSlot = (dayDate, hour) => {
         return schedules.find(sch => {
@@ -87,7 +131,7 @@ const SchedulePage = () => {
     const getDynamicHours = () => {
         const startOfWeek = new Date(weekDays[0]);
         startOfWeek.setHours(0, 0, 0, 0);
-        
+
         const endOfWeek = new Date(weekDays[6]);
         endOfWeek.setHours(23, 59, 59, 999);
 
@@ -104,29 +148,42 @@ const SchedulePage = () => {
         let minHour = Math.min(...eventHours);
         let maxHour = Math.max(...eventHours);
 
-        minHour = Math.max(0, minHour - 1); 
+        minHour = Math.max(0, minHour - 1);
         maxHour = Math.min(23, maxHour + 1);
 
         const generatedHours = [];
         for (let i = minHour; i <= maxHour; i++) {
             generatedHours.push(i);
         }
-        
+
         return generatedHours;
     };
 
-    const dynamicHours = getDynamicHours(); 
+    const dynamicHours = getDynamicHours();
+
+    const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
     return (
         <div className="schedule-page-container">
             <h1 className="page-title">Розклад</h1>
-            <div className="schedule-filter-bar">
-                <select className="center-select">
-                    <option value="1">Центр "Сонечко" - Головний</option>
-                </select>
-                <button className="apply-btn">
-                    Застосувати
-                </button>
-            </div>
+            {isAdmin && (
+                <div className="schedule-filter-bar">
+                    <select
+                        className="center-select"
+                        value={selectedCenter}
+                        onChange={(e) => setSelectedCenter(e.target.value)}
+                        disabled={centers.length <= 1}
+                    >
+                        {centers.map(center => (
+                            <option key={center.id} value={center.id}>
+                                {center.name}
+                            </option>
+                        ))}
+                    </select>
+                    <button className="apply-btn">
+                        Застосувати
+                    </button>
+                </div>
+            )}
 
             <div className="calendar-container">
                 <div className="calendar-header">
@@ -138,7 +195,9 @@ const SchedulePage = () => {
                         </div>
                     </div>
 
-                    <button className="edit-schedule-btn">Редагувати розклад</button>
+                    {isAdmin && (
+                        <button className="edit-schedule-btn">Редагувати розклад</button>
+                    )}
 
                 </div>
 

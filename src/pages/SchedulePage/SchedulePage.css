@@ -94,7 +94,7 @@
 }
 
 .edit-schedule-btn {
-    background-color: #A779E6;
+    background-color: #4F169E;
     color: white;
     border: none;
     border-radius: 15px;
@@ -105,7 +105,9 @@
 }
 
 .edit-schedule-btn:hover {
-    background-color: #9162D4;
+    background-color: #5D1DBF; 
+    transform: translateY(-2px); 
+    box-shadow: 0 6px 15px rgba(79, 22, 158, 0.4); 
 }
 
 .table-container {

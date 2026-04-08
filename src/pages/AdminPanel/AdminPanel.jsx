@@ -25,8 +25,8 @@ const tableConfig = {
         keys: ['id', 'title', 'type', 'groupId', 'createdAt']
     },
     'Групи': {
-        headers: ['ID', 'Назва', 'Опис', 'ID Вчителя', 'Дії'],
-        keys: ['id', 'name', 'description', 'teacherId']
+        headers: ['ID', 'Назва', 'Опис', 'ID Вчителя', 'ID Центру', 'Дії'],
+        keys: ['id', 'name', 'description', 'teacherId', 'centerId']
     },
     'Гуртки': {
         headers: ['ID', 'Назва', 'Опис', 'ID Центру', 'Дії'],
@@ -261,9 +261,11 @@ const AdminPanel = () => {
                 <div className='table-container'>
                     <div className='table-first-row'>
                         <h2 className='table-title'>{activeTab}</h2>
-                        <button className='add-entity-btn' onClick={handleAddClick}>
-                            + Додати запис
-                        </button>
+                        {activeTab !== 'Заявки' && activeTab !== 'Матеріали' && (
+                            <button className='add-entity-btn' onClick={handleAddClick}>
+                                + Додати запис
+                            </button>
+                        )}
                     </div>
                     <table className='admin-table'>
                         <thead >
