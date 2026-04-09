@@ -5,11 +5,13 @@ import { useAuth } from '../../auth/AuthContext';
 
 const SchedulePage = () => {
     const { user } = useAuth();
-    const [currentDate, setCurrentDate] = useState(new Date('2026-03-29'));
+    const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedCenter, setSelectedCenter] = useState("1");
+    const [appliedCenter, setAppliedCenter] = useState("");
     const [centers, setCenters] = useState([]);
     const [schedules, setSchedules] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState(null);
 
     useEffect(() => {
         const fetchCenters = async () => {
@@ -20,6 +22,7 @@ const SchedulePage = () => {
                 setCenters(availableCenters);
                 if (availableCenters.length > 0) {
                     setSelectedCenter(availableCenters[0].id);
+                    setAppliedCenter(availableCenters[0].id);
                 }
             } catch (error) {
                 console.error("Помилка завантаження центрів:", error);
@@ -49,12 +52,12 @@ const SchedulePage = () => {
 
                 else if (user.roles.includes('SuperAdmin') || user.roles.includes('CenterAdmin')) {
 
-                    if (!selectedCenter) {
+                    if (!appliedCenter) {
                         return;
                     }
 
                     response = await api.get('/schedule', {
-                        params: { centerId: selectedCenter }
+                        params: { centerId: appliedCenter }
                     });
                 }
 
@@ -69,7 +72,7 @@ const SchedulePage = () => {
         };
 
         fetchSchedules();
-    }, [user, selectedCenter]);
+    }, [user, appliedCenter]);
 
     const getMonthYearString = (date) => {
         const options = { month: 'long', year: 'numeric' };
@@ -162,6 +165,14 @@ const SchedulePage = () => {
     const dynamicHours = getDynamicHours();
 
     const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
+
+    const formatTime = (dateString) => {
+        if (!dateString) {
+            return "";
+        }
+        const date = new Date(dateString);
+        return date.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+    };
     return (
         <div className="schedule-page-container">
             <h1 className="page-title">Розклад</h1>
@@ -179,7 +190,10 @@ const SchedulePage = () => {
                             </option>
                         ))}
                     </select>
-                    <button className="apply-btn">
+                    <button className="apply-btn"
+                        onClick={() => setAppliedCenter(selectedCenter)}
+                        disabled={selectedCenter === appliedCenter}
+                    >
                         Застосувати
                     </button>
                 </div>
@@ -225,7 +239,10 @@ const SchedulePage = () => {
                                         return (
                                             <td key={index} className="event-cell">
                                                 {event && (
-                                                    <div className="event-pill">
+                                                    <div className="event-pill"
+                                                        onClick={() => setSelectedEvent(event)}
+                                                        style={{ cursor: 'pointer' }}
+                                                    >
                                                         {event.subjectName}
                                                     </div>
                                                 )}
@@ -238,7 +255,31 @@ const SchedulePage = () => {
                     </table>
                 </div>
             </div>
-
+            {selectedEvent && (
+                <div className="event-modal-overlay" onClick={() => setSelectedEvent(null)}>
+                    <div className="event-modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="event-modal-header">
+                            <h3>{selectedEvent.subjectName}</h3>
+                            <button className="close-event-btn" onClick={() => setSelectedEvent(null)}>×</button>
+                        </div>
+                        <div className="event-modal-body">
+                            <p>
+                                <strong>Група:</strong> {selectedEvent.groupName || "Не вказано"}
+                            </p>
+                            <p>
+                                <strong>Викладач:</strong> {selectedEvent.teacherName || "Не вказано"}
+                            </p>
+                            <p>
+                                <strong>Кабінет:</strong> {selectedEvent.roomName || "Не вказано"}
+                            </p>
+                            <p>
+                                <strong>Час:</strong> {formatTime(selectedEvent.startTime)} - {formatTime(selectedEvent.endTime)}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )
+            }
         </div>
     );
 };

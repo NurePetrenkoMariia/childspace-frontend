@@ -177,3 +177,72 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.event-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; 
+}
+
+.event-modal-content {
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    width: 350px;
+    padding: 24px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.event-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid #EBE4F4;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+}
+
+.event-modal-header h3 {
+    margin: 0;
+    color: #4F169E;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.close-event-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    line-height: 1;
+    color: #9384A6;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-event-btn:hover {
+    color: #4F169E;
+}
+
+.event-modal-body p {
+    margin: 10px 0;
+    color: #333;
+    font-size: 15px;
+}
