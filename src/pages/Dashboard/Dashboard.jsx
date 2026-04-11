@@ -2,7 +2,11 @@ import { useAuth } from '../../auth/AuthContext';
 import SubjectGrid from '../../components/SubjectGrid/SubjectGrid';
 
 const Dashboard = () => {
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
+
+    if (loading) {
+        return <div className="loading-spinner">Завантаження...</div>;
+    }
 
     const title = (
         <header className="dashboard-header">

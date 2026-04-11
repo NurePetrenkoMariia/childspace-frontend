@@ -21,8 +21,8 @@ const tableConfig = {
         keys: ['id', 'firstName', 'lastName', 'birthDate', 'parentId', 'notes']
     },
     'Матеріали': {
-        headers: ['ID', 'Заголовок', 'Тип', 'ID Групи', 'Створено', 'Дії'],
-        keys: ['id', 'title', 'type', 'groupId', 'createdAt']
+        headers: ['ID', 'Заголовок', 'Тип', 'Створено', 'Дії'],
+        keys: ['id', 'title', 'type', 'createdAt']
     },
     'Групи': {
         headers: ['ID', 'Назва', 'Опис', 'ID Вчителя', 'ID Центру', 'Дії'],
