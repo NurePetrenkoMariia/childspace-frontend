@@ -1,15 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../../../api/axios';
+import { useAuth } from '../../auth/AuthContext';
 import './MaterialsPage.css';
 
 const MaterialsPage = () => {
     const { id } = useParams();
+    const { user } = useAuth();
+    const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
+    const isTeacher = user?.roles?.includes('Teacher');
 
+    const canAddMaterial = isAdmin || isTeacher;
     const [subjectName, setSubjectName] = useState('');
     const [loadingName, setLoadingName] = useState(true);
     const [materials, setMaterials] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [newMaterial, setNewMaterial] = useState({
+        title: '',
+        description: '',
+        type: 0,  //????
+        file: null
+    });
 
     useEffect(() => {
         const fetchSubjectDetails = async () => {
@@ -26,14 +40,16 @@ const MaterialsPage = () => {
         if (id) {
             fetchSubjectDetails();
         }
-    }, [id]);
+    }, [id, refreshTrigger]);
 
     useEffect(() => {
         const fetchMaterials = async () => {
+            if (!id) {
+                return;
+            }
             setIsLoading(true);
             try {
-                //замінити на відфільтрований метод
-                const response = await api.get('/material');
+                const response = await api.get(`/material/subject/${id}`);
 
                 const sortedMaterials = response.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 setMaterials(sortedMaterials);
@@ -45,7 +61,7 @@ const MaterialsPage = () => {
         };
 
         fetchMaterials();
-    }, []);
+    }, [id]);
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -53,63 +69,95 @@ const MaterialsPage = () => {
             day: 'numeric',
             month: 'long',
             year: 'numeric'
-        }) + ' р.';
+        });
+    };
+
+    const handleCreateMaterial = async () => {
+        if (!newMaterial.title || !newMaterial.file) {
+            alert("Будь ласка, введіть назву та оберіть файл!");
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('SubjectId', id);
+            formData.append('TeacherId', user.id);
+            formData.append('Title', newMaterial.title);
+            formData.append('Description', newMaterial.description || "");
+            formData.append('Type', newMaterial.type);
+            formData.append('file', newMaterial.file);
+            await api.post('/material', formData);
+
+            setIsAddModalOpen(false);
+            setNewMaterial({ title: '', description: '', type: 0, file: null });
+            setRefreshTrigger(prev => prev + 1);
+        } catch (err) {
+            console.error("Помилка при створенні матеріалу:", err);
+            alert("Не вдалося додати матеріал. Перевірте, чи підтримує бекенд завантаження файлів.");
+        }
     };
 
     return (
         <div className="materials-container">
             <h1 className="materials-page-title">Матеріали {loadingName ? '...' : (subjectName ? `> ${subjectName}` : '')} </h1>
             <div className="materials-content-wrapper">
-                <div className="materials-actions-top">
-                    <button
-                        className="add-material-btn"
-                        onClick={() => console.log("Відкрити модалку додавання")}
-                    //додавання 
-                    >
-                        Додати
-                    </button>
-                </div>
+                {canAddMaterial && (
+                    <div className="materials-actions-top">
+                        <button
+                            className="add-material-btn"
+                            onClick={() => setIsAddModalOpen(true)}
+                        >
+                            + Додати матеріал
+                        </button>
+                    </div>
+                )}
 
                 <div className="materials-list">
                     {isLoading ? (
                         <p style={{ textAlign: 'center', color: '#6A35C2' }}>Завантаження матеріалів...</p>
                     ) : materials.length > 0 ? (
-                        materials.map(mat => (
-                            <div key={mat.id} className="material-card">
-                                <div className='material-card-title'>
-                                    <div className="material-info-left">
-                                        <span className="material-author">
-                                            {mat.teacherName || "Викладач"}
-                                        </span>
-                                        <span className="material-date">
-                                            {formatDate(mat.createdAt)}
-                                        </span>
+                        materials.map(mat => {
+                            const isAuthor = mat.teacherId == user?.id;
+                            const canManageMaterial = isAdmin || (isTeacher && isAuthor);
+                            return (
+                                <div key={mat.id} className="material-card">
+                                    <div className='material-card-title'>
+                                        <div className="material-info-left">
+                                            <span className="material-author">
+                                                {mat.teacherName || "Викладач"}
+                                            </span>
+                                            <span className="material-date">
+                                                {formatDate(mat.createdAt)}
+                                            </span>
+                                        </div>
+                                        {canManageMaterial && (
+                                            <div className='material-info-right'>
+                                                <button className="material-text-btn">Редагувати</button>
+                                                <button className="material-text-btn">Видалити</button>
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className='material-info-right'>
-                                        <button className="material-text-btn">Редагувати</button>
-                                        <button className="material-text-btn">Видалити</button>
+                                    <div className="material-card-body">
+                                        {mat.title && <h3 className="material-title">{mat.title}</h3>}
+                                        <p className="material-description">
+                                            {mat.description || " "}
+                                        </p>
+                                    </div>
+                                    <div className="material-card-footer">
+                                        {mat.fileUrl && (
+                                            <a
+                                                href={mat.fileUrl}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="material-file-pill"
+                                            >
+                                                Файл матеріалу
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="material-card-body">
-                                    {mat.title && <h3 className="material-title">{mat.title}</h3>}
-                                    <p className="material-description">
-                                        {mat.description || " "}
-                                    </p>
-                                </div>
-                                <div className="material-card-footer">
-                                    {mat.fileUrl && (
-                                        <a 
-                                            href={mat.fileUrl} 
-                                            target="_blank" 
-                                            rel="noreferrer" 
-                                            className="material-file-pill"
-                                        >
-                                            Файл матеріалу 
-                                        </a>
-                                    )}
-                                </div>
-                            </div>
-                        ))
+                            );
+                        })
                     ) : (
                         <p style={{ textAlign: 'center', color: '#9384A6', padding: '20px' }}>
                             Матеріали не знайдені
@@ -118,6 +166,63 @@ const MaterialsPage = () => {
                     }
                 </div>
             </div>
+            {isAddModalOpen && (
+                <div className="event-modal-overlay" onClick={() => setIsAddModalOpen(false)}>
+                    <div className="event-modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="event-modal-header">
+                            <h3>Додати новий матеріал</h3>
+                            <button className="close-event-btn" onClick={() => setIsAddModalOpen(false)}>×</button>
+                        </div>
+
+                        <div className="event-modal-body">
+                            <div className="form-group" >
+                                <label>Назва матеріалу *</label>
+                                <input
+                                    type="text"
+                                    value={newMaterial.title}
+                                    onChange={e => setNewMaterial({ ...newMaterial, title: e.target.value })}
+                                    placeholder="Наприклад: Група 1: Домашнє завдання на 10.04.2026"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Тип матеріалу</label>
+                                <select
+                                    value={newMaterial.type}
+                                    onChange={e => setNewMaterial({ ...newMaterial, type: parseInt(e.target.value) })}
+                                >
+                                    <option value={0}>Домашнє завдання</option>
+                                    <option value={1}>Фото</option>
+                                    <option value={2}>Документ</option>
+                                    <option value={3}>Відео</option>
+                                </select>
+                            </div>
+
+                            <div className="form-group">
+                                <label >Опис (необов'язково)</label>
+                                <textarea
+                                    value={newMaterial.description}
+                                    onChange={e => setNewMaterial({ ...newMaterial, description: e.target.value })}
+                                    rows="3"
+                                />
+                            </div>
+
+                            <div className="form-group" style={{ marginBottom: '20px' }}>
+                                <label>Файл *</label>
+                                <input
+                                    type="file"
+                                    onChange={e => setNewMaterial({ ...newMaterial, file: e.target.files[0] })}
+                                />
+                            </div>
+
+                            <div className='edit-form-btns'>
+                                <button className="cancel-btn" onClick={() => setIsAddModalOpen(false)}>Скасувати</button>
+                                <button className="apply-btn" onClick={handleCreateMaterial}>Завантажити</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

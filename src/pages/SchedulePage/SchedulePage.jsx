@@ -12,6 +12,42 @@ const SchedulePage = () => {
     const [schedules, setSchedules] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
+    const [editingEvent, setEditingEvent] = useState(null);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [editFormData, setEditFormData] = useState({
+        groupId: "",
+        teacherId: "",
+        subjectId: "",
+        roomName: "",
+        startTime: "",
+        endTime: ""
+    });
+    const [teachersList, setTeachersList] = useState([]);
+    const [groupsList, setGroupsList] = useState([]);
+    const [subjectsList, setSubjectsList] = useState([]);
+
+    const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
+    useEffect(() => {
+        if (isAdmin) {
+            const fetchDictionaries = async () => {
+                try {
+                    const [teachersRes, groupsRes, subjectsRes] = await Promise.all([
+                        api.get('/user/teachers'), 
+                        api.get('/group'),
+                        api.get('/subject')
+                    ]);
+
+                    setTeachersList(teachersRes.data);
+                    setGroupsList(groupsRes.data);
+                    setSubjectsList(subjectsRes.data);
+                } catch (error) {
+                    console.error("Помилка завантаження списків для форми:", error);
+                }
+            };
+            fetchDictionaries();
+        }
+    }, [isAdmin]);
 
     useEffect(() => {
         const fetchCenters = async () => {
@@ -72,7 +108,7 @@ const SchedulePage = () => {
         };
 
         fetchSchedules();
-    }, [user, appliedCenter]);
+    }, [user, appliedCenter, refreshTrigger]);
 
     const getMonthYearString = (date) => {
         const options = { month: 'long', year: 'numeric' };
@@ -164,8 +200,6 @@ const SchedulePage = () => {
 
     const dynamicHours = getDynamicHours();
 
-    const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
-
     const formatTime = (dateString) => {
         if (!dateString) {
             return "";
@@ -173,6 +207,7 @@ const SchedulePage = () => {
         const date = new Date(dateString);
         return date.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
     };
+
     return (
         <div className="schedule-page-container">
             <h1 className="page-title">Розклад</h1>
