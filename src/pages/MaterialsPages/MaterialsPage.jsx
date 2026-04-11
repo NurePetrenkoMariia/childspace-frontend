@@ -97,6 +97,19 @@ const MaterialsPage = () => {
         }
     };
 
+    const handleDeleteMaterial = async (materialId) => {
+        if (window.confirm("Ви впевнені, що хочете видалити цей матеріал? Цю дію неможливо скасувати.")) {
+            try {
+                await api.delete(`/material/${materialId}`);
+
+                setRefreshTrigger(prev => prev + 1);
+            } catch (err) {
+                console.error("Помилка при видаленні матеріалу:", err);
+                alert("Не вдалося видалити матеріал. Спробуйте пізніше.");
+            }
+        }
+    }
+
     return (
         <div className="materials-container">
             <h1 className="materials-page-title">Матеріали {loadingName ? '...' : (subjectName ? `> ${subjectName}` : '')} </h1>
@@ -133,7 +146,7 @@ const MaterialsPage = () => {
                                         {canManageMaterial && (
                                             <div className='material-info-right'>
                                                 <button className="material-text-btn">Редагувати</button>
-                                                <button className="material-text-btn">Видалити</button>
+                                                <button className="material-text-btn" onClick={() => handleDeleteMaterial(mat.id)}>Видалити</button>
                                             </div>
                                         )}
                                     </div>
