@@ -33,7 +33,7 @@ const SchedulePage = () => {
             const fetchDictionaries = async () => {
                 try {
                     const [teachersRes, groupsRes, subjectsRes] = await Promise.all([
-                        api.get('/user/teachers'), 
+                        api.get('/user/teachers'),
                         api.get('/group'),
                         api.get('/subject')
                     ]);
@@ -208,6 +208,43 @@ const SchedulePage = () => {
         return date.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
     };
 
+    const handleStartEdit = (event) => {
+        const formatForInput = (dateStr) => {
+            if (!dateStr) {
+                return "";
+            }
+            const d = new Date(dateStr);
+            return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        };
+        setEditingEvent(event);
+        setEditFormData({
+            groupId: event.groupId || "",
+            teacherId: event.teacherId || "",
+            subjectId: event.subjectId || "",
+            roomName: event.roomName || "",
+            startTime: formatForInput(event.startTime),
+            endTime: formatForInput(event.endTime)
+        });
+        setIsEditMode(true);
+    };
+
+    const handleCancelEdit = () => {
+        setIsEditMode(false);
+        setEditingEvent(null);
+    };
+
+    const handleSaveEdit = async () => {
+        try {
+            await api.put(`/schedule/${editingEvent.id}`, editFormData);
+            setIsEditMode(false);
+            setSelectedEvent(null);
+            setRefreshTrigger(prev => prev + 1);
+            alert("Розклад успішно оновлено!");
+        } catch (error) {
+            console.error("Помилка при оновленні:", error);
+            alert("Не вдалося зберегти зміни");
+        }
+    };
     return (
         <div className="schedule-page-container">
             <h1 className="page-title">Розклад</h1>
@@ -245,7 +282,11 @@ const SchedulePage = () => {
                     </div>
 
                     {isAdmin && (
-                        <button className="edit-schedule-btn">Редагувати розклад</button>
+                        <button className="edit-schedule-btn"
+                            onClick={() => handleStartEdit(selectedEvent)}
+                        >
+                            Редагувати розклад
+                        </button>
                     )}
 
                 </div>
@@ -291,30 +332,128 @@ const SchedulePage = () => {
                 </div>
             </div>
             {selectedEvent && (
-                <div className="event-modal-overlay" onClick={() => setSelectedEvent(null)}>
+                <div className="event-modal-overlay" onClick={() => {
+                    if (!isEditMode) setSelectedEvent(null);
+                }}
+                >
                     <div className="event-modal-content" onClick={e => e.stopPropagation()}>
                         <div className="event-modal-header">
-                            <h3>{selectedEvent.subjectName}</h3>
-                            <button className="close-event-btn" onClick={() => setSelectedEvent(null)}>×</button>
+                            <h3>{isEditMode ? "Редагування заняття" : selectedEvent.subjectName}</h3>
+                            <button className="close-event-btn" onClick={() => {
+                                setSelectedEvent(null);
+                                setIsEditMode(false);
+                            }}>×</button>
                         </div>
                         <div className="event-modal-body">
-                            <p>
-                                <strong>Група:</strong> {selectedEvent.groupName || "Не вказано"}
-                            </p>
-                            <p>
-                                <strong>Викладач:</strong> {selectedEvent.teacherName || "Не вказано"}
-                            </p>
-                            <p>
-                                <strong>Кабінет:</strong> {selectedEvent.roomName || "Не вказано"}
-                            </p>
-                            <p>
-                                <strong>Час:</strong> {formatTime(selectedEvent.startTime)} - {formatTime(selectedEvent.endTime)}
-                            </p>
+                            <div className="form-group">
+                                <label>Предмет</label>
+                                {isEditMode ? (
+                                    <select
+                                        value={editFormData.subjectId}
+                                        onChange={e => setEditFormData({ ...editFormData, subjectId: e.target.value })}
+                                    >
+                                        <option value="">Оберіть предмет</option>
+                                        {subjectsList.map(s => (
+                                            <option key={s.id} value={s.id}>{s.name} ({s.id.substring(0, 8)})</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <p className="modal-text-value">{selectedEvent.subjectName}</p>
+                                )}
+                            </div>
+
+                            <div className="form-group">
+                                <label>Група</label>
+                                {isEditMode ? (
+                                    <select
+                                        value={editFormData.groupId}
+                                        onChange={e => setEditFormData({ ...editFormData, groupId: e.target.value })}
+                                    >
+                                        <option value="">Оберіть групу</option>
+                                        {groupsList.map(g => (
+                                            <option key={g.id} value={g.id}>{g.name} ({g.id.substring(0, 8)})</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <p className="modal-text-value">{selectedEvent.groupName || "Не вказано"}</p>
+                                )}
+                            </div>
+
+                            <div className="form-group">
+                                <label>Викладач</label>
+                                {isEditMode ? (
+                                    <select
+                                        value={editFormData.teacherId}
+                                        onChange={e => setEditFormData({ ...editFormData, teacherId: e.target.value })}
+                                    >
+                                        <option value="">Оберіть викладача</option>
+                                        {teachersList.map(t => (
+                                            <option key={t.id} value={t.id}>{t.firstName} {t.lastName} ({t.id.substring(0, 8)})</option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <p className="modal-text-value">{selectedEvent.teacherName || "Не вказано"}</p>
+                                )}
+                            </div>
+
+                            <div className="form-group">
+                                <label>Кабінет</label>
+                                {isEditMode ? (
+                                    <input
+                                        type="text"
+                                        value={editFormData.roomName}
+                                        onChange={e => setEditFormData({ ...editFormData, roomName: e.target.value })}
+                                    />
+                                ) : (
+                                    <p className="modal-text-value">{selectedEvent.roomName || "Не вказано"}</p>
+                                )}
+                            </div>
+
+                            <div className="form-group">
+                                <label>Час початку та кінця</label>
+                                {isEditMode ? (
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <input
+                                            type="datetime-local"
+                                            value={editFormData.startTime}
+                                            onChange={e => setEditFormData({ ...editFormData, startTime: e.target.value })}
+                                        />
+                                        <input
+                                            type="datetime-local"
+                                            value={editFormData.endTime}
+                                            onChange={e => setEditFormData({ ...editFormData, endTime: e.target.value })}
+                                        />
+                                    </div>
+                                ) : (
+                                    <p className="modal-text-value">
+                                        {formatTime(selectedEvent.startTime)} - {formatTime(selectedEvent.endTime)}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="modal-footer" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+                                {isAdmin && !isEditMode && (
+                                    <button className="apply-btn" onClick={() => handleStartEdit(selectedEvent)} style={{ width: '100%' }}>
+                                        Редагувати
+                                    </button>
+                                )}
+                                {isEditMode && (
+                                    <>
+                                        <button className="cancel-btn" onClick={handleCancelEdit} style={{ flex: 1 }}>
+                                            Скасувати
+                                        </button>
+                                        <button className="apply-btn" onClick={handleSaveEdit} style={{ flex: 1 }}>
+                                            Зберегти
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
             )
             }
+            
         </div>
     );
 };
