@@ -245,6 +245,19 @@ const SchedulePage = () => {
             alert("Не вдалося зберегти зміни");
         }
     };
+
+    const handleDelete = async (recordId) => {
+        if (window.confirm("Ви впевнені, що хочете видалити цей запис? Цю дію неможливо скасувати.")) {
+            try {
+                await api.delete(`/schedule/${recordId}`);
+                setSelectedEvent(null);
+                setRefreshTrigger(prev => prev + 1);
+            } catch (err) {
+                console.error("Помилка при видаленні запису:", err);
+                alert("Не вдалося видалити матеріал. Спробуйте пізніше.");
+            }
+        }
+    };
     return (
         <div className="schedule-page-container">
             <h1 className="page-title">Розклад</h1>
@@ -280,14 +293,6 @@ const SchedulePage = () => {
                             <button onClick={nextWeek}>&gt;</button>
                         </div>
                     </div>
-
-                    {isAdmin && (
-                        <button className="edit-schedule-btn"
-                            onClick={() => handleStartEdit(selectedEvent)}
-                        >
-                            Редагувати розклад
-                        </button>
-                    )}
 
                 </div>
 
@@ -433,9 +438,14 @@ const SchedulePage = () => {
 
                             <div className="modal-footer" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
                                 {isAdmin && !isEditMode && (
-                                    <button className="apply-btn" onClick={() => handleStartEdit(selectedEvent)} style={{ width: '100%' }}>
-                                        Редагувати
-                                    </button>
+                                    <>
+                                        <button className="apply-btn" onClick={() => handleStartEdit(selectedEvent)} style={{ width: '100%' }}>
+                                            Редагувати
+                                        </button>
+                                        <button className="apply-btn" onClick={() => handleDelete(selectedEvent.id)} style={{ width: '100%' }}>
+                                            Видалити
+                                        </button>
+                                    </>
                                 )}
                                 {isEditMode && (
                                     <>
@@ -453,7 +463,7 @@ const SchedulePage = () => {
                 </div>
             )
             }
-            
+
         </div>
     );
 };
