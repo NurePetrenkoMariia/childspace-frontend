@@ -21,7 +21,16 @@ const MaterialsPage = () => {
     const [newMaterial, setNewMaterial] = useState({
         title: '',
         description: '',
-        type: 0,  //????
+        type: 0,
+        file: null
+    });
+
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editMaterial, setEditMaterial] = useState({
+        id: '',
+        title: '',
+        description: '',
+        type: 0,
         file: null
     });
 
@@ -108,7 +117,48 @@ const MaterialsPage = () => {
                 alert("Не вдалося видалити матеріал. Спробуйте пізніше.");
             }
         }
-    }
+    };
+
+    const handleEditClick = (mat) => {
+        setEditMaterial({
+            id: mat.id,
+            title: mat.title,
+            description: mat.description || '',
+            type: mat.type,
+            file: null
+        });
+        setIsEditModalOpen(true);
+    };
+
+    const handleEditMaterial = async () => {
+        if (!editMaterial.title) {
+            alert("Будь ласка, введіть назву!");
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('Title', editMaterial.title);
+            formData.append('Description', editMaterial.description || "");
+            formData.append('Type', editMaterial.type);
+
+            if (editMaterial.file) {
+                formData.append('file', editMaterial.file);
+            }
+
+            await api.put(`/material/${editMaterial.id}`, formData);
+
+            setIsEditModalOpen(false);
+            setRefreshTrigger(prev => prev + 1);
+        } catch (err) {
+            console.error("Помилка при оновленні матеріалу:", err);
+            if (err.response && err.response.status === 403) {
+                alert("У вас немає прав для редагування цього матеріалу.");
+            } else {
+                alert("Не вдалося оновити матеріал.");
+            }
+        }
+    };
 
     return (
         <div className="materials-container">
@@ -145,7 +195,7 @@ const MaterialsPage = () => {
                                         </div>
                                         {canManageMaterial && (
                                             <div className='material-info-right'>
-                                                <button className="material-text-btn">Редагувати</button>
+                                                <button className="material-text-btn" onClick={() => handleEditClick(mat)}>Редагувати</button>
                                                 <button className="material-text-btn" onClick={() => handleDeleteMaterial(mat.id)}>Видалити</button>
                                             </div>
                                         )}
@@ -236,6 +286,65 @@ const MaterialsPage = () => {
                     </div>
                 </div>
             )}
+            {isEditModalOpen && (
+                <div className="event-modal-overlay" onClick={() => {
+                    setIsEditModalOpen(false)
+                }}>
+                    <div className="event-modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="event-modal-header">
+                            <h3>Редагування матеріалу</h3>
+                            <button className="close-event-btn" onClick={() => {
+                                setIsEditModalOpen(false);
+                            }}>×</button>
+                        </div>
+
+
+                        <div className="event-modal-body">
+                            <div className="form-group">
+                                <label>Назва матеріалу*</label>
+                                <input
+                                    type="text"
+                                    value={editMaterial.title}
+                                    onChange={e => setEditMaterial({ ...editMaterial, title: e.target.value })}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Тип матеріалу</label>
+                                <select
+                                    value={editMaterial.type}
+                                    onChange={e => setEditMaterial({ ...editMaterial, type: parseInt(e.target.value) })}
+                                >
+                                    <option value={0}>Домашнє завдання</option>
+                                    <option value={1}>Фото</option>
+                                    <option value={2}>Документ</option>
+                                    <option value={3}>Відео</option>
+
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label >Опис</label>
+                                <textarea
+                                    value={editMaterial.description}
+                                    onChange={e => setEditMaterial({ ...editMaterial, description: e.target.value })}
+                                    rows="3"
+                                />
+                            </div>
+                            <div className="form-group" style={{ marginBottom: '20px' }}>
+                                <label>Новий файл (залиште порожнім, щоб не змінювати)</label>
+                                <input
+                                    type="file"
+                                    onChange={e => setEditMaterial({ ...editMaterial, file: e.target.files[0] })}
+                                />
+                            </div>
+                            <div className='edit-form-btns'>
+                                <button className="cancel-btn" onClick={() => setIsEditModalOpen(false)} style={{ flex: 1 }}>Скасувати</button>
+                                <button className="apply-btn" onClick={handleEditMaterial} style={{ flex: 1 }}>Завантажити</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )
+            }
         </div>
     );
 };
