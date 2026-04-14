@@ -29,8 +29,8 @@ const tableConfig = {
         keys: ['id', 'name', 'description', 'teacherId', 'centerId']
     },
     'Гуртки': {
-        headers: ['ID', 'Назва', 'Опис', 'ID Центру', 'Дії'],
-        keys: ['id', 'name', 'description', 'centerId']
+        headers: ['ID', 'Назва', 'Опис', 'ID Центру', 'Фото', 'Дії'],
+        keys: ['id', 'name', 'description', 'centerId', 'photoUrl']
     },
     'Заявки': {
         headers: ['ID', 'Центр', 'Представник дитини', 'Дитина', 'Телефон', 'Дата', 'Дії'],
@@ -137,6 +137,22 @@ const AdminPanel = () => {
             return `${value}...`;
         }
 
+        if (key === 'photoUrl' || key === 'photo') {
+            const value = item[key];
+            if (!value) return '—';
+
+            return (
+                <a
+                    href={value}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#6A35C2', textDecoration: 'underline', fontWeight: '500' }}
+                >
+                    Відкрити фото
+                </a>
+            );
+        }
+
         return value || '—';
     };
 
@@ -175,26 +191,42 @@ const AdminPanel = () => {
 
     const handleCreateSave = async () => {
         try {
-            let payload = { ...newData };
+            let response;
+            if (activeTab == 'Гуртки') {
+                const formData = new FormData();
+                formData.append('Name', newData.name);
+                formData.append('Description', newData.description || "");
+                formData.append('CenterId', newData.centerId);
 
-            if (activeTab === 'Користувачі') {
-                if (payload.role) {
-                    payload.roles = [payload.role];
-                    delete payload.role;
+                if (newData.photo) {
+                    formData.append('Photo', newData.photo);
                 }
 
-                if (!payload.centerId || payload.centerId.trim() === "") {
-                    payload.centerId = null;
-                }
-
-                if (!payload.password) {
-                    alert("Пароль є обов'язковим для створення користувача!");
-                    return;
-                }
+                response = await api.post(endpointMap[activeTab], formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
             }
+            else {
+                let payload = { ...newData };
 
-            const response = await api.post(endpointMap[activeTab], payload);
+                if (activeTab === 'Користувачі') {
+                    if (payload.role) {
+                        payload.roles = [payload.role];
+                        delete payload.role;
+                    }
 
+                    if (!payload.centerId || payload.centerId.trim() === "") {
+                        payload.centerId = null;
+                    }
+
+                    if (!payload.password) {
+                        alert("Пароль є обов'язковим для створення користувача!");
+                        return;
+                    }
+                }
+
+                response = await api.post(endpointMap[activeTab], payload);
+            }
             const savedItem = response.data;
             if (activeTab === 'Користувачі') {
                 savedItem.role = (savedItem.roles && savedItem.roles.length > 0)
@@ -378,6 +410,16 @@ const AdminPanel = () => {
                                                     </option>
                                                 ))}
                                             </select>
+                                        ) : activeTab == 'Гуртки' && key == 'photo' ? (
+                                            <div className='file-upload-group'>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => setNewData({ ...newData, photo: e.target.files[0] })}
+                                                />
+                                                {newData.photo && <p className="file-name-hint">Обрано: {newData.photo.name}</p>}
+                                            </div>
+
                                         ) : (
                                             <input
                                                 type="text"

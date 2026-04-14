@@ -40,7 +40,7 @@ const SubjectDetailsPage = () => {
                 <div className="details-main-card">
                     <div className="details-image-container">
                         <img 
-                            src={subject.imageUrl || defaultCourseImg} 
+                            src={subject.photoUrl || defaultCourseImg} 
                             alt={subject.name} 
                             className="details-image"
                         />

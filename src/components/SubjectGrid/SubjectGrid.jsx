@@ -37,7 +37,7 @@ const SubjectGrid = ({ titleComponent, getBaseRedirectUrl }) => {
                                 key={subject.id}
                                 id={subject.id}
                                 title={subject.name}
-                                image={subject.imageUrl || defaultCourseImg}
+                                image={subject.photoUrl || defaultCourseImg}
                                 redirectUrl={redirectUrl} 
                             />
                         );
