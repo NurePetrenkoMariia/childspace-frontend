@@ -11,6 +11,7 @@ import ChatsPage from './pages/ChatsPage/ChatsPage'
 import SchedulePage from './pages/SchedulePage/SchedulePage'
 import MaterialsPage from './pages/MaterialsPages/MaterialsPage'
 import MaterialsDashboard from './pages/MaterialsPages/MaterialsDashboard'
+import AttendancePage from './pages/AttendancePage/AttendancePage'
 
 function App() {
 
@@ -29,6 +30,7 @@ function App() {
             <Route path="/schedule" element={<SchedulePage />} />
             <Route path="/materials" element={<MaterialsDashboard />} />
             <Route path="/materials/subject/:id" element={<MaterialsPage/>} />
+            <Route path="/attendance" element={<AttendancePage />} />
           </Route>
         </Routes>
       </AuthProvider>
