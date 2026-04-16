@@ -2,16 +2,18 @@ import { useEffect, useState } from 'react';
 import api from '../../../api/axios';
 import CourseCard from '../../components/CourseCard/CourseCard';
 import './SubjectGrid.css';
-import defaultCourseImg from '../../assets/icons/default-course.jpg'
+import defaultCourseImg from '../../assets/icons/default-course.jpg';
 
-const SubjectGrid = ({ titleComponent, getBaseRedirectUrl }) => {
+const SubjectGrid = ({ titleComponent, getBaseRedirectUrl, centerId }) => {
     const [subjects, setSubjects] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchSubjects = async () => {
+            setLoading(true);
             try {
-                const response = await api.get('/subject');
+                const endpoint = centerId ? `/subject?centerId=${centerId}` : '/subject';
+                const response = await api.get(endpoint);
                 setSubjects(response.data);
             } catch (error) {
                 console.error("Помилка при завантаженні предметів:", error);
@@ -21,7 +23,7 @@ const SubjectGrid = ({ titleComponent, getBaseRedirectUrl }) => {
         };
 
         fetchSubjects();
-    }, []);
+    }, [centerId]);
 
     return (
         <div className="subjects-content">
