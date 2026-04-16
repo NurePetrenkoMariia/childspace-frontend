@@ -263,8 +263,34 @@ const AdminPanel = () => {
                 value && value.toString().toLowerCase().includes(lowerCaseSearch)
             );
         });
-
         setFilteredData(filtered);
+    };
+
+    const handleDeleteClick = async (id) => {
+        if (window.confirm("Ви впевнені, що хочете видалити цей запис?")) {
+            try {
+                await api.delete(`${endpointMap[activeTab]}/${id}`);
+                const updated = data.filter(item => item.id !== id);
+                setData(updated);
+                if (searchTerm) {
+                    setFilteredData(updatedData.filter(item => {
+                        const term = searchTerm.toLowerCase();
+                        for (let key in item) {
+                            let value = item[key];
+                            if (value && String(value).toLowerCase().includes(term)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }));
+                } else {
+                    setFilteredData(updated);
+                }
+            } catch (error) {
+                console.error("Помилка при видаленні:", error);
+                alert("Не вдалося видалити запис. Можливо, до нього прив'язані інші дані.");
+            }
+        }
     };
 
     return (
@@ -345,7 +371,7 @@ const AdminPanel = () => {
                                                 <button className='action-btn edit-btn' onClick={() => handleEditClick(item)}>
                                                     <img src={editIcon} alt="Edit" className="edit-btn-icon" />
                                                 </button>
-                                                <button className='action-btn delete-btn'>
+                                                <button className='action-btn delete-btn' onClick={() => handleDeleteClick(item.id)}>
                                                     <img src={deleteIcon} alt="Delete" className="delete-btn-icon" />
                                                 </button>
                                             </div>
