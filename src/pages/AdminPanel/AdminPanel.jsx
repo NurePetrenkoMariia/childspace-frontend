@@ -58,6 +58,7 @@ const AdminPanel = () => {
     const [centersList, setCentersList] = useState([]);
     const [groupsList, setGroupsList] = useState([]);
     const [parentsList, setParentsList] = useState([]);
+    const [teachersList, setTeachersList] = useState([]);
 
     const endpointMap = {
         'Центри': '/center',
@@ -101,6 +102,8 @@ const AdminPanel = () => {
                 const parentsResponse = await api.get('/user/parents');
                 setParentsList(parentsResponse.data);
 
+                const teachersResponse = await api.get('/user/teachers');
+                setTeachersList(teachersResponse.data);
             } catch (error) {
                 console.error("Помилка завантаження списків", error);
             }
@@ -124,6 +127,11 @@ const AdminPanel = () => {
         if (key === 'groupId') {
             const group = groupsList.find(g => g.id === item[key]);
             return group ? `${group.name} (${group.id})` : item[key] || '—';
+        }
+
+        if (key === 'teacherId') {
+            const teacher = teachersList.find(t => t.id === item[key]);
+            return teacher ? `${teacher.firstName} ${teacher.lastName}` : item[key] || '—';
         }
 
         const value = item[key];
@@ -397,36 +405,49 @@ const AdminPanel = () => {
                                                     </option>
                                                 ))}
                                             </select>
-                                        ) : activeTab === 'Діти' && key === 'parentId' ? (
-                                            <select
-                                                className="filter-input"
+                                        ) : key === 'teacherId' ? (
+                                            <select className='filter-input'
                                                 onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
                                                 value={newData[key] || ""}
                                             >
-                                                <option value="">Оберіть представника</option>
-                                                {parentsList.map(parent => (
-                                                    <option key={parent.id} value={parent.id}>
-                                                        {parent.firstName} {parent.lastName} ({parent.email})
+                                                <option value="">Оберіть вчителя</option>
+                                                {teachersList.map(teacher => (
+                                                    <option key={teacher.id} value={teacher.id}>
+                                                        {teacher.firstName} {teacher.lastName} ({teacher.email})
                                                     </option>
                                                 ))}
                                             </select>
-                                        ) : activeTab == 'Гуртки' && key == 'photo' ? (
-                                            <div className='file-upload-group'>
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={(e) => setNewData({ ...newData, photo: e.target.files[0] })}
-                                                />
-                                                {newData.photo && <p className="file-name-hint">Обрано: {newData.photo.name}</p>}
-                                            </div>
+                                        )
+                                            : activeTab === 'Діти' && key === 'parentId' ? (
+                                                <select
+                                                    className="filter-input"
+                                                    onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                    value={newData[key] || ""}
+                                                >
+                                                    <option value="">Оберіть представника</option>
+                                                    {parentsList.map(parent => (
+                                                        <option key={parent.id} value={parent.id}>
+                                                            {parent.firstName} {parent.lastName} ({parent.email})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : activeTab == 'Гуртки' && key == 'photo' ? (
+                                                <div className='file-upload-group'>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => setNewData({ ...newData, photo: e.target.files[0] })}
+                                                    />
+                                                    {newData.photo && <p className="file-name-hint">Обрано: {newData.photo.name}</p>}
+                                                </div>
 
-                                        ) : (
-                                            <input
-                                                type="text"
-                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
-                                                value={newData[key] || ""}
-                                            />
-                                        )}
+                                            ) : (
+                                                <input
+                                                    type="text"
+                                                    onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                    value={newData[key] || ""}
+                                                />
+                                            )}
                                     </div>
                                 ))}
 
