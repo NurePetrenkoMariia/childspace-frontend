@@ -23,6 +23,15 @@ const SchedulePage = () => {
         startTime: "",
         endTime: ""
     });
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [addFormData, setAddFormData] = useState({
+        groupId: "",
+        teacherId: "",
+        subjectId: "",
+        roomName: "",
+        startTime: "",
+        endTime: ""
+    });
     const [teachersList, setTeachersList] = useState([]);
     const [groupsList, setGroupsList] = useState([]);
     const [subjectsList, setSubjectsList] = useState([]);
@@ -258,6 +267,31 @@ const SchedulePage = () => {
             }
         }
     };
+
+    const handleOpenAddModal = () => {
+        setAddFormData({
+            groupId: "",
+            teacherId: "",
+            subjectId: "",
+            roomName: "",
+            startTime: "",
+            endTime: ""
+        });
+        setIsAddModalOpen(true);
+    };
+
+    const handleSaveNewRecord = async () => {
+        try {
+            await api.post('/schedule', addFormData);
+            setIsAddModalOpen(false);
+            setRefreshTrigger(prev => prev + 1);
+            alert("Нове заняття успішно додано до розкладу!");
+        } catch (error) {
+            console.error("Помилка додавання нового заняття до розкладу:", "");
+            alert("Не вдалося створити заняття.");
+        }
+    };
+
     return (
         <div className="schedule-page-container">
             <h1 className="page-title">Розклад</h1>
@@ -293,7 +327,13 @@ const SchedulePage = () => {
                             <button onClick={nextWeek}>&gt;</button>
                         </div>
                     </div>
-
+                    {isAdmin && (
+                        <button className='add-entity-btn'
+                            onClick={handleOpenAddModal}
+                        >
+                            + Додати заняття
+                        </button>
+                    )}
                 </div>
 
                 <div className='table-container'>
@@ -393,7 +433,7 @@ const SchedulePage = () => {
                                     >
                                         <option value="">Оберіть викладача</option>
                                         {teachersList.map(t => (
-                                            <option key={t.id} value={t.id}>{t.firstName} {t.lastName} ({t.id.substring(0, 8)})</option>
+                                            <option key={t.id} value={t.id}>{t.firstName} {t.lastName} ({t.email})</option>
                                         ))}
                                     </select>
                                 ) : (
@@ -464,6 +504,87 @@ const SchedulePage = () => {
             )
             }
 
+            {isAddModalOpen && (
+                <div className='event-modal-overlay' onClick={() => setIsAddModalOpen(false)}>
+                    <div className="event-modal-content" onClick={e => e.stopPropagation()}>
+                        <div className="event-modal-header">
+                            <h3>Заповніть необхідні поля</h3>
+                            <button className="close-event-btn" onClick={() =>
+                                setIsAddModalOpen(false)}>×
+                            </button>
+                        </div>
+                        <div className="event-modal-body">
+                            <div className="form-group">
+                                <label>Предмет</label>
+                                <select
+                                    value={addFormData.subjectId}
+                                    onChange={e => setAddFormData({ ...addFormData, subjectId: e.target.value })}
+                                >
+                                    <option value="">Оберіть предмет</option>
+                                    {subjectsList.map(s => (
+                                        <option key={s.id} value={s.id}>{s.name} ({s.id.substring(0, 8)})</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Група</label>
+                                <select
+                                    value={addFormData.groupId}
+                                    onChange={e => setAddFormData({ ...addFormData, groupId: e.target.value })}
+                                >
+                                    <option value="">Оберіть групу</option>
+                                    {groupsList.map(g => (
+                                        <option key={g.id} value={g.id}>{g.name} ({g.id.substring(0, 8)})</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Викладач</label>
+                                <select
+                                    value={addFormData.teacherId}
+                                    onChange={e => setAddFormData({ ...addFormData, teacherId: e.target.value })}
+                                >
+                                    <option value="">Оберіть викладача</option>
+                                    {teachersList.map(t => (
+                                        <option key={t.id} value={t.id}>{t.firstName} {t.lastName} ({t.email})</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Кабінет</label>
+                                <input
+                                    type="text"
+                                    value={addFormData.roomName}
+                                    onChange={e => setAddFormData({ ...addFormData, roomName: e.target.value })}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Час початку та кінця</label>
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <input
+                                        type="datetime-local"
+                                        value={addFormData.startTime}
+                                        onChange={e => setAddFormData({ ...addFormData, startTime: e.target.value })}
+                                    />
+                                    <input
+                                        type="datetime-local"
+                                        value={addFormData.endTime}
+                                        onChange={e => setAddFormData({ ...addFormData, endTime: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="modal-footer" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+                            <button className="cancel-btn" onClick={() => setIsAddModalOpen(false)} style={{ flex: 1 }}>
+                                Скасувати
+                            </button>
+                            <button className="apply-btn" onClick={handleSaveNewRecord} style={{ flex: 1 }}>
+                                Зберегти
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
