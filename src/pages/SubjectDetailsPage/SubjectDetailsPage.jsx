@@ -50,7 +50,7 @@ const SubjectDetailsPage = () => {
             }
         }
         if (name === 'parentName') {
-            const hasInvalidElements = /[^a-zA-Za-яА-ЯіІїЇєЄґҐ'’ʼ\-]/u.test(value);
+            const hasInvalidElements = /[^a-zA-Za-яА-ЯіІїЇєЄґҐ'’ʼ \-]/u.test(value);
             if (hasInvalidElements) {
                 setParentNameError('Ім\'я може містити лише літери, пробіли, дефіс та апостроф!');
             }
@@ -59,7 +59,7 @@ const SubjectDetailsPage = () => {
             }
         }
         if (name === 'childName') {
-            const hasInvalidElements = /[^a-zA-Za-яА-ЯіІїЇєЄґҐ'’ʼ\-]/u.test(value);
+            const hasInvalidElements = /[^a-zA-Za-яА-ЯіІїЇєЄґҐ'’ʼ \-]/u.test(value);
             if (hasInvalidElements) {
                 setChildNameError('Ім\'я може містити лише літери, пробіли, дефіс та апостроф!');
             }

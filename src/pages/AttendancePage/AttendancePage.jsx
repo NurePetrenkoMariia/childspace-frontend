@@ -39,12 +39,13 @@ const AttendancePage = () => {
         fetchFilterData();
     }, []);
 
-    const availableSubj = subjects.filter(s =>
-        selectedCenter && s.centerId == selectedCenter
-    );
-    const availableGroups = groups.filter(g =>
-        selectedSubject && g.subjectId == selectedSubject && g.centerId == selectedCenter
-    );
+    const availableSubj = selectedCenter
+        ? subjects.filter(s => s.centerId === selectedCenter)
+        : [];
+
+    const availableGroups = selectedSubject
+        ? groups.filter(g => g.subjectId === selectedSubject)
+        : [];
 
     const handleApplyFilters = async () => {
         if (!selectedGroup) {
@@ -54,8 +55,8 @@ const AttendancePage = () => {
         setIsLoading(true);
         try {
             const [childrenRes, scheduleRes] = await Promise.all([
-                api.get(`/child/group/${selectedGroup}`), //ДОДАТИ НА БЕКЕНДІ
-                api.get('/schedule', { params: { groupId: selectedGroup } }) //ДОДАТИ НА БЕКЕНДІ
+                api.get(`/group/${selectedGroup}/children`), 
+                api.get(`/schedule/group/${selectedGroup}`) 
             ]);
 
             setChildrenList(childrenRes.data);
@@ -89,6 +90,11 @@ const AttendancePage = () => {
         if (lessonId) {
             fetchAttendances(lessonId);
         }
+    };
+
+    const handleSubjectChange = (e) =>{
+        setSelectedSubject(e.target.value);
+        setSelectedGroup('');
     };
 
     const handleAttendanceChange = async (childId, status) => {

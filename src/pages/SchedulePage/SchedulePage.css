@@ -198,6 +198,8 @@
     padding: 24px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     animation: slideUp 0.3s ease;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 @keyframes slideUp {

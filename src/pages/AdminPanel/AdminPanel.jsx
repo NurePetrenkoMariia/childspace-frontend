@@ -25,12 +25,12 @@ const tableConfig = {
         keys: ['id', 'title', 'type', 'createdAt']
     },
     'Групи': {
-        headers: ['ID', 'Назва', 'Опис', 'ID Вчителя', 'ID Центру', 'Дії'],
-        keys: ['id', 'name', 'description', 'teacherId', 'centerId']
+        headers: ['ID', 'Назва', 'Опис', 'ID Вчителя', 'ID Центру', 'Предмет','Дії'],
+        keys: ['id', 'name', 'description', 'teacherId', 'centerId', 'subjectId', ]
     },
     'Гуртки': {
-        headers: ['ID', 'Назва', 'Опис', 'ID Центру', 'Фото', 'Дії'],
-        keys: ['id', 'name', 'description', 'centerId', 'photoUrl']
+        headers: ['ID', 'Назва', 'Опис', 'ID Центру', 'Фото',  'Дії'],
+        keys: ['id', 'name', 'description', 'centerId','photoUrl']
     },
     'Заявки': {
         headers: ['ID', 'Центр', 'Представник дитини', 'Дитина', 'Телефон', 'Вік дитини', 'Дата', 'Дії'],
@@ -90,8 +90,7 @@ const AdminPanel = () => {
         fetchData();
     }, [activeTab]);
 
-    useEffect(() => {
-        const fetchLists = async () => {
+    const fetchLists = async () => {
             try {
                 const response = await api.get('/center');
                 setCentersList(response.data);
@@ -108,6 +107,8 @@ const AdminPanel = () => {
                 console.error("Помилка завантаження списків", error);
             }
         };
+
+    useEffect(() => {
         fetchLists();
     }, []);
 
@@ -175,9 +176,31 @@ const AdminPanel = () => {
     };
     const handleSaveClick = async (id) => {
         try {
-            await api.put(`${endpointMap[activeTab]}/${id}`, editFormData);
+            let response;
 
-            setData(data.map(item => item.id === id ? editFormData : item));
+            if (activeTab === 'Гуртки') {
+                const formData = new FormData();
+                formData.append('Name', editFormData.name);
+                formData.append('Description', editFormData.description || "");
+                formData.append('CenterId', editFormData.centerId);
+
+                if (editFormData.newPhoto) {
+                    formData.append('Photo', editFormData.newPhoto);
+                }
+
+                response = await api.put(`${endpointMap[activeTab]}/${id}`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+            } else {
+                response = await api.put(`${endpointMap[activeTab]}/${id}`, editFormData);
+            }
+
+            const updatedItem = response.data;
+            const updatedDataList = data.map(item => item.id === id ? updatedItem : item);
+
+            setData(updatedDataList);
+            setFilteredData(filteredData.map(item => item.id === id ? updatedItem : item));
+
             setEditingId(null);
         } catch (error) {
             console.error("Помилка при збереженні:", error);
@@ -192,8 +215,9 @@ const AdminPanel = () => {
         });
     };
 
-    const handleAddClick = () => {
+    const handleAddClick = async () => {
         setNewData({});
+        await fetchLists();
         setIsModalOpen(true);
     };
 
@@ -242,7 +266,9 @@ const AdminPanel = () => {
                     : payload.roles[0];
             }
 
-            setData([...data, savedItem]);
+            const updatedData = ([...data, savedItem]);
+            setData(updatedData);
+            setFilteredData(updatedData);
             setIsModalOpen(false);
         } catch (error) {
             console.error("Помилка при створенні:", error.response?.data || error.message);
@@ -273,7 +299,7 @@ const AdminPanel = () => {
                 const updated = data.filter(item => item.id !== id);
                 setData(updated);
                 if (searchTerm) {
-                    setFilteredData(updatedData.filter(item => {
+                    setFilteredData(updated.filter(item => {
                         const term = searchTerm.toLowerCase();
                         for (let key in item) {
                             let value = item[key];
@@ -345,12 +371,26 @@ const AdminPanel = () => {
                                     {currentConfig.keys.map(key => (
                                         <td key={key}>
                                             {editingId === item.id && key !== 'id' ? (
-                                                <input
-                                                    type="text"
-                                                    className="edit-input"
-                                                    value={editFormData[key] || ''}
-                                                    onChange={(e) => handleInputChange(e, key)}
-                                                />
+                                                activeTab === 'Гуртки' && key === 'photoUrl' ? (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={(e) => setEditFormData({ ...editFormData, newPhoto: e.target.files[0] })}
+                                                            style={{ fontSize: '12px', maxWidth: '150px' }}
+                                                        />
+                                                        <span style={{ fontSize: '10px', color: '#9384A6' }}>
+                                                            Залиште пустим, щоб не змінювати
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <input
+                                                        type="text"
+                                                        className="edit-input"
+                                                        value={editFormData[key] || ''}
+                                                        onChange={(e) => handleInputChange(e, key)}
+                                                    />
+                                                )
                                             ) : (
                                                 formatCellValue(item, key)
                                             )}
@@ -457,7 +497,7 @@ const AdminPanel = () => {
                                                         </option>
                                                     ))}
                                                 </select>
-                                            ) : activeTab == 'Гуртки' && key == 'photo' ? (
+                                            ) : activeTab == 'Гуртки' && key == 'photoUrl' ? (
                                                 <div className='file-upload-group'>
                                                     <input
                                                         type="file"
