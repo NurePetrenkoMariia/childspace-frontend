@@ -36,7 +36,7 @@ const Sidebar = () => {
                 <div className={getNavItemClass("/schedule")} onClick={() => navigate("/schedule")}>
                     <img src={scheduleIcon} alt="Schedule" className="sidebar-custom-icon" />
                 </div>
-                <div className="nav-item">
+                <div className={getNavItemClass("/attendance")} onClick={() => navigate("/attendance")}>
                     <img src={attendanceIcon} alt="Attendance" className="sidebar-custom-icon" />
                 </div>
                 <div className={getNavItemClass("/chats")} onClick={() => navigate("/chats")}>
