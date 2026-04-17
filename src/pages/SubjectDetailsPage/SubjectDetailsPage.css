@@ -91,3 +91,7 @@
 .enroll-button:hover {
     transform: scale(1.02);
 }
+
+.modal-subtitle{
+    color: #7846ca;
+}

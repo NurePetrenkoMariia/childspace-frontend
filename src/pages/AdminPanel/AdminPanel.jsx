@@ -33,8 +33,8 @@ const tableConfig = {
         keys: ['id', 'name', 'description', 'centerId', 'photoUrl']
     },
     'Заявки': {
-        headers: ['ID', 'Центр', 'Представник дитини', 'Дитина', 'Телефон', 'Дата', 'Дії'],
-        keys: ['id', 'centerId', 'parentName', 'childName', 'phone', 'createdAt']
+        headers: ['ID', 'Центр', 'Представник дитини', 'Дитина', 'Телефон', 'Вік дитини', 'Дата', 'Дії'],
+        keys: ['id', 'centerId', 'parentName', 'childName', 'phone', 'childAge', 'createdAt']
     }
 };
 
