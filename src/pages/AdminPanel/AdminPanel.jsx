@@ -6,6 +6,7 @@ import confirmIcon from '../../assets/icons/checkmark.png';
 import cancelIcon from '../../assets/icons/cancel.png';
 import editIcon from '../../assets/icons/pencil.png';
 import deleteIcon from '../../assets/icons/trash.png';
+import groupIcon from '../../assets/icons/icons8-group.png';
 
 const tableConfig = {
     'Центри': {
@@ -25,12 +26,12 @@ const tableConfig = {
         keys: ['id', 'title', 'type', 'createdAt']
     },
     'Групи': {
-        headers: ['ID', 'Назва', 'Опис', 'ID Вчителя', 'ID Центру', 'Предмет','Дії'],
-        keys: ['id', 'name', 'description', 'teacherId', 'centerId', 'subjectId', ]
+        headers: ['ID', 'Назва', 'Опис', 'ID Вчителя', 'ID Центру', 'Предмет', 'Дії'],
+        keys: ['id', 'name', 'description', 'teacherId', 'centerId', 'subjectId',]
     },
     'Гуртки': {
-        headers: ['ID', 'Назва', 'Опис', 'ID Центру', 'Фото',  'Дії'],
-        keys: ['id', 'name', 'description', 'centerId','photoUrl']
+        headers: ['ID', 'Назва', 'Опис', 'ID Центру', 'Фото', 'Дії'],
+        keys: ['id', 'name', 'description', 'centerId', 'photoUrl']
     },
     'Заявки': {
         headers: ['ID', 'Центр', 'Представник дитини', 'Дитина', 'Телефон', 'Вік дитини', 'Дата', 'Дії'],
@@ -59,6 +60,17 @@ const AdminPanel = () => {
     const [groupsList, setGroupsList] = useState([]);
     const [parentsList, setParentsList] = useState([]);
     const [teachersList, setTeachersList] = useState([]);
+
+    const [isGroupManagerOpen, setIsGroupManagerOpen] = useState(false);
+    const [selectedGroupForManager, setSelectedGroupForManager] = useState(null);
+    const [groupChildrenIds, setGroupChildrenIds] = useState([]);
+    const [allChildrenList, setAllChildrenList] = useState([]);
+
+    const [isAddChildModalOpen, setIsAddChildModalOpen] = useState(false);
+    const [childSearchTerm, setChildSearchTerm] = useState("");
+
+    const [isRemoveChildModalOpen, setIsRemoveChildModalOpen] = useState(false);
+    const [childToRemove, setChildToRemove] = useState(null);
 
     const endpointMap = {
         'Центри': '/center',
@@ -91,22 +103,22 @@ const AdminPanel = () => {
     }, [activeTab]);
 
     const fetchLists = async () => {
-            try {
-                const response = await api.get('/center');
-                setCentersList(response.data);
+        try {
+            const response = await api.get('/center');
+            setCentersList(response.data);
 
-                const groupsResponse = await api.get('/group');
-                setGroupsList(groupsResponse.data);
+            const groupsResponse = await api.get('/group');
+            setGroupsList(groupsResponse.data);
 
-                const parentsResponse = await api.get('/user/parents');
-                setParentsList(parentsResponse.data);
+            const parentsResponse = await api.get('/user/parents');
+            setParentsList(parentsResponse.data);
 
-                const teachersResponse = await api.get('/user/teachers');
-                setTeachersList(teachersResponse.data);
-            } catch (error) {
-                console.error("Помилка завантаження списків", error);
-            }
-        };
+            const teachersResponse = await api.get('/user/teachers');
+            setTeachersList(teachersResponse.data);
+        } catch (error) {
+            console.error("Помилка завантаження списків", error);
+        }
+    };
 
     useEffect(() => {
         fetchLists();
@@ -319,6 +331,54 @@ const AdminPanel = () => {
         }
     };
 
+    const handleOpenGroupManager = async (group) => {
+        setSelectedGroupForManager(group);
+        try {
+            const allChildrenRes = await api.get('/child');
+            setAllChildrenList(allChildrenRes.data);
+            const groupChildrenRes = await api.get(`/group/${group.id}/children`);
+            const ids = groupChildrenRes.data.map(child => child.id);
+            setGroupChildrenIds(ids);
+
+            setIsGroupManagerOpen(true);
+        } catch (err) {
+            console.error("Помилка завантаження складу групи:", err);
+        }
+    };
+
+    const handleChangeChildStatusInGroup = async (childId, isCurrentlyInGroup) => {
+        const groupId = selectedGroupForManager.id;
+        try {
+            if (isCurrentlyInGroup) {
+                await api.delete(`/groupchild/group/${groupId}/child/${childId}`);
+                setGroupChildrenIds(prev => prev.filter(id => id !== childId));
+            } else {
+                await api.post(`/groupchild`, {
+                    groupId: groupId,
+                    childId: childId
+                });
+                setGroupChildrenIds(prev => [...prev, childId]);
+            }
+        } catch (error) {
+            console.error("Помилка зміни складу групи:", error);
+        }
+    };
+
+    const handleInitiateRemoveChild = (child) => {
+        setChildToRemove(child);
+        setIsRemoveChildModalOpen(true);
+    };
+
+    const confirmRemoveChild = async () => {
+        if (!childToRemove) {
+            return;
+        }
+
+        await handleChangeChildStatusInGroup(childToRemove.id, true);
+        setIsRemoveChildModalOpen(false);
+        setChildToRemove(null);
+    };
+
     return (
         <div className='admin-container'>
             <h1 className='admin-title'>Адмін-панель</h1>
@@ -362,7 +422,12 @@ const AdminPanel = () => {
                     <table className='admin-table'>
                         <thead >
                             <tr>
-                                {currentConfig.headers.map(h => <th key={h}>{h}</th>)}
+                                {currentConfig.headers.map(h =>
+                                    <th key={h}
+                                        style={h === 'Дії' ? { width: activeTab === 'Групи' ? '155px' : '95px' } : {}}
+                                    >
+                                        {h}
+                                    </th>)}
                             </tr>
                         </thead>
                         <tbody>
@@ -408,6 +473,14 @@ const AdminPanel = () => {
                                             </div>
                                         ) : (
                                             <div className='actions-wrapper'>
+                                                {activeTab == 'Групи' && (
+                                                    <button className='action-btn group-child-btn'
+                                                        onClick={() => handleOpenGroupManager(item)}
+                                                        title="Склад групи"
+                                                    >
+                                                        <img src={groupIcon} alt="Group" className="group-btn-icon" />
+                                                    </button>
+                                                )}
                                                 <button className='action-btn edit-btn' onClick={() => handleEditClick(item)}>
                                                     <img src={editIcon} alt="Edit" className="edit-btn-icon" />
                                                 </button>
@@ -533,6 +606,163 @@ const AdminPanel = () => {
                         <div className="modal-actions">
                             <button className="confirm-btn" onClick={handleCreateSave}>Зберегти</button>
                             <button className="cancel-btn" onClick={() => setIsModalOpen(false)}>Скасувати</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {isGroupManagerOpen && (
+                <div className='modal-overlay' onClick={() => setIsGroupManagerOpen(false)}>
+                    <div className="modal-content participants-modal" onClick={e => e.stopPropagation()}>
+                        <div className="participants-header">
+                            <h2 className='modal-title'>Склад групи: {selectedGroupForManager?.name}</h2>
+                            <button className="add-entity-btn  add-user-btn"
+                                onClick={() => {
+                                    setChildSearchTerm("")
+                                    setIsAddChildModalOpen(true);
+                                }}
+                            >
+                                + Додати дитину
+                            </button>
+                        </div>
+                        <div className='participants-list'>
+                            {allChildrenList.filter(c => groupChildrenIds.includes(c.id)).length > 0 ? (
+                                allChildrenList.filter(child => groupChildrenIds.includes(child.id))
+                                    .map(child => (
+                                        <div key={child.id} className="participant-item">
+                                            <div className="participant-info">
+                                                <div className="participant-avatar">
+                                                    {child.firstName ? child.firstName.charAt(0).toUpperCase() : '?'}
+                                                </div>
+                                                <span className="participant-name">
+                                                    {child.firstName} {child.lastName}
+                                                </span>
+                                            </div>
+                                            <button
+                                                className="remove-participant-btn"
+                                                onClick={() => handleInitiateRemoveChild(child)}
+                                            >
+                                                Видалити
+                                            </button>
+                                        </div>
+                                    ))
+                            ) : (
+                                <p style={{ textAlign: 'center', color: '#9384A6', padding: '20px' }}>
+                                    У цій групі ще немає дітей
+                                </p>
+                            )}
+                            <div className="modal-actions">
+                                <button
+                                    className="cancel-btn"
+                                    onClick={() => setIsGroupManagerOpen(false)}
+                                >
+                                    Закрити
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {isAddChildModalOpen && (
+                <div className="modal-overlay" style={{ zIndex: 1001 }} onClick={() => setIsAddChildModalOpen(false)}>
+                    <div className="modal-content participants-modal" onClick={e => e.stopPropagation()}>
+                        <div className="participants-header" style={{ marginBottom: '15px' }}>
+                            <h2 className="modal-title">Додати дитину в групу: </h2>
+                        </div>
+                        <div className="form-group" style={{ marginBottom: '15px' }}>
+                            <input
+                                type="text"
+                                placeholder="Пошук за іменем чи прізвищем..."
+                                className="chat-input-field"
+                                value={childSearchTerm}
+                                onChange={(e) => setChildSearchTerm(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+                        <div className='participants-list'>
+                            {allChildrenList.filter(child =>
+                                !groupChildrenIds.includes(child.id) &&
+                                (child.firstName + ' ' + child.lastName).toLowerCase().includes(childSearchTerm.toLowerCase())
+                            ).length > 0 ? (
+                                allChildrenList
+                                    .filter(child =>
+                                        !groupChildrenIds.includes(child.id) &&
+                                        (child.firstName + ' ' + child.lastName).toLowerCase().includes(childSearchTerm.toLowerCase())
+                                    )
+                                    .map(child => (
+                                        <div key={child.id} className="participant-item">
+                                            <div className="participant-info">
+                                                <div className="participant-avatar">
+                                                    {child.firstName ? child.firstName.charAt(0).toUpperCase() : '?'}
+                                                </div>
+                                                <span className="participant-name">
+                                                    {child.firstName} {child.lastName}
+                                                </span>
+                                            </div>
+
+                                            <button
+                                                className="add-participant-btn"
+                                                onClick={() => handleChangeChildStatusInGroup(child.id, false)}
+                                            >
+                                                Додати
+                                            </button>
+                                        </div>
+                                    ))
+                            ) : (
+                                <p style={{ textAlign: 'center', color: '#9384A6', margin: '20px 0' }}>
+                                    Дітей не знайдено
+                                </p>
+                            )}
+                        </div>
+                        <div className="modal-actions">
+                            <button
+                                className="cancel-btn"
+                                onClick={() => {
+                                    setIsAddChildModalOpen(false);
+                                    setChildSearchTerm("");
+                                }}
+                            >
+                                Назад
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {isRemoveChildModalOpen && childToRemove && (
+                <div className="modal-overlay" style={{ zIndex: 1010 }} onClick={() => setIsRemoveChildModalOpen(false)}>
+                    <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center', padding: '30px 20px' }} onClick={e => e.stopPropagation()}>
+                        
+                        <div className='warning-sign-container'>
+                            <span className='warning-sign'>⚠️</span>
+                        </div>
+
+                        <h2 style={{ color: '#2D3748', marginBottom: '10px', fontSize: '20px' }}>
+                            Видалення з групи
+                        </h2>
+                        
+                        <p style={{ color: '#718096', marginBottom: '25px', fontSize: '15px', lineHeight: '1.5' }}>
+                            Ви впевнені, що хочете видалити <b>{childToRemove.lastName} {childToRemove.firstName}</b> зі складу групи <b>{selectedGroupForManager?.name}</b>?
+                        </p>
+
+                        <div className="modal-actions" style={{justifyContent: 'center', gap: '15px'}} >
+                            <button 
+                                className="cancel-btn" 
+                                onClick={() => setIsRemoveChildModalOpen(false)}
+                                style={{ width: '130px' }}
+                            >
+                                Скасувати
+                            </button>
+                            <button 
+                                className="confirm-btn" 
+                                onClick={confirmRemoveChild}
+                                style={{ 
+                                    width: '130px', 
+                                    backgroundColor: '#D30000', 
+                                    color: 'white', 
+                                    border: 'none'
+                                }}
+                            >
+                                Видалити
+                            </button>
                         </div>
                     </div>
                 </div>

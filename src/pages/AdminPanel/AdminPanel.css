@@ -1,17 +1,17 @@
-.admin-card{
+.admin-card {
     background-color: white;
     border-radius: 35px;
     padding: 22px;
 }
 
-.admin-title{
+.admin-title {
     color: #4F169E;
     font-size: 28px;
     font-weight: 800;
     margin-bottom: 25px;
 }
 
-.admin-tabs{
+.admin-tabs {
     display: flex;
     gap: 10px;
     border: 2px solid #4F169E;
@@ -19,7 +19,7 @@
     justify-content: space-evenly;
 }
 
-.tab-item{
+.tab-item {
     background: none;
     border: none;
     padding: 10px 25px;
@@ -35,7 +35,7 @@
     border: 1.5px solid #4F169E;
 }
 
-.admin-filters{
+.admin-filters {
     display: flex;
     justify-content: space-around;
     margin-bottom: 30px;
@@ -52,7 +52,7 @@
     margin-right: 17px;
 }
 
-.apply-search-btn{
+.apply-search-btn {
     background-color: #A779E6;
     font-size: 15px;
     border-radius: 15px;
@@ -63,16 +63,16 @@
 
 .apply-search-btn:hover {
     background-color: #9162D4;
-    transform: translateY(-2px); 
-    box-shadow: 0 4px 12px rgba(167, 121, 230, 0.4); 
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(167, 121, 230, 0.4);
 }
 
 .apply-search-btn:active {
-    transform: translateY(0); 
+    transform: translateY(0);
     box-shadow: 0 2px 6px rgba(167, 121, 230, 0.2);
 }
 
-.search-btn-icon{
+.search-btn-icon {
     width: 20px;
     height: 20px;
     transform: translateY(5px);
@@ -88,34 +88,30 @@
     box-sizing: border-box;
 }
 
-.actions-cell{
+.actions-cell {
     width: 110px;
     text-align: center;
 }
 
-.actions-wrapper{
+.actions-wrapper {
     display: flex;
     gap: 8px;
+    justify-content: flex-start;
+    align-items: center;
 }
 
-.actions-cell button{
+.actions-cell button {
     margin-right: 6px;
 }
 
-.admin-table{
+.admin-table {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
-
-}
-
-.admin-table th:last-child,
-.admin-table td:last-child{
-    width: 95px;
 }
 
 .admin-table th,
-.admin-table td{
+.admin-table td {
     padding: 12px 10px;
     text-align: left;
     border-bottom: 1px solid #eee;
@@ -124,43 +120,60 @@
     white-space: nowrap;
 }
 
-.table-container{
+.table-container {
     width: 100%;
     overflow-x: auto;
 }
 
-.admin-table thead{
+.admin-table thead {
     background-color: #F5F0FF;
 }
 
-.admin-table th{
+.admin-table th {
     color: #4F169E;
     font-weight: 600;
 }
 
-.admin-table tbody tr:hover{
+.admin-table tbody tr:hover {
     background-color: #F9F5FF;
 }
 
-.edit-btn-icon, .delete-btn-icon, .confirm-btn-icon, .cancel-btn-icon{
+.edit-btn-icon,
+.delete-btn-icon,
+.confirm-btn-icon,
+.cancel-btn-icon,
+.group-btn-icon {
     width: 27px;
     height: 27px;
 }
 
-.edit-btn{
+.edit-btn {
     background-color: #FF7D43;
     border: none;
     border-radius: 9px;
     transition: all 0.2s ease;
 }
 
-.edit-btn:hover{
-    background-color: #E66A30; 
-    transform: translateY(-2px); 
+.edit-btn:hover {
+    background-color: #E66A30;
+    transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(255, 125, 67, 0.3);
 }
 
-.delete-btn{
+.group-child-btn {
+    background-color: #A779E6;
+    border: none;
+    border-radius: 9px;
+    transition: all 0.2s ease;
+}
+
+.group-child-btn:hover {
+    background-color: #9162D4;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(208, 67, 255, 0.3);
+}
+
+.delete-btn {
     background-color: #FF0000;
     border: none;
     border-radius: 9px;
@@ -175,7 +188,10 @@
 
 .modal-overlay {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
@@ -188,7 +204,7 @@
     padding: 30px;
     border-radius: 25px;
     width: 450px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
 
 .add-entity-btn {
@@ -203,17 +219,19 @@
     margin-top: 15px;
     padding: 0 15px;
 }
+
 .add-entity-btn:hover {
-    background-color: #5D1DBF; 
-    transform: translateY(-2px); 
-    box-shadow: 0 6px 15px rgba(79, 22, 158, 0.4); 
+    background-color: #5D1DBF;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(79, 22, 158, 0.4);
 }
 
 .add-entity-btn:active {
-    transform: translateY(0); 
+    transform: translateY(0);
     box-shadow: 0 2px 6px rgba(79, 22, 158, 0.2);
 }
-.table-first-row{
+
+.table-first-row {
     display: flex;
     justify-content: space-between;
     padding: 0 10px;
@@ -246,7 +264,7 @@
 .modal-actions button {
     padding: 12px 24px;
     border: none;
-    border-radius: 15px;       
+    border-radius: 15px;
     font-size: 16px;
     font-weight: 700;
     cursor: pointer;
@@ -254,7 +272,7 @@
 }
 
 .confirm-btn {
-    background-color: #4CAF50; 
+    background-color: #4CAF50;
     color: white;
     box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2);
     border: none;
@@ -263,14 +281,14 @@
 
 .confirm-btn:hover {
     background-color: #43A047;
-    transform: translateY(-2px); 
+    transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(76, 175, 80, 0.3);
 }
 
 .cancel-btn {
-    background-color: #5D2E8E;   
-    border: none;      
-    border-radius: 9px;  
+    background-color: #5D2E8E;
+    border: none;
+    border-radius: 9px;
     color: white;
 }
 
@@ -279,3 +297,18 @@
     transform: translateY(-2px);
 }
 
+.warning-sign-container{
+    width: 60px;
+    height: 60px;
+    border-radius: 50%; 
+    background-color: #FFF5F5;
+    display: flex;
+    align-items: center; 
+    justify-content: center; 
+    margin: 0 auto 15px; 
+}
+
+.warning-sign{
+    padding-bottom: 6px;
+    font-size: 24px;
+}
