@@ -123,6 +123,9 @@
 .table-container {
     width: 100%;
     overflow-x: auto;
+    overflow-y: auto;
+    max-height: 65vh;
+    padding-right: 5px;
 }
 
 .admin-table thead {
@@ -137,6 +140,7 @@
 .admin-table tbody tr:hover {
     background-color: #F9F5FF;
 }
+
 
 .edit-btn-icon,
 .delete-btn-icon,
@@ -235,7 +239,20 @@
     display: flex;
     justify-content: space-between;
     padding: 0 10px;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background-color: white; 
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
+
+.admin-table thead th {
+    position: sticky;
+    top: 50px; 
+    z-index: 4;
+    background-color: #F5F0FF;
+} 
 
 .form-group {
     margin-bottom: 15px;
@@ -285,15 +302,15 @@
     box-shadow: 0 6px 15px rgba(76, 175, 80, 0.3);
 }
 
-.cancel-btn {
-    background-color: #5D2E8E;
+.actions-wrapper .cancel-btn {
+    background-color: #A779E6;
     border: none;
     border-radius: 9px;
     color: white;
 }
 
-.cancel-btn:hover {
-    background-color: #4B2C92;
+.actions-wrapper .cancel-btn:hover {
+    background-color: #9162D4;
     transform: translateY(-2px);
 }
 

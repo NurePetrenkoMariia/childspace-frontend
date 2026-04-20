@@ -258,6 +258,8 @@
     font-size: 14px;
     color: black;
     line-height: 1.4;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .message-time {

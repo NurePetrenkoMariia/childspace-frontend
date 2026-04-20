@@ -55,8 +55,8 @@ const AttendancePage = () => {
         setIsLoading(true);
         try {
             const [childrenRes, scheduleRes] = await Promise.all([
-                api.get(`/group/${selectedGroup}/children`), 
-                api.get(`/schedule/group/${selectedGroup}`) 
+                api.get(`/group/${selectedGroup}/children`),
+                api.get(`/schedule/group/${selectedGroup}`)
             ]);
 
             setChildrenList(childrenRes.data);
@@ -92,7 +92,7 @@ const AttendancePage = () => {
         }
     };
 
-    const handleSubjectChange = (e) =>{
+    const handleSubjectChange = (e) => {
         setSelectedSubject(e.target.value);
         setSelectedGroup('');
     };
@@ -213,56 +213,58 @@ const AttendancePage = () => {
                     {isLoading ? (
                         <p style={{ textAlign: 'center', padding: '20px' }}>Завантаження...</p>
                     ) : (
-                        <table className='attendance-table'>
-                            <thead>
-                                <tr>
-                                    <th>№</th>
-                                    <th>Прізвище, ім'я дитини</th>
-                                    <th>Присутність</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {childrenList.map((child, index) => {
-                                    const record = attendances.find(a => a.childId === child.id);
-                                    const isPresent = record?.status === 0;
-                                    const isAbsent = record?.status === 1;
-                                    return (
-                                        <tr key={child.id}>
-                                            <td className='child-index'>
-                                                {index + 1}
-                                            </td>
-                                            <td className='child-name'>
-                                                {child.lastName} {child.firstName}
-                                            </td>
-                                            <td className='child-checkboxes'>
-                                                <label className='checkbox-label'>
-                                                    Був
-                                                    <input type="radio"
-                                                        name={`attendance-${child.id}`}
-                                                        checked={isPresent}
-                                                        onChange={() => handleAttendanceChange(child.id, 0)}
-                                                    />
-                                                    <span className="custom-radio"></span>
-                                                </label>
-                                                <label className='checkbox-label'>
-                                                    Не був
-                                                    <input type="radio"
-                                                        name={`attendance-${child.id}`}
-                                                        checked={isAbsent}
-                                                        onChange={() => handleAttendanceChange(child.id, 1)}
-                                                    />
-                                                    <span className="custom-radio"></span>
-                                                </label>
-                                            </td>
-                                        </tr>
-                                    );
-                                }
+                        <div className='table-rounded-wrapper'>
+                            <table className='attendance-table'>
+                                <thead>
+                                    <tr>
+                                        <th>№</th>
+                                        <th>Прізвище, ім'я дитини</th>
+                                        <th>Присутність</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {childrenList.map((child, index) => {
+                                        const record = attendances.find(a => a.childId === child.id);
+                                        const isPresent = record?.status === 0;
+                                        const isAbsent = record?.status === 1;
+                                        return (
+                                            <tr key={child.id}>
+                                                <td className='child-index'>
+                                                    {index + 1}
+                                                </td>
+                                                <td className='child-name'>
+                                                    {child.lastName} {child.firstName}
+                                                </td>
+                                                <td className='child-checkboxes'>
+                                                    <label className='checkbox-label'>
+                                                        Був/була
+                                                        <input type="radio"
+                                                            name={`attendance-${child.id}`}
+                                                            checked={isPresent}
+                                                            onChange={() => handleAttendanceChange(child.id, 0)}
+                                                        />
+                                                        <span className="custom-radio"></span>
+                                                    </label>
+                                                    <label className='checkbox-label'>
+                                                        Не був/не була
+                                                        <input type="radio"
+                                                            name={`attendance-${child.id}`}
+                                                            checked={isAbsent}
+                                                            onChange={() => handleAttendanceChange(child.id, 1)}
+                                                        />
+                                                        <span className="custom-radio"></span>
+                                                    </label>
+                                                </td>
+                                            </tr>
+                                        );
+                                    }
 
-                                )
+                                    )
 
-                                }
-                            </tbody>
-                        </table>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     )}
                 </div>
             </div>
