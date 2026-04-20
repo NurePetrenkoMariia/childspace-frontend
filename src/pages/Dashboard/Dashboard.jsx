@@ -2,9 +2,12 @@ import { useAuth } from '../../auth/AuthContext';
 import SubjectGrid from '../../components/SubjectGrid/SubjectGrid';
 import CenterGrid from '../../components/CenterGrid/CenterGrid';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './Dashboard.css';
 
 const Dashboard = () => {
     const { user, loading } = useAuth();
+    const navigate = useNavigate();
 
     const [selectedCenterId, setSelectedCenterId] = useState(null);
     const isSuperAdmin = user?.roles?.includes('SuperAdmin');
@@ -21,22 +24,34 @@ const Dashboard = () => {
     }
 
     const greetingText = user ? `Привіт, ${user.firstName} 👋` : 'Привіт, гостю 👋';
-    const mainTitle = selectedCenterId 
-        ? "Ось доступні гуртки:" 
+    const mainTitle = selectedCenterId
+        ? "Ось доступні гуртки:"
         : "Оберіть центр дитячого розвитку:";
 
     const title = (
-        <header className="dashboard-header"  style={{paddingBottom: '15px'}}>
-            <p className="greeting">{greetingText}</p>
-            <h1 className="welcome-text">{mainTitle}</h1>
+        <header className="dashboard-header">
+            <div className='dashboard-header-top'>
+                <div>
+                    <p className="greeting">{greetingText}</p>
+                    <h1 className="welcome-text">{mainTitle}</h1>
+                </div>
+                {isGuest && (
+                    <button className='dashboard-header-top-btn'
+                        onClick={() => navigate('/login')}
+                    >
+                        Увійти
+                    </button>
+                )}
+            </div>
             {(isSuperAdmin || isGuest) && selectedCenterId && (
                 <button 
+                className='dashboard-header-center-btn'
                     onClick={() => setSelectedCenterId(null)}
-                    style={{marginTop: '10px', padding: '5px 15px', borderRadius: '8px', cursor: 'pointer', background: '#F9F6FC', border: '1px solid #A384D6', color: '#6A35C2'}}
                 >
                     ← Обрати інший центр
                 </button>
             )}
+
         </header>
     );
 
@@ -45,15 +60,15 @@ const Dashboard = () => {
     return (
         <div className="dashboard-container">
             {!selectedCenterId && (isGuest || isSuperAdmin) ? (
-                <CenterGrid 
-                    titleComponent={title} 
-                    onCenterSelect={(id) => setSelectedCenterId(id)} 
+                <CenterGrid
+                    titleComponent={title}
+                    onCenterSelect={(id) => setSelectedCenterId(id)}
                 />
             ) : (
                 <SubjectGrid
                     titleComponent={title}
                     getBaseRedirectUrl={getRedirectPath}
-                    centerId={selectedCenterId} 
+                    centerId={selectedCenterId}
                 />
             )}
         </div>
