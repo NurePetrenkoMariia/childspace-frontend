@@ -40,6 +40,13 @@ const ChatsPage = () => {
     const [messages, setMessages] = useState([]);
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+    const chatAreaRef = useRef(null);
+    const previousScrollHeightRef = useRef(0);
+
     const [participants, setParticipants] = useState([]);
     const [isLoadingParticipants, setIsLoadingParticipants] = useState(false);
 
@@ -89,9 +96,18 @@ const ChatsPage = () => {
 
         return result;
     };
+
     useEffect(() => {
-        scrollToBottom();
-    }, [messages, activeChatId]);
+        if (previousScrollHeightRef.current > 0 && chatAreaRef.current) {
+            const newScrollHeight = chatAreaRef.current.scrollHeight;
+            chatAreaRef.current.scrollTop = newScrollHeight - previousScrollHeightRef.current;
+            previousScrollHeightRef.current = 0;
+        }
+
+        else if (page === 1 || previousScrollHeightRef.current === 0) {
+            scrollToBottom();
+        }
+    }, [messages]);
 
     useEffect(() => {
         const fetchChats = async () => {
@@ -192,14 +208,22 @@ const ChatsPage = () => {
         }
     }
     useEffect(() => {
-        const fetchMessages = async () => {
-            if (!activeChatId) return;
+        if (!activeChatId) {
+            return;
+        }
 
+        const loadInitialMessages = async () => {
             setIsLoadingMessages(true);
+            setPage(1);
+            setHasMore(true);
+
             try {
-                const response = await api.get(`/message/chat/${activeChatId}`);
-                console.log("Отримані повідомлення:", response.data);
+                const response = await api.get(`/message/chat/${activeChatId}?page=1&pageSize=50`);
                 setMessages(response.data);
+
+                if (response.data.length < 50) {
+                    setHasMore(false);
+                }
             } catch (error) {
                 console.error("Помилка завантаження повідомлень:", error);
             } finally {
@@ -207,7 +231,7 @@ const ChatsPage = () => {
             }
         };
 
-        fetchMessages();
+        loadInitialMessages();
     }, [activeChatId]);
 
     const handleSendMessage = async () => {
@@ -324,6 +348,32 @@ const ChatsPage = () => {
             } catch (error) {
                 console.error("Помилка при видаленні користувача:", error);
                 alert(error.response?.data?.message || "Не вдалося видалити користувача з чату.");
+            }
+        }
+    };
+
+    const handleScroll = async (e) => {
+        const { scrollTop, scrollHeight } = e.target;
+
+        if (scrollTop === 0 && hasMore && !isLoadingMore && !isLoadingMessages) {
+            setIsLoadingMore(true);
+            const nextPage = page + 1;
+            previousScrollHeightRef.current = scrollHeight;
+
+            try {
+                const response = await api.get(`/message/chat/${activeChatId}?page=${nextPage}&pageSize=50`);
+                const olderMessages = response.data;
+
+                if (olderMessages.length < 50) {
+                    setHasMore(false);
+                }
+
+                setPage(nextPage);
+                setMessages(prev => [...olderMessages, ...prev]);
+            } catch (error) {
+                console.error("Помилка завантаження старих повідомлень:", error);
+            } finally {
+                setIsLoadingMore(false);
             }
         }
     };
@@ -459,7 +509,15 @@ const ChatsPage = () => {
                         </div>
                     </div>
 
-                    <div className="chat-messages-area">
+                    <div className="chat-messages-area"
+                        ref={chatAreaRef}
+                        onScroll={handleScroll}
+                    >
+                        {isLoadingMore && (
+                            <div style={{ textAlign: 'center', padding: '10px 0', color: '#9384A6', fontSize: '12px' }}>
+                                Завантаження історії...
+                            </div>
+                        )}
                         {getMessagesWithSeparators(messages).map(item => {
                             if (item.isSeparator) {
                                 return (
