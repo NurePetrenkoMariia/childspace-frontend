@@ -28,6 +28,8 @@ const ChatsPage = () => {
     const [userSearchTerm, setUserSearchTerm] = useState("");
     const [editingChatId, setEditingChatId] = useState(null);
     const [editedChatName, setEditedChatName] = useState("");
+    const [editingMessageId, setEditingMessageId] = useState(null);
+    const [editedMessageText, setEditedMessageText] = useState("");
 
     const messagesEndRef = useRef(null);
     const scrollToBottom = () => {
@@ -391,6 +393,35 @@ const ChatsPage = () => {
         }
     };
 
+    const handleStartEditingMessage = (msg) => {
+        setEditingMessageId(msg.id);
+        setEditedMessageText(msg.content);
+    };
+
+    const handleCancelEditingMessage = () => {
+        setEditingMessageId(null);
+        setEditedMessageText("");
+    };
+
+    const handleSaveMessageEdit = async (messageId) => {
+        if (editedMessageText.trim() === ""){
+            return;
+        }
+        
+        try {
+            await api.put(`/message/${messageId}`, { content: editedMessageText });
+            
+            setMessages(prevMessages => prevMessages.map(msg => 
+                msg.id === messageId ? { ...msg, content: editedMessageText } : msg
+            ));
+            
+            setEditingMessageId(null);
+        } catch (error) {
+            console.error("Помилка редагування повідомлення:", error);
+            alert("Не вдалося зберегти зміни.");
+        }
+    };
+
     return (
         <div className="chats-container">
             <div className="chat-title-row">
@@ -546,21 +577,61 @@ const ChatsPage = () => {
                                 <div key={msg.id} className={`message-wrapper ${isMyMessage ? 'mine' : 'others'}`}>
                                     <div className="message-bubble">
                                         {!isMyMessage && <div className="message-sender">{msg.senderName}</div>}
-                                        <div className="message-text">{msg.content}</div>
+                                        {editingMessageId === msg.id ? (
+                                            <div className="message-edit-mode">
+                                                <input
+                                                    type='text'
+                                                    className='chat-inline-input'
+                                                    value={editedMessageText}
+                                                    autoFocus
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') handleSaveMessageEdit(msg.id);
+                                                        if (e.key === 'Escape') handleCancelEditingMessage();
+                                                    }}
+                                                    onChange={(e) => setEditedMessageText(e.target.value)}
+                                                />
+                                                <div className="message-edit-actions">
+                                                    <button className="chat-inline-btn" onClick={() => handleSaveMessageEdit(msg.id)}>
+                                                        <img src={confirmIconDark} alt="Save" style={{ width: '18px', height: '18px' }} />
+                                                    </button>
+                                                    <button className="chat-inline-btn" onClick={handleCancelEditingMessage}>
+                                                        <img src={cancelIconDark} alt="Cancel" style={{ width: '18px', height: '18px' }} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="message-text">{msg.content}</div>
+                                        )
+                                        }
+
                                         <div className="message-time">
                                             {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </div>
                                     </div>
-                                    {(isMyMessage || isAdmin) && (
-                                        <button
-                                            className="message-delete-btn"
-                                            onClick={() => handleDeleteMessage(msg.id)}
-                                            title="Видалити повідомлення"
-                                        >
-                                            <img src={deleteIconDark} alt="Delete" />
-                                        </button>
-                                    )}
+                                    <div className='messages-actions-container'>
+
+                                        {isMyMessage && editingMessageId !== msg.id && (
+                                            <button
+                                                className="message-action-btn"
+                                                onClick={() => handleStartEditingMessage(msg)}
+                                                title="Редагувати повідомлення"
+                                            >
+                                                <img src={editIconDark} alt="Edit" />
+                                            </button>
+                                        )}
+
+                                        {(isMyMessage || isAdmin) && (
+                                            <button
+                                                className="message-delete-btn"
+                                                onClick={() => handleDeleteMessage(msg.id)}
+                                                title="Видалити повідомлення"
+                                            >
+                                                <img src={deleteIconDark} alt="Delete" />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
+
                             );
                         })}
                         <div ref={messagesEndRef} />

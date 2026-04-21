@@ -580,3 +580,53 @@
     opacity: 1;
     transform: scale(1.1);
 }
+
+.messages-actions-container{
+    display: flex;
+    gap: 4px;
+}
+
+.message-action-btn{
+    background: none;
+    border: none;
+    opacity: 0;
+    padding: 6px;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    border-radius: 50%;
+}
+
+.message-wrapper:hover .message-action-btn {
+    opacity: 1;
+}
+
+.message-action-btn img {
+    width: 18px;
+    height: 18px;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+}
+
+.message-action-btn:hover img {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+
+.message-action-btn:hover{
+    background-color: #EDE4F5;
+}
+
+.message-edit-mode {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+.message-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
