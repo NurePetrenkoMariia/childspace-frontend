@@ -39,5 +39,5 @@
 }
 
 .dashboard-container .courses-grid {
-    max-height: calc(100vh - 200px);
+    max-height: calc(100vh - 145px);
 }

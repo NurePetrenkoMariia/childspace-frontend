@@ -206,7 +206,8 @@ const ChatsPage = () => {
                 alert("Не вдалося видалити чат.");
             }
         }
-    }
+    };
+
     useEffect(() => {
         if (!activeChatId) {
             return;
@@ -378,6 +379,18 @@ const ChatsPage = () => {
         }
     };
 
+    const handleDeleteMessage = async (messageId) => {
+        if (window.confirm("Ви впевнені, що хочете видалити це повідомлення?")) {
+            try {
+                await api.delete(`/message/${messageId}`);
+                setMessages(prevMessages => prevMessages.filter(msg => msg.id !== messageId));
+            } catch (error) {
+                console.error("Помилка видалення повідомлення:", error);
+                alert("Не вдалося видалити повідомлення.");
+            }
+        }
+    };
+
     return (
         <div className="chats-container">
             <div className="chat-title-row">
@@ -527,15 +540,26 @@ const ChatsPage = () => {
                                 );
                             }
                             const msg = item.data;
+                            const isMyMessage = msg.senderId === user?.id;
+
                             return (
-                                <div key={msg.id} className={`message-wrapper ${msg.senderId === user?.id ? 'mine' : 'others'}`}>
+                                <div key={msg.id} className={`message-wrapper ${isMyMessage ? 'mine' : 'others'}`}>
                                     <div className="message-bubble">
-                                        {msg.senderId !== user?.id && <div className="message-sender">{msg.senderName}</div>}
+                                        {!isMyMessage && <div className="message-sender">{msg.senderName}</div>}
                                         <div className="message-text">{msg.content}</div>
                                         <div className="message-time">
                                             {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </div>
                                     </div>
+                                    {(isMyMessage || isAdmin) && (
+                                        <button
+                                            className="message-delete-btn"
+                                            onClick={() => handleDeleteMessage(msg.id)}
+                                            title="Видалити повідомлення"
+                                        >
+                                            <img src={deleteIconDark} alt="Delete" />
+                                        </button>
+                                    )}
                                 </div>
                             );
                         })}

@@ -231,7 +231,8 @@
 }
 
 .message-wrapper.mine {
-    justify-content: flex-end;
+    justify-content: flex-start;
+    flex-direction: row-reverse;
 }
 
 .message-wrapper.others {
@@ -429,7 +430,7 @@
 }
 
 .participants-modal {
-    width: 450px; 
+    width: 450px;
     display: flex;
     flex-direction: column;
     max-height: 80vh;
@@ -453,7 +454,7 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
-    overflow-y: auto; 
+    overflow-y: auto;
     padding-right: 10px;
     margin-bottom: 20px;
     scrollbar-color: #A384D6 transparent;
@@ -482,7 +483,7 @@
 .participant-avatar {
     width: 38px;
     height: 38px;
-    background-color: #E2D5F0; 
+    background-color: #E2D5F0;
     color: #4F169E;
     border-radius: 50%;
     display: flex;
@@ -517,8 +518,8 @@
 }
 
 .add-participant-btn {
-    background-color: #EDE4F5; 
-    color: #4F169E;           
+    background-color: #EDE4F5;
+    color: #4F169E;
     border: none;
     border-radius: 10px;
     padding: 6px 15px;
@@ -529,16 +530,53 @@
 }
 
 .add-participant-btn:hover {
-    background-color: #A779E6; 
+    background-color: #A779E6;
     color: white;
     transform: scale(1.05);
 }
 
-.chat-actions-container{
+.chat-actions-container {
     display: flex;
     gap: 4px;
 }
 
 .delete-chat-btn:hover img {
+    transform: scale(1.1);
+}
+
+.message-wrapper {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 8px;
+}
+
+.message-delete-btn {
+    background: none;
+    border: none;
+    opacity: 0;
+    padding: 6px;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    border-radius: 50%;
+}
+
+.message-delete-btn img {
+    width: 18px;
+    height: 18px;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+
+.message-wrapper:hover .message-delete-btn {
+    opacity: 1;
+}
+
+.message-delete-btn:hover {
+    background-color: #FFE5E5;
+}
+
+.message-delete-btn:hover img {
+    opacity: 1;
     transform: scale(1.1);
 }
