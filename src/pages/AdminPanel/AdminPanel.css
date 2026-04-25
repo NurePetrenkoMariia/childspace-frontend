@@ -209,7 +209,10 @@
     border-radius: 25px;
     width: 450px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    max-height: 90vh;
+    overflow-y: auto;
 }
+
 
 .add-entity-btn {
     background-color: #4F169E;
@@ -242,17 +245,17 @@
     position: sticky;
     top: 0;
     z-index: 5;
-    background-color: white; 
+    background-color: white;
     padding-top: 10px;
     padding-bottom: 10px;
 }
 
 .admin-table thead th {
     position: sticky;
-    top: 50px; 
+    top: 50px;
     z-index: 4;
     background-color: #F5F0FF;
-} 
+}
 
 .form-group {
     margin-bottom: 15px;
@@ -314,18 +317,23 @@
     transform: translateY(-2px);
 }
 
-.warning-sign-container{
+.warning-sign-container {
     width: 60px;
     height: 60px;
-    border-radius: 50%; 
+    border-radius: 50%;
     background-color: #FFF5F5;
     display: flex;
-    align-items: center; 
-    justify-content: center; 
-    margin: 0 auto 15px; 
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
 }
 
-.warning-sign{
+.warning-sign {
     padding-bottom: 6px;
     font-size: 24px;
+}
+
+.admin-password-demands{
+    color: #4F169E;
+    font-size: 15px;
 }

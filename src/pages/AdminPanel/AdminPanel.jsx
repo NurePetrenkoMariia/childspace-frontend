@@ -448,6 +448,13 @@ const AdminPanel = () => {
                                                             Залиште пустим, щоб не змінювати
                                                         </span>
                                                     </div>
+                                                ) : key === 'birthDate' ? (
+                                                    <input
+                                                        type="date"
+                                                        className="edit-input"
+                                                        value={editFormData[key] ? editFormData[key].split('T')[0] : ''}
+                                                        onChange={(e) => handleInputChange(e, key)}
+                                                    />
                                                 ) : (
                                                     <input
                                                         type="text"
@@ -580,6 +587,13 @@ const AdminPanel = () => {
                                                     {newData.photo && <p className="file-name-hint">Обрано: {newData.photo.name}</p>}
                                                 </div>
 
+                                            ) : key === 'birthDate' ? (
+                                                <input
+                                                    type="date"
+                                                    className="filter-input"
+                                                    onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                    value={newData[key] ? newData[key].split('T')[0] : ""}
+                                                />
                                             ) : (
                                                 <input
                                                     type="text"
@@ -591,16 +605,27 @@ const AdminPanel = () => {
                                 ))}
 
                             {activeTab === 'Користувачі' && (
-                                <div className="form-group">
-                                    <label>Пароль</label>
-                                    <input
-                                        type="text"
-                                        className="filter-input"
-                                        onChange={(e) => setNewData({ ...newData, password: e.target.value })}
-                                        value={newData.password || ""}
-                                        placeholder="Введіть надійний пароль"
-                                    />
-                                </div>
+                                <>
+                                    <div className="form-group">
+                                        <label>Пароль</label>
+                                        <input
+                                            type="text"
+                                            className="filter-input"
+                                            onChange={(e) => setNewData({ ...newData, password: e.target.value })}
+                                            value={newData.password || ""}
+                                            placeholder="Введіть надійний пароль"
+                                        />
+                                    </div>
+                                    <div className='admin-password-demands'>
+                                        <p>Пароль має містити: </p>
+                                        <ul >
+                                            <li>Мінімум 6 символів</li>
+                                            <li>Хоча б 1 спец. символ (наприклад: !, @, #, _);</li>
+                                            <li>Хоча б 1 цифру (0-9)</li>
+                                            <li>Хоча б 1 велику літеру (A-Z)</li>
+                                        </ul>
+                                    </div>
+                                </>
                             )}
                         </div>
                         <div className="modal-actions">
@@ -730,7 +755,7 @@ const AdminPanel = () => {
             {isRemoveChildModalOpen && childToRemove && (
                 <div className="modal-overlay" style={{ zIndex: 1010 }} onClick={() => setIsRemoveChildModalOpen(false)}>
                     <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center', padding: '30px 20px' }} onClick={e => e.stopPropagation()}>
-                        
+
                         <div className='warning-sign-container'>
                             <span className='warning-sign'>⚠️</span>
                         </div>
@@ -738,26 +763,26 @@ const AdminPanel = () => {
                         <h2 style={{ color: '#2D3748', marginBottom: '10px', fontSize: '20px' }}>
                             Видалення з групи
                         </h2>
-                        
+
                         <p style={{ color: '#718096', marginBottom: '25px', fontSize: '15px', lineHeight: '1.5' }}>
                             Ви впевнені, що хочете видалити <b>{childToRemove.lastName} {childToRemove.firstName}</b> зі складу групи <b>{selectedGroupForManager?.name}</b>?
                         </p>
 
-                        <div className="modal-actions" style={{justifyContent: 'center', gap: '15px'}} >
-                            <button 
-                                className="cancel-btn" 
+                        <div className="modal-actions" style={{ justifyContent: 'center', gap: '15px' }} >
+                            <button
+                                className="cancel-btn"
                                 onClick={() => setIsRemoveChildModalOpen(false)}
                                 style={{ width: '130px' }}
                             >
                                 Скасувати
                             </button>
-                            <button 
-                                className="confirm-btn" 
+                            <button
+                                className="confirm-btn"
                                 onClick={confirmRemoveChild}
-                                style={{ 
-                                    width: '130px', 
-                                    backgroundColor: '#D30000', 
-                                    color: 'white', 
+                                style={{
+                                    width: '130px',
+                                    backgroundColor: '#D30000',
+                                    color: 'white',
                                     border: 'none'
                                 }}
                             >

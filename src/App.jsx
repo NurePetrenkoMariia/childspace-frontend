@@ -20,17 +20,18 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route element={
-            <Layout />
-          }>
+          <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/subject/:id" element={<SubjectDetailsPage />} />
-            <Route path="/admin" element={<AdminPanel />} />
-            <Route path="/chats" element={<ChatsPage />} />
-            <Route path="/schedule" element={<SchedulePage />} />
-            <Route path="/materials" element={<MaterialsDashboard />} />
-            <Route path="/materials/subject/:id" element={<MaterialsPage/>} />
-            <Route path="/attendance" element={<AttendancePage />} />
+
+            <Route element={<ProtectedRoute />}>
+              <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/chats" element={<ChatsPage />} />
+              <Route path="/schedule" element={<SchedulePage />} />
+              <Route path="/materials" element={<MaterialsDashboard />} />
+              <Route path="/materials/subject/:id" element={<MaterialsPage />} />
+              <Route path="/attendance" element={<AttendancePage />} />
+            </Route>
           </Route>
         </Routes>
       </AuthProvider>
