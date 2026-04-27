@@ -9,6 +9,7 @@ import attendanceIcon from '../../assets/icons/tick.png';
 import chatIcon from '../../assets/icons/chat.png';
 import materialsIcon from '../../assets/icons/books.png';
 import logoutIcon from '../../assets/icons/logout-48.png';
+import profileIcon from '../../assets/icons/profile.png';
 
 const Sidebar = () => {
     const { logout } = useAuth();
@@ -46,10 +47,15 @@ const Sidebar = () => {
                     <img src={materialsIcon} alt="Materials" className="sidebar-custom-icon" />
                 </div>
             </div>
+            <div className='nav-icons-bottom'>
 
-            <button className="logout-btn" onClick={handleLogout}>
-                <img src={logoutIcon} alt="Logout" className="sidebar-custom-icon" />
-            </button>
+                <div className={getNavItemClass("/profile")} onClick={() => navigate("/profile")}>
+                    <img src={profileIcon} alt="Profile" className="sidebar-custom-icon" />
+                </div>
+                <button className="logout-btn" onClick={handleLogout}>
+                    <img src={logoutIcon} alt="Logout" className="sidebar-custom-icon" />
+                </button>
+            </div>
         </div>
     );
 };

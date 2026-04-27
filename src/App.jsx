@@ -12,6 +12,7 @@ import SchedulePage from './pages/SchedulePage/SchedulePage'
 import MaterialsPage from './pages/MaterialsPages/MaterialsPage'
 import MaterialsDashboard from './pages/MaterialsPages/MaterialsDashboard'
 import AttendancePage from './pages/AttendancePage/AttendancePage'
+import ProfilePage from './pages/ProfilePage/ProfilePage'
 
 function App() {
 
@@ -31,6 +32,7 @@ function App() {
               <Route path="/materials" element={<MaterialsDashboard />} />
               <Route path="/materials/subject/:id" element={<MaterialsPage />} />
               <Route path="/attendance" element={<AttendancePage />} />
+              <Route path="/profile" element={<ProfilePage />} />
             </Route>
           </Route>
         </Routes>
