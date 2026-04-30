@@ -7,19 +7,31 @@ const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setIsLoading(true);
         try {
             const success = await login(email, password);
             if (success) {
-                navigate('/'); 
+                navigate('/');
+            } else {
+                setError('Неправильний email або пароль');
             }
         } catch (err) {
-            setError('Неправильний логін або пароль');
+            if (!err.response) {
+                setError('Помилка сервера. Перевірте з\'єднання з інтернетом');
+            } else if (err.response.status === 401) {
+                setError('Неправильний email або пароль');
+            } else {
+                setError('Щось пішло не так. Спробуйте пізніше');
+            }
+        } finally {
+            setIsLoading(false);
         }
     };
     return (
@@ -27,6 +39,13 @@ const LoginPage = () => {
             <div className="login-card">
                 <h1 className="login-title">Увійдіть у свій акаунт</h1>
 
+                {error && (
+                    <div className='login-error-msg'>
+                        {error}
+                    </div>
+                )
+
+                }
                 <form onSubmit={handleSubmit} className="login-form">
                     <input
                         type="email"
@@ -42,7 +61,9 @@ const LoginPage = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         className="login-input"
                     />
-                    <button type="submit" className="login-button">Увійти</button>
+                    <button type="submit" className="login-button">
+                        {isLoading ? 'Вхід...' : 'Увійти'}
+                    </button>
                 </form>
             </div>
         </div>

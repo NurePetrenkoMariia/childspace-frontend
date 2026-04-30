@@ -40,7 +40,6 @@
     justify-content: space-around;
     margin-bottom: 30px;
     margin-top: 17px;
-
 }
 
 .filter-input {
@@ -126,6 +125,7 @@
     overflow-y: auto;
     max-height: 65vh;
     padding-right: 5px;
+    max-width: 100%;
 }
 
 .admin-table thead {
@@ -336,4 +336,25 @@
 .admin-password-demands{
     color: #4F169E;
     font-size: 15px;
+}
+
+.column-resizer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 6px;      
+    height: 100%;
+    cursor: col-resize; 
+    background-color: transparent; 
+    z-index: 1;
+    transition: background-color 0.2s ease;
+}
+
+.column-resizer:hover,
+.column-resizer:active {
+    background-color: #6A35C2; 
+}
+
+.admin-table td {
+    white-space: nowrap;
 }

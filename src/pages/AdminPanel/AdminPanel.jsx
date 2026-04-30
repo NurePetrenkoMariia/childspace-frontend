@@ -14,7 +14,7 @@ const tableConfig = {
         keys: ['id', 'name', 'address', 'phone', 'email']
     },
     'Користувачі': {
-        headers: ['ID', 'Ім\'я', 'Прізвище', 'Email', 'ID Центру', 'Роль', 'Дії'],
+        headers: ['ID', 'Ім\'я', 'Прізвище', 'Email', 'Центр', 'Роль', 'Дії'],
         keys: ['id', 'firstName', 'lastName', 'email', 'centerId', 'role']
     },
     'Діти': {
@@ -26,11 +26,11 @@ const tableConfig = {
         keys: ['id', 'title', 'type', 'createdAt']
     },
     'Групи': {
-        headers: ['ID', 'Назва', 'Опис', 'ID Вчителя', 'ID Центру', 'Предмет', 'Дії'],
+        headers: ['ID', 'Назва', 'Опис', 'Вчитель', 'Центр', 'Предмет', 'Дії'],
         keys: ['id', 'name', 'description', 'teacherId', 'centerId', 'subjectId',]
     },
     'Гуртки': {
-        headers: ['ID', 'Назва', 'Опис', 'ID Центру', 'Фото', 'Дії'],
+        headers: ['ID', 'Назва', 'Опис', 'Центр', 'Фото', 'Дії'],
         keys: ['id', 'name', 'description', 'centerId', 'photoUrl']
     },
     'Заявки': {
@@ -60,6 +60,7 @@ const AdminPanel = () => {
     const [groupsList, setGroupsList] = useState([]);
     const [parentsList, setParentsList] = useState([]);
     const [teachersList, setTeachersList] = useState([]);
+    const [subjectsList, setSubjectsList] = useState([]);
 
     const [isGroupManagerOpen, setIsGroupManagerOpen] = useState(false);
     const [selectedGroupForManager, setSelectedGroupForManager] = useState(null);
@@ -115,6 +116,9 @@ const AdminPanel = () => {
 
             const teachersResponse = await api.get('/user/teachers');
             setTeachersList(teachersResponse.data);
+
+            const subjectsResponse = await api.get('/subject');
+            setSubjectsList(subjectsResponse.data);
         } catch (error) {
             console.error("Помилка завантаження списків", error);
         }
@@ -147,6 +151,11 @@ const AdminPanel = () => {
             return teacher ? `${teacher.firstName} ${teacher.lastName}` : item[key] || '—';
         }
 
+        if (key === 'centerId') {
+            const center = centersList.find(t => t.id === item[key]);
+            return center ? `${center.name} (${item[key]})` : item[key] || '—';
+        }
+
         const value = item[key];
 
         if (key.includes('Date') || key.includes('At')) {
@@ -155,7 +164,7 @@ const AdminPanel = () => {
 
         if (key === 'id' || key.includes('Id')) {
             if (!value) return '—';
-            return `${value}...`;
+            return `${value}`;
         }
 
         if (key === 'photoUrl' || key === 'photo') {
@@ -179,13 +188,21 @@ const AdminPanel = () => {
 
     const handleEditClick = (item) => {
         setEditingId(item.id);
-        setEditFormData(item);
+        let roleForEdit = item.role || "";
+        if (item.roles && Array.isArray(item.roles) && item.roles.length > 0) {
+            roleForEdit = item.roles[0];
+        }
+        setEditFormData({
+            ...item,
+            role: roleForEdit
+        });
     };
 
     const handleCancelClick = () => {
         setEditingId(null);
         setEditFormData({});
     };
+
     const handleSaveClick = async (id) => {
         try {
             let response;
@@ -204,6 +221,11 @@ const AdminPanel = () => {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
             } else {
+                let payload = { ...editFormData };
+                if (activeTab === 'Користувачі' && payload.role) {
+                    payload.roles = [payload.role];
+                    delete payload.role;
+                }
                 response = await api.put(`${endpointMap[activeTab]}/${id}`, editFormData);
             }
 
@@ -288,6 +310,29 @@ const AdminPanel = () => {
         }
     };
 
+    const startResizing = (e) => {
+        e.preventDefault();
+
+        const th = e.target.closest('th');
+        const startX = e.pageX;
+        const startWidth = th.offsetWidth;
+
+        const handleMouseMove = (moveEvent) => {
+            const newWidth = startWidth + (moveEvent.pageX - startX);
+
+            if (newWidth > 50 && newWidth < 500 ) {
+                th.style.width = `${newWidth}px`;
+            }
+        };
+
+        const handleMouseUp = () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+    
     const handleSearch = () => {
         if (!searchTerm) {
             setFilteredData(data);
@@ -424,9 +469,16 @@ const AdminPanel = () => {
                             <tr>
                                 {currentConfig.headers.map(h =>
                                     <th key={h}
-                                        style={h === 'Дії' ? { width: activeTab === 'Групи' ? '155px' : '95px' } : {}}
+                                        style={{
+                                            width: h === 'Дії' ? (activeTab === 'Групи' ? '155px' : '95px') : 'auto'
+                                        }}
+                                        className='resizable-th'
                                     >
                                         {h}
+                                        <div
+                                            className='column-resizer'
+                                            onMouseDown={startResizing}
+                                        />
                                     </th>)}
                             </tr>
                         </thead>
@@ -455,6 +507,58 @@ const AdminPanel = () => {
                                                         value={editFormData[key] ? editFormData[key].split('T')[0] : ''}
                                                         onChange={(e) => handleInputChange(e, key)}
                                                     />
+                                                ) : activeTab === 'Користувачі' && key === 'role' ? (
+                                                    <select
+                                                        className="edit-input"
+                                                        onChange={(e) => handleInputChange(e, key)}
+                                                        value={editFormData[key] || ""}
+                                                    >
+                                                        <option value="" disabled>Оберіть роль...</option>
+                                                        <option value="CenterAdmin">Адмін центру</option>
+                                                        <option value="Teacher">Вчитель</option>
+                                                        <option value="Parent">Батько/Мати</option>
+                                                    </select>
+                                                ) : activeTab === 'Діти' && key === 'parentId' ? (
+                                                    <select
+                                                        className="edit-input"
+                                                        onChange={(e) => handleInputChange(e, key)}
+                                                        value={editFormData[key] || ""}
+                                                    >
+                                                        <option value="" disabled>Оберіть представника</option>
+                                                        {parentsList.map(parent => (
+                                                            <option key={parent.id} value={parent.id}>
+                                                                {parent.firstName} {parent.lastName} ({parent.email})
+                                                            </option>
+                                                        )
+                                                        )}
+                                                    </select>
+                                                ) : activeTab === 'Групи' && key === 'subjectId' ? (
+                                                    <select
+                                                        className="edit-input"
+                                                        onChange={(e) => handleInputChange(e, key)}
+                                                        value={editFormData[key] || ""}
+                                                    >
+                                                        <option value="" disabled>Оберіть центр</option>
+                                                        {subjectsList.map(subject => (
+                                                            <option key={subject.id} value={subject.id}>
+                                                                {subject.name} (Центр: {subject.centerId})
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                
+                                                ) : activeTab === 'Групи' && key === 'teacherId' ? (
+                                                    <select
+                                                        className="edit-input"
+                                                        onChange={(e) => handleInputChange(e, key)}
+                                                        value={editFormData[key] || ""}
+                                                    >
+                                                        <option value="" disabled>Оберіть вчителя</option>
+                                                        {teachersList.map(teacher => (
+                                                            <option key={teacher.id} value={teacher.id}>
+                                                                {teacher.firstName} {teacher.lastName} ({teacher.email})
+                                                            </option>
+                                                        ))}
+                                                    </select>
                                                 ) : (
                                                     <input
                                                         type="text"
@@ -521,7 +625,7 @@ const AdminPanel = () => {
                                                 value={newData[key] || ""}
                                             >
                                                 <option value="" disabled>Оберіть роль...</option>
-                                                <option value="CenterAdmin">CenterAdmin</option>
+                                                <option value="CenterAdmin">Адмін центру</option>
                                                 <option value="Teacher">Вчитель (Teacher)</option>
                                                 <option value="Parent">Батько/Мати (Parent)</option>
                                             </select>
