@@ -130,21 +130,24 @@ const ProfilePage = () => {
                 </div>
                 {isParent && (
                     <div className='profile-card profile-children-card' >
-                        <h3 style={{color:'#4F169E'}}>Ваші діти</h3>
+                        <h3 style={{ color: '#4F169E' }}>Ваші діти</h3>
                         {userData.children && userData.children.length > 0 ? (
                             <div className="children-list">
                                 {userData.children.map((child, index) => (
                                     <div key={index} className="child-item">
-            
+
                                         <div className="child-info">
                                             <h4 className="child-name">{child.name}</h4>
                                             <p className="child-meta">
-                                                Вік: {child.age} {child.age === 1 ? 'рік' : (child.age > 1 && child.age < 5 ? 'роки' : 'років')}
+                                                <span className='detail-label'> Вік: </span>{child.age} {child.age === 1 ? 'рік' : (child.age > 1 && child.age < 5 ? 'роки' : 'років')}
                                             </p>
-                                            {child.groupName && (
-                                                <p className="child-meta">
-                                                    Група: {child.groupName}
-                                                </p>
+                                            {child.groupNames && child.groupNames.length > 0 && (
+                                                <div className="profile-groups-container">
+                                                    <span className="detail-label">Групи: </span>
+                                                    <span className="groups-list">
+                                                        {child.groupNames.join(', ')}
+                                                    </span>
+                                                </div>
                                             )}
                                         </div>
                                     </div>

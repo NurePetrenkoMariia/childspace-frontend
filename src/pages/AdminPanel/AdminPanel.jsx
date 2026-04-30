@@ -14,8 +14,8 @@ const tableConfig = {
         keys: ['id', 'name', 'address', 'phone', 'email']
     },
     'Користувачі': {
-        headers: ['ID', 'Ім\'я', 'Прізвище', 'Email', 'Центр', 'Роль', 'Дії'],
-        keys: ['id', 'firstName', 'lastName', 'email', 'centerId', 'role']
+        headers: ['ID', 'Ім\'я', 'Прізвище', 'Email', 'Центр', 'Телефон', 'Роль', 'Дії'],
+        keys: ['id', 'firstName', 'lastName', 'email', 'centerId', 'phoneNumber', 'role']
     },
     'Діти': {
         headers: ['ID', 'Ім\'я', 'Прізвище', 'Дата народження', 'Представник дитини', 'Нотатки', 'Дії'],
@@ -84,6 +84,7 @@ const AdminPanel = () => {
     };
 
     const tabs = ['Центри', 'Користувачі', 'Діти', 'Матеріали', 'Групи', 'Гуртки', 'Заявки'];
+    const phoneRegex = /^\+?[0-9]{10,13}$/;
 
     useEffect(() => {
         const fetchData = async () => {
@@ -206,6 +207,7 @@ const AdminPanel = () => {
     const handleSaveClick = async (id) => {
         try {
             let response;
+            let savedRole = null;
 
             if (activeTab === 'Гуртки') {
                 const formData = new FormData();
@@ -222,14 +224,30 @@ const AdminPanel = () => {
                 });
             } else {
                 let payload = { ...editFormData };
-                if (activeTab === 'Користувачі' && payload.role) {
-                    payload.roles = [payload.role];
-                    delete payload.role;
+                if (activeTab === 'Користувачі') {
+                    if (payload.role) {
+                        savedRole = payload.role;
+                        payload.roles = [payload.role];
+                        delete payload.role;
+                    }
+
+                    if (!payload.centerId || payload.centerId.toString().trim() === "") {
+                        payload.centerId = null;
+                    }
                 }
-                response = await api.put(`${endpointMap[activeTab]}/${id}`, editFormData);
+
+                const phoneValue = payload.phone || payload.phoneNumber;
+                if (phoneValue && !phoneRegex.test(phoneValue)) {
+                    alert("Введіть коректний номер телефону (наприклад: +380501234567)");
+                    return;
+                }
+                response = await api.put(`${endpointMap[activeTab]}/${id}`, payload);
             }
 
             const updatedItem = response.data;
+            if (activeTab === 'Користувачі' && savedRole) {
+                updatedItem.roles = [savedRole];
+            }
             const updatedDataList = data.map(item => item.id === id ? updatedItem : item);
 
             setData(updatedDataList);
@@ -291,6 +309,11 @@ const AdminPanel = () => {
                     }
                 }
 
+                if (payload.phone && !phoneRegex.test(payload.phone)) {
+                    alert("Введіть коректний номер телефону (наприклад: +380501234567)");
+                    return;
+                }
+
                 response = await api.post(endpointMap[activeTab], payload);
             }
             const savedItem = response.data;
@@ -320,7 +343,7 @@ const AdminPanel = () => {
         const handleMouseMove = (moveEvent) => {
             const newWidth = startWidth + (moveEvent.pageX - startX);
 
-            if (newWidth > 50 && newWidth < 500 ) {
+            if (newWidth > 50 && newWidth < 500) {
                 th.style.width = `${newWidth}px`;
             }
         };
@@ -332,7 +355,7 @@ const AdminPanel = () => {
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
     };
-    
+
     const handleSearch = () => {
         if (!searchTerm) {
             setFilteredData(data);
@@ -545,7 +568,7 @@ const AdminPanel = () => {
                                                             </option>
                                                         ))}
                                                     </select>
-                                                
+
                                                 ) : activeTab === 'Групи' && key === 'teacherId' ? (
                                                     <select
                                                         className="edit-input"
@@ -561,10 +584,11 @@ const AdminPanel = () => {
                                                     </select>
                                                 ) : (
                                                     <input
-                                                        type="text"
+                                                        type={key === 'phoneNumber' || key === 'phone' ? 'tel' : 'text'}
                                                         className="edit-input"
                                                         value={editFormData[key] || ''}
                                                         onChange={(e) => handleInputChange(e, key)}
+                                                        placeholder={key === 'phoneNumber' || key === 'phone' ? 'Наприклад, +380676767676 або 0676767676' : 'Введіть дані...'}
                                                     />
                                                 )
                                             ) : (
@@ -700,9 +724,10 @@ const AdminPanel = () => {
                                                 />
                                             ) : (
                                                 <input
-                                                    type="text"
+                                                    type={key === 'phoneNumber' || key === 'phone' ? 'tel' : 'text'}
                                                     onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
                                                     value={newData[key] || ""}
+                                                    placeholder={key === 'phoneNumber' || key === 'phone' ? 'Наприклад, +380676767676 або 0676767676' : 'Введіть дані...'}
                                                 />
                                             )}
                                     </div>
