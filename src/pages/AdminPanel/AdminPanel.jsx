@@ -149,12 +149,22 @@ const AdminPanel = () => {
 
         if (key === 'teacherId') {
             const teacher = teachersList.find(t => t.id === item[key]);
-            return teacher ? `${teacher.firstName} ${teacher.lastName}` : item[key] || '—';
+            return teacher ? `${teacher.firstName} ${teacher.lastName} (${teacher.email})` : item[key] || '—';
+        }
+
+         if (key === 'parentId') {
+            const parent = parentsList.find(t => t.id === item[key]);
+            return parent ? `${parent.firstName} ${parent.lastName} (${parent.email})` : item[key] || '—';
         }
 
         if (key === 'centerId') {
             const center = centersList.find(t => t.id === item[key]);
             return center ? `${center.name} (${item[key]})` : item[key] || '—';
+        }
+
+        if (key === 'subjectId') {
+            const subj = subjectsList.find(t => t.id === item[key]);
+            return subj ? `${subj.name}` : item[key] || '—';
         }
 
         const value = item[key];
@@ -555,16 +565,32 @@ const AdminPanel = () => {
                                                         )
                                                         )}
                                                     </select>
-                                                ) : activeTab === 'Групи' && key === 'subjectId' ? (
+                                                ) : key === 'centerId' ? (
                                                     <select
                                                         className="edit-input"
                                                         onChange={(e) => handleInputChange(e, key)}
                                                         value={editFormData[key] || ""}
                                                     >
                                                         <option value="" disabled>Оберіть центр</option>
-                                                        {subjectsList.map(subject => (
+                                                        {centersList.map(center => (
+                                                            <option key={center.id} value={center.id}>
+                                                                {center.name} ({center.id})
+                                                            </option>
+                                                        )
+                                                        )}
+                                                    </select>
+                                                ): activeTab === 'Групи' && key === 'subjectId' ? (
+                                                    <select
+                                                        className="edit-input"
+                                                        onChange={(e) => handleInputChange(e, key)}
+                                                        value={editFormData[key] || ""}
+                                                    >
+                                                        <option value="" disabled>Оберіть гурток</option>
+                                                        {subjectsList
+                                                        .filter(subject => subject.centerId === editFormData.centerId)
+                                                        .map(subject => (
                                                             <option key={subject.id} value={subject.id}>
-                                                                {subject.name} (Центр: {subject.centerId})
+                                                                {subject.name}
                                                             </option>
                                                         ))}
                                                     </select>
@@ -691,8 +717,7 @@ const AdminPanel = () => {
                                                     </option>
                                                 ))}
                                             </select>
-                                        )
-                                            : activeTab === 'Діти' && key === 'parentId' ? (
+                                        ): key === 'parentId' ? (
                                                 <select
                                                     className="filter-input"
                                                     onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
@@ -722,7 +747,20 @@ const AdminPanel = () => {
                                                     onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
                                                     value={newData[key] ? newData[key].split('T')[0] : ""}
                                                 />
-                                            ) : (
+                                            ) : activeTab === 'Групи' && key === 'subjectId' ? (
+                                                 <select
+                                                    className="filter-input"
+                                                    onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                    value={newData[key] || ""}
+                                                >
+                                                    <option value="">Оберіть предмет</option>
+                                                    {subjectsList.map(subject => (
+                                                        <option key={subject.id} value={subject.id}>
+                                                            {subject.name} (Центр: {subject.centerId})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ): (
                                                 <input
                                                     type={key === 'phoneNumber' || key === 'phone' ? 'tel' : 'text'}
                                                     onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
