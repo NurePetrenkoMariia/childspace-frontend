@@ -26,13 +26,15 @@ function App() {
             <Route path="/subject/:id" element={<SubjectDetailsPage />} />
 
             <Route element={<ProtectedRoute />}>
-              <Route path="/admin" element={<AdminPanel />} />
               <Route path="/chats" element={<ChatsPage />} />
               <Route path="/schedule" element={<SchedulePage />} />
               <Route path="/materials" element={<MaterialsDashboard />} />
               <Route path="/materials/subject/:id" element={<MaterialsPage />} />
               <Route path="/attendance" element={<AttendancePage />} />
               <Route path="/profile" element={<ProfilePage />} />
+            </Route>
+            <Route element={<ProtectedRoute allowedRoles={['SuperAdmin', 'CenterAdmin']} />}>
+              <Route path="/admin" element={<AdminPanel />} />
             </Route>
           </Route>
         </Routes>

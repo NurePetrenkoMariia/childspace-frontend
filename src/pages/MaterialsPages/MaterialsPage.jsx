@@ -7,7 +7,6 @@ import './MaterialsPage.css';
 const MaterialsPage = () => {
     const { id } = useParams();
     const { user } = useAuth();
-    console.log("Дані юзера:", user);
     const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
     const isTeacher = user?.roles?.includes('Teacher');
 

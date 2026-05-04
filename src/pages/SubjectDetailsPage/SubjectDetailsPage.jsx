@@ -22,6 +22,7 @@ const SubjectDetailsPage = () => {
     const [parentNameError, setParentNameError] = useState('');
     const [phoneError, setPhoneError] = useState('');
     const [childNameError, setChildNameError] = useState('');
+    const [childAgeError, setChildAgeError] = useState('');
 
     useEffect(() => {
         const fetchDetails = async () => {
@@ -65,6 +66,21 @@ const SubjectDetailsPage = () => {
             }
             else {
                 setChildNameError('');
+            }
+        }
+        if (name === 'childAge') {
+            const hasInvalidElements = /[^\d+]/.test(value);
+            if (hasInvalidElements) {
+                setChildAgeError('Вік може містити тільки цифри!');
+            }
+            else {
+                const age = parseInt(value, 10);
+
+                if (age < 1 || age > 100) {
+                    setChildAgeError('Вік має бути від 1 до 100 років');
+                } else {
+                    setChildAgeError('');
+                }
             }
         }
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -221,7 +237,11 @@ const SubjectDetailsPage = () => {
                                     onChange={handleChange}
                                     placeholder='Наприклад: 11'
                                 />
-                                //ДОРОБИТИ ПЕРЕВІРКУ НА ВІК
+                                {childAgeError && (
+                                    <span style={{ color: '#e74c3c', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                                        {childAgeError}
+                                    </span>
+                                )}
                             </div>
                             <div className="form-group">
                                 <label>Коментар (необов'язково)</label>
@@ -238,7 +258,7 @@ const SubjectDetailsPage = () => {
                                 </button>
                                 <button type='submit'
                                     className="apply-btn"
-                                    disabled={isSubmitting || !!phoneError || !!parentNameError || !!childNameError}
+                                    disabled={isSubmitting || !!phoneError || !!parentNameError || !!childNameError || !!childAgeError}
                                     style={{ flex: 1 }}>
                                     {isSubmitting ? 'Відправка...' : 'Відправити заявку'}
                                 </button>

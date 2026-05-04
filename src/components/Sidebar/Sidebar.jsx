@@ -12,9 +12,11 @@ import logoutIcon from '../../assets/icons/logout-48.png';
 import profileIcon from '../../assets/icons/profile.png';
 
 const Sidebar = () => {
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
+    const isGuest = !user;
 
     const handleLogout = async () => {
         await logout();
@@ -31,9 +33,11 @@ const Sidebar = () => {
                 <div className={getNavItemClass("/")} onClick={() => navigate("/")}>
                     <img src={homeIcon} alt="Home" className="sidebar-custom-icon" />
                 </div>
-                <div className={getNavItemClass("/admin")} onClick={() => navigate("/admin")}>
-                    <img src={adminIcon} alt="Admin" className="sidebar-custom-icon" />
-                </div>
+                {isAdmin && (
+                    <div className={getNavItemClass("/admin")} onClick={() => navigate("/admin")}>
+                        <img src={adminIcon} alt="Admin" className="sidebar-custom-icon" />
+                    </div>
+                )}
                 <div className={getNavItemClass("/schedule")} onClick={() => navigate("/schedule")}>
                     <img src={scheduleIcon} alt="Schedule" className="sidebar-custom-icon" />
                 </div>
@@ -47,15 +51,17 @@ const Sidebar = () => {
                     <img src={materialsIcon} alt="Materials" className="sidebar-custom-icon" />
                 </div>
             </div>
-            <div className='nav-icons-bottom'>
-
-                <div className={getNavItemClass("/profile")} onClick={() => navigate("/profile")}>
-                    <img src={profileIcon} alt="Profile" className="sidebar-custom-icon" />
+            {!isGuest && (
+                <div className='nav-icons-bottom'>
+                    <div className={getNavItemClass("/profile")} onClick={() => navigate("/profile")}>
+                        <img src={profileIcon} alt="Profile" className="sidebar-custom-icon" />
+                    </div>
+                    <button className="logout-btn" onClick={handleLogout}>
+                        <img src={logoutIcon} alt="Logout" className="sidebar-custom-icon" />
+                    </button>
                 </div>
-                <button className="logout-btn" onClick={handleLogout}>
-                    <img src={logoutIcon} alt="Logout" className="sidebar-custom-icon" />
-                </button>
-            </div>
+            )}
+
         </div>
     );
 };
