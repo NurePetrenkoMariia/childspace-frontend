@@ -21,7 +21,6 @@ const MaterialsPage = () => {
     const [newMaterial, setNewMaterial] = useState({
         title: '',
         description: '',
-        type: 0,
         file: null
     });
 
@@ -30,7 +29,6 @@ const MaterialsPage = () => {
         id: '',
         title: '',
         description: '',
-        type: 0,
         file: null
     });
 
@@ -93,12 +91,11 @@ const MaterialsPage = () => {
             formData.append('TeacherId', user.id);
             formData.append('Title', newMaterial.title);
             formData.append('Description', newMaterial.description || "");
-            formData.append('Type', newMaterial.type);
             formData.append('file', newMaterial.file);
             await api.post('/material', formData);
 
             setIsAddModalOpen(false);
-            setNewMaterial({ title: '', description: '', type: 0, file: null });
+            setNewMaterial({ title: '', description: '', file: null });
             setRefreshTrigger(prev => prev + 1);
         } catch (err) {
             console.error("Помилка при створенні матеріалу:", err);
@@ -124,7 +121,6 @@ const MaterialsPage = () => {
             id: mat.id,
             title: mat.title,
             description: mat.description || '',
-            type: mat.type,
             file: null
         });
         setIsEditModalOpen(true);
@@ -140,7 +136,6 @@ const MaterialsPage = () => {
             const formData = new FormData();
             formData.append('Title', editMaterial.title);
             formData.append('Description', editMaterial.description || "");
-            formData.append('Type', editMaterial.type);
 
             if (editMaterial.file) {
                 formData.append('file', editMaterial.file);
@@ -249,19 +244,6 @@ const MaterialsPage = () => {
                             </div>
 
                             <div className="form-group">
-                                <label>Тип матеріалу</label>
-                                <select
-                                    value={newMaterial.type}
-                                    onChange={e => setNewMaterial({ ...newMaterial, type: parseInt(e.target.value) })}
-                                >
-                                    <option value={0}>Домашнє завдання</option>
-                                    <option value={1}>Фото</option>
-                                    <option value={2}>Документ</option>
-                                    <option value={3}>Відео</option>
-                                </select>
-                            </div>
-
-                            <div className="form-group">
                                 <label >Опис (необов'язково)</label>
                                 <textarea
                                     value={newMaterial.description}
@@ -308,19 +290,7 @@ const MaterialsPage = () => {
                                     onChange={e => setEditMaterial({ ...editMaterial, title: e.target.value })}
                                 />
                             </div>
-                            <div className="form-group">
-                                <label>Тип матеріалу</label>
-                                <select
-                                    value={editMaterial.type}
-                                    onChange={e => setEditMaterial({ ...editMaterial, type: parseInt(e.target.value) })}
-                                >
-                                    <option value={0}>Домашнє завдання</option>
-                                    <option value={1}>Фото</option>
-                                    <option value={2}>Документ</option>
-                                    <option value={3}>Відео</option>
-
-                                </select>
-                            </div>
+                    
                             <div className="form-group">
                                 <label >Опис</label>
                                 <textarea
