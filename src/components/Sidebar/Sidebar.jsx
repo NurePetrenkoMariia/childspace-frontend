@@ -1,5 +1,7 @@
 import { useAuth } from '../../auth/AuthContext';
 import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import api from '../../../api/axios';
 import './Sidebar.css';
 
 import homeIcon from '../../assets/icons/home.png';
@@ -17,6 +19,24 @@ const Sidebar = () => {
     const location = useLocation();
     const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
     const isGuest = !user;
+    const [hasUnreadChats, setHasUnreadChats] = useState(false);
+
+    useEffect(() => {
+        const checkUnread = async () => {
+            try {
+                const response = await api.get('/chat/has-unread');
+                setHasUnreadChats(response.data.hasUnread);
+            } catch (error) {
+                console.error("Помилка перевірки непрочитаних повідомлень:", error);
+            }
+        };
+
+        checkUnread();
+
+        const intervalId = setInterval(checkUnread, 30000);
+        return () => clearInterval(intervalId);
+
+    }, []);
 
     const handleLogout = async () => {
         await logout();
@@ -46,6 +66,9 @@ const Sidebar = () => {
                 </div>
                 <div className={getNavItemClass("/chats")} onClick={() => navigate("/chats")}>
                     <img src={chatIcon} alt="Chat" className="sidebar-custom-icon" />
+                    {hasUnreadChats && (
+                        <span className="sidebar-unread-dot" title="Є нові повідомлення"></span>
+                    )}
                 </div>
                 <div className={getNavItemClass("/materials")} onClick={() => navigate("/materials")}>
                     <img src={materialsIcon} alt="Materials" className="sidebar-custom-icon" />

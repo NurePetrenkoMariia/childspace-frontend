@@ -80,7 +80,7 @@ const AttendancePage = () => {
             const response = await api.get(`/attendance/lesson/${lessonId}`);
             setAttendances(response.data);
         } catch (error) {
-            console.error("Помилка завантаження відвідуваності:", error);
+            console.error("Помилка завантаження в ідвідуваності:", error);
         }
     };
 

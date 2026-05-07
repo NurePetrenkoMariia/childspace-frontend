@@ -227,6 +227,12 @@ const ChatsPage = () => {
                 if (response.data.length < 50) {
                     setHasMore(false);
                 }
+
+                await api.post(`/chat/${activeChatId}/mark-read`);
+                setChatsList(prevChats => prevChats.map(chat => 
+                    chat.id === activeChatId ? { ...chat, hasUnreadMessages: false } : chat
+                ));
+
             } catch (error) {
                 console.error("Помилка завантаження повідомлень:", error);
             } finally {
@@ -404,17 +410,17 @@ const ChatsPage = () => {
     };
 
     const handleSaveMessageEdit = async (messageId) => {
-        if (editedMessageText.trim() === ""){
+        if (editedMessageText.trim() === "") {
             return;
         }
-        
+
         try {
             await api.put(`/message/${messageId}`, { content: editedMessageText });
-            
-            setMessages(prevMessages => prevMessages.map(msg => 
+
+            setMessages(prevMessages => prevMessages.map(msg =>
                 msg.id === messageId ? { ...msg, content: editedMessageText } : msg
             ));
-            
+
             setEditingMessageId(null);
         } catch (error) {
             console.error("Помилка редагування повідомлення:", error);
@@ -486,6 +492,9 @@ const ChatsPage = () => {
                                             ) : (
                                                 <>
                                                     <h3 className="chat-name">{chat.name}</h3>
+                                                    {chat.hasUnreadMessages && (
+                                                        <span className="unread-dot" title="Є нові повідомлення"></span>
+                                                    )}
                                                     {isAdmin && (
                                                         <div className='chat-actions-container'>
                                                             <button

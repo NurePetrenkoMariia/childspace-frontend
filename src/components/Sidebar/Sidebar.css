@@ -55,3 +55,14 @@
 .logout-btn:active{
     background-color: rgba(255, 255, 255, 0.2); 
 }
+
+.sidebar-unread-dot {
+    width: 10px;
+    height: 10px;
+    background-color: rgb(231, 52, 52); 
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 5px rgba(79, 22, 158, 0.4);
+    flex-shrink: 0; 
+    margin-top: 13px;
+}

@@ -92,6 +92,17 @@
     margin-bottom: 5px;
 }
 
+.unread-dot {
+    width: 10px;
+    height: 10px;
+    background-color: rgb(231, 52, 52);  
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 5px rgba(79, 22, 158, 0.4);
+    flex-shrink: 0; 
+    margin-top: 13px;
+}
+
 .chat-edit-icon-btn {
     background: none;
     border: none;
@@ -165,7 +176,7 @@
 
 .chat-preview {
     font-size: 13px;
-    color: #9384A6;
+    color: #7F6B94; ;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -266,7 +277,7 @@
 .message-time {
     text-align: right;
     font-size: 12px;
-    color: #9384A6;
+    color: #7F6B94;
     margin-top: 5px;
 }
 

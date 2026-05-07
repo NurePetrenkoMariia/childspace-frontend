@@ -10,7 +10,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
     }
 
 if (allowedRoles && allowedRoles.length > 0) {
-        const userRoles = user.roles
+        const userRoles = user.roles;
 
         const hasRequiredRole = allowedRoles.some(role => userRoles.includes(role));
 
