@@ -333,7 +333,7 @@
     font-size: 24px;
 }
 
-.admin-password-demands{
+.admin-password-demands {
     color: #4F169E;
     font-size: 15px;
 }
@@ -342,19 +342,70 @@
     position: absolute;
     top: 0;
     right: 0;
-    width: 6px;      
+    width: 6px;
     height: 100%;
-    cursor: col-resize; 
-    background-color: transparent; 
+    cursor: col-resize;
+    background-color: transparent;
     z-index: 1;
     transition: background-color 0.2s ease;
 }
 
 .column-resizer:hover,
 .column-resizer:active {
-    background-color: #6A35C2; 
+    background-color: #6A35C2;
 }
 
 .admin-table td {
     white-space: nowrap;
+}
+
+.user-create-success-header {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.user-create-success-header-check {
+    font-size: 35px;
+    margin-bottom: 10px;
+}
+
+.user-create-success-data {
+    background-color: #FDFBFF;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #EDE4F5;
+    margin-bottom: 25px;
+}
+
+.user-create-success-note {
+    color: #7F6B94;
+    text-align: center;
+}
+
+.user-create-success-data span {
+    color: #7F6B94;
+    font-size: 14px;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.user-create-success-data-email{
+    font-weight: 500;
+}
+
+.user-create-success-data-password{
+    background-color: #F5F0FF;
+    font-weight: 700;
+    font-size: 22px;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+    font-family: monospace;
+    letter-spacing: 2px;
+}
+
+.confirm-close-password{
+    color: #7F6B94;
+    margin-bottom: 25px;
+    line-height: 1.5;
 }

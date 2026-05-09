@@ -22,8 +22,8 @@ const tableConfig = {
         keys: ['id', 'firstName', 'lastName', 'birthDate', 'parentId', 'notes']
     },
     'Матеріали': {
-        headers: ['ID', 'Заголовок', 'Тип', 'Створено', 'Дії'],
-        keys: ['id', 'title', 'type', 'createdAt']
+        headers: ['ID', 'Заголовок', 'Створено', 'Дії'],
+        keys: ['id', 'title', 'createdAt']
     },
     'Групи': {
         headers: ['ID', 'Назва', 'Опис', 'Вчитель', 'Центр', 'Предмет', 'Дії'],
@@ -72,6 +72,9 @@ const AdminPanel = () => {
 
     const [isRemoveChildModalOpen, setIsRemoveChildModalOpen] = useState(false);
     const [childToRemove, setChildToRemove] = useState(null);
+
+    const [newUserDetails, setNewUserDetails] = useState(null);
+    const [isConfirmClosePasswordOpen, setIsConfirmClosePasswordOpen] = useState(false);
 
     const endpointMap = {
         'Центри': '/center',
@@ -152,7 +155,7 @@ const AdminPanel = () => {
             return teacher ? `${teacher.firstName} ${teacher.lastName} (${teacher.email})` : item[key] || '—';
         }
 
-         if (key === 'parentId') {
+        if (key === 'parentId') {
             const parent = parentsList.find(t => t.id === item[key]);
             return parent ? `${parent.firstName} ${parent.lastName} (${parent.email})` : item[key] || '—';
         }
@@ -312,11 +315,6 @@ const AdminPanel = () => {
                     if (!payload.centerId || payload.centerId.trim() === "") {
                         payload.centerId = null;
                     }
-
-                    if (!payload.password) {
-                        alert("Пароль є обов'язковим для створення користувача!");
-                        return;
-                    }
                 }
 
                 if (payload.phone && !phoneRegex.test(payload.phone)) {
@@ -330,13 +328,21 @@ const AdminPanel = () => {
             if (activeTab === 'Користувачі') {
                 savedItem.role = (savedItem.roles && savedItem.roles.length > 0)
                     ? savedItem.roles[0]
-                    : payload.roles[0];
+                    : newData.role;
             }
 
             const updatedData = ([...data, savedItem]);
             setData(updatedData);
             setFilteredData(updatedData);
             setIsModalOpen(false);
+
+            if (activeTab == 'Користувачі' && savedItem.generatedPassword) {
+                setNewUserDetails({
+                    email: savedItem.email,
+                    password: savedItem.generatedPassword,
+                    name: `${savedItem.firstName} ${savedItem.lastName}`
+                });
+            }
         } catch (error) {
             console.error("Помилка при створенні:", error.response?.data || error.message);
             alert("Не вдалося створити запис. Перевірте обов'язкові поля.");
@@ -579,7 +585,7 @@ const AdminPanel = () => {
                                                         )
                                                         )}
                                                     </select>
-                                                ): activeTab === 'Групи' && key === 'subjectId' ? (
+                                                ) : activeTab === 'Групи' && key === 'subjectId' ? (
                                                     <select
                                                         className="edit-input"
                                                         onChange={(e) => handleInputChange(e, key)}
@@ -587,12 +593,12 @@ const AdminPanel = () => {
                                                     >
                                                         <option value="" disabled>Оберіть гурток</option>
                                                         {subjectsList
-                                                        .filter(subject => subject.centerId === editFormData.centerId)
-                                                        .map(subject => (
-                                                            <option key={subject.id} value={subject.id}>
-                                                                {subject.name}
-                                                            </option>
-                                                        ))}
+                                                            .filter(subject => subject.centerId === editFormData.centerId)
+                                                            .map(subject => (
+                                                                <option key={subject.id} value={subject.id}>
+                                                                    {subject.name}
+                                                                </option>
+                                                            ))}
                                                     </select>
 
                                                 ) : activeTab === 'Групи' && key === 'teacherId' ? (
@@ -717,83 +723,59 @@ const AdminPanel = () => {
                                                     </option>
                                                 ))}
                                             </select>
-                                        ): key === 'parentId' ? (
-                                                <select
-                                                    className="filter-input"
-                                                    onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
-                                                    value={newData[key] || ""}
-                                                >
-                                                    <option value="">Оберіть представника</option>
-                                                    {parentsList.map(parent => (
-                                                        <option key={parent.id} value={parent.id}>
-                                                            {parent.firstName} {parent.lastName} ({parent.email})
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            ) : activeTab == 'Гуртки' && key == 'photoUrl' ? (
-                                                <div className='file-upload-group'>
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={(e) => setNewData({ ...newData, photo: e.target.files[0] })}
-                                                    />
-                                                    {newData.photo && <p className="file-name-hint">Обрано: {newData.photo.name}</p>}
-                                                </div>
+                                        ) : key === 'parentId' ? (
+                                            <select
+                                                className="filter-input"
+                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                value={newData[key] || ""}
+                                            >
+                                                <option value="">Оберіть представника</option>
+                                                {parentsList.map(parent => (
+                                                    <option key={parent.id} value={parent.id}>
+                                                        {parent.firstName} {parent.lastName} ({parent.email})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : activeTab == 'Гуртки' && key == 'photoUrl' ? (
+                                            <div className='file-upload-group'>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => setNewData({ ...newData, photo: e.target.files[0] })}
+                                                />
+                                                {newData.photo && <p className="file-name-hint">Обрано: {newData.photo.name}</p>}
+                                            </div>
 
-                                            ) : key === 'birthDate' ? (
-                                                <input
-                                                    type="date"
-                                                    className="filter-input"
-                                                    onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
-                                                    value={newData[key] ? newData[key].split('T')[0] : ""}
-                                                />
-                                            ) : activeTab === 'Групи' && key === 'subjectId' ? (
-                                                 <select
-                                                    className="filter-input"
-                                                    onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
-                                                    value={newData[key] || ""}
-                                                >
-                                                    <option value="">Оберіть предмет</option>
-                                                    {subjectsList.map(subject => (
-                                                        <option key={subject.id} value={subject.id}>
-                                                            {subject.name} (Центр: {subject.centerId})
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            ): (
-                                                <input
-                                                    type={key === 'phoneNumber' || key === 'phone' ? 'tel' : 'text'}
-                                                    onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
-                                                    value={newData[key] || ""}
-                                                    placeholder={key === 'phoneNumber' || key === 'phone' ? 'Наприклад, +380676767676 або 0676767676' : 'Введіть дані...'}
-                                                />
-                                            )}
+                                        ) : key === 'birthDate' ? (
+                                            <input
+                                                type="date"
+                                                className="filter-input"
+                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                value={newData[key] ? newData[key].split('T')[0] : ""}
+                                            />
+                                        ) : activeTab === 'Групи' && key === 'subjectId' ? (
+                                            <select
+                                                className="filter-input"
+                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                value={newData[key] || ""}
+                                            >
+                                                <option value="">Оберіть предмет</option>
+                                                {subjectsList.map(subject => (
+                                                    <option key={subject.id} value={subject.id}>
+                                                        {subject.name} (Центр: {subject.centerId})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <input
+                                                type={key === 'phoneNumber' || key === 'phone' ? 'tel' : 'text'}
+                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                value={newData[key] || ""}
+                                                placeholder={key === 'phoneNumber' || key === 'phone' ? 'Наприклад, +380676767676 або 0676767676' : 'Введіть дані...'}
+                                            />
+                                        )}
                                     </div>
                                 ))}
-
-                            {activeTab === 'Користувачі' && (
-                                <>
-                                    <div className="form-group">
-                                        <label>Пароль</label>
-                                        <input
-                                            type="text"
-                                            className="filter-input"
-                                            onChange={(e) => setNewData({ ...newData, password: e.target.value })}
-                                            value={newData.password || ""}
-                                            placeholder="Введіть надійний пароль"
-                                        />
-                                    </div>
-                                    <div className='admin-password-demands'>
-                                        <p>Пароль має містити: </p>
-                                        <ul >
-                                            <li>Мінімум 6 символів</li>
-                                            <li>Хоча б 1 спец. символ (наприклад: !, @, #, _);</li>
-                                            <li>Хоча б 1 цифру (0-9)</li>
-                                            <li>Хоча б 1 велику літеру (A-Z)</li>
-                                        </ul>
-                                    </div>
-                                </>
-                            )}
                         </div>
                         <div className="modal-actions">
                             <button className="confirm-btn" onClick={handleCreateSave}>Зберегти</button>
@@ -954,6 +936,94 @@ const AdminPanel = () => {
                                 }}
                             >
                                 Видалити
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {newUserDetails && (
+                <div className="modal-overlay" style={{ zIndex: 2000 }}>
+                    <div className="modal-content" style={{ maxWidth: '450px' }} onClick={e => e.stopPropagation()}>
+                        <div className='user-create-success-header'>
+                            <div className='user-create-success-header-check'>✅</div>
+                            <h2 className="modal-title" style={{ color: '#4F169E', margin: 0 }}>Користувача створено!</h2>
+                        </div>
+
+
+                        <p className='user-create-success-note' >
+                            Обов'язково скопіюйте цей пароль та передайте його користувачу <b>{newUserDetails.name}</b>. З міркувань безпеки, ви більше не зможете його побачити.
+                        </p>
+
+                        <div className='user-create-success-data'>
+                            <div style={{ marginBottom: '15px' }}>
+                                <span>Email:</span>
+                                <div className='user-create-success-data-email'>{newUserDetails.email}</div>
+                            </div>
+                            <div>
+                                <span >Пароль:</span>
+                                <div className='user-create-success-data-password' >
+                                    {newUserDetails.password}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className='modal-actions'>
+                            <button className='confirm-btn'
+                                style={{ flex: 1, backgroundColor: '#4F169E', color: 'white' }}
+                                onClick={() => {
+                                    navigator.clipboard.writeText(newUserDetails.password);
+                                    alert("Пароль скопійовано!");
+                                }}>
+                                Скопіювати пароль
+                            </button>
+                            <button className='cancel-btn'
+                                style={{ flex: 1, padding: '12px' }}
+                                onClick={() => setIsConfirmClosePasswordOpen(true)}
+                            >
+                                Закрити
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {isConfirmClosePasswordOpen && (
+                <div className="modal-overlay" style={{ zIndex: 3000 }} onClick={() => setIsConfirmClosePasswordOpen(false)}>
+                    <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center', padding: '30px 20px' }} onClick={e => e.stopPropagation()}>
+                        
+                        <div className='warning-sign-container'>
+                            <span className='warning-sign'>⚠️</span>
+                        </div>
+
+                        <h2 style={{ color: '#2D3748', marginBottom: '10px', fontSize: '20px' }}>
+                            Ви впевнені?
+                        </h2>
+
+                        <p className='confirm-close-password' >
+                            Ви точно скопіювали та зберегли пароль? Після закриття цього вікна <b>відновити його буде неможливо</b>, і доведеться скидати пароль.
+                        </p>
+
+                        <div className="modal-actions" style={{ justifyContent: 'center', gap: '15px' }} >
+                            <button 
+                                className="cancel-btn" 
+                                onClick={() => setIsConfirmClosePasswordOpen(false)}
+                                style={{ flex: 1}}
+                            >
+                                Ні, повернутися
+                            </button>
+                            <button 
+                                className="confirm-btn" 
+                                onClick={() => {
+                                    setIsConfirmClosePasswordOpen(false);
+                                    setNewUserDetails(null); 
+                                }}
+                                style={{ 
+                                    flex: 1,
+                                    backgroundColor: '#4F169E', 
+                                    color: 'white',
+                                    border: 'none'
+                                }}
+                            >
+                                Так, закрити
                             </button>
                         </div>
                     </div>
