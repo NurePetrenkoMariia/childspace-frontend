@@ -94,8 +94,14 @@ const AdminPanel = () => {
             setLoading(true);
             try {
                 const response = await api.get(endpointMap[activeTab]);
-                setData(response.data);
-                setFilteredData(response.data);
+                let loadedData = response.data;
+                if (activeTab === 'Користувачі') {
+                    loadedData = loadedData.filter(user =>
+                        !(user.roles && user.roles.includes('SuperAdmin'))
+                    );
+                }
+                setData(loadedData);
+                setFilteredData(loadedData);
                 setSearchTerm("");
             } catch (error) {
                 console.error(`Помилка завантаження ${activeTab}:`, error);
@@ -989,7 +995,7 @@ const AdminPanel = () => {
             {isConfirmClosePasswordOpen && (
                 <div className="modal-overlay" style={{ zIndex: 3000 }} onClick={() => setIsConfirmClosePasswordOpen(false)}>
                     <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center', padding: '30px 20px' }} onClick={e => e.stopPropagation()}>
-                        
+
                         <div className='warning-sign-container'>
                             <span className='warning-sign'>⚠️</span>
                         </div>
@@ -1003,22 +1009,22 @@ const AdminPanel = () => {
                         </p>
 
                         <div className="modal-actions" style={{ justifyContent: 'center', gap: '15px' }} >
-                            <button 
-                                className="cancel-btn" 
+                            <button
+                                className="cancel-btn"
                                 onClick={() => setIsConfirmClosePasswordOpen(false)}
-                                style={{ flex: 1}}
+                                style={{ flex: 1 }}
                             >
                                 Ні, повернутися
                             </button>
-                            <button 
-                                className="confirm-btn" 
+                            <button
+                                className="confirm-btn"
                                 onClick={() => {
                                     setIsConfirmClosePasswordOpen(false);
-                                    setNewUserDetails(null); 
+                                    setNewUserDetails(null);
                                 }}
-                                style={{ 
+                                style={{
                                     flex: 1,
-                                    backgroundColor: '#4F169E', 
+                                    backgroundColor: '#4F169E',
                                     color: 'white',
                                     border: 'none'
                                 }}

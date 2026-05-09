@@ -116,14 +116,16 @@ const ChatsPage = () => {
             setIsLoadingChats(true);
             try {
                 const response = await api.get('/chat');
-                const formattedChats = response.data.map(chat => ({
-                    ...chat,
-                    lastMessage: chat.lastMessage || null,
-                    participants: chat.participantsCount || 0
-                }));
 
-                formattedChats.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
+                const formattedChats = response.data.map(chat => {
+                    const isMyLastMessage = chat.lastMessage && chat.lastMessage.senderId === user?.id;
+                    return {
+                        ...chat,
+                        lastMessage: chat.lastMessage || null,
+                        participants: chat.participantsCount || 0,
+                        hasUnreadMessages: isMyLastMessage ? false : chat.hasUnreadMessages
+                    };
+                });
                 setChatsList(formattedChats);
 
                 if (formattedChats.length > 0) {
@@ -229,7 +231,7 @@ const ChatsPage = () => {
                 }
 
                 await api.post(`/chat/${activeChatId}/mark-read`);
-                setChatsList(prevChats => prevChats.map(chat => 
+                setChatsList(prevChats => prevChats.map(chat =>
                     chat.id === activeChatId ? { ...chat, hasUnreadMessages: false } : chat
                 ));
 
@@ -259,15 +261,29 @@ const ChatsPage = () => {
             setNewMessageText("");
             scrollToBottom();
 
-            setChatsList(prevChats => prevChats.map(chat => {
-                if (chat.id === activeChatId) {
-                    return {
-                        ...chat,
-                        lastMessage: newMsg
-                    };
-                }
-                return chat;
-            }));
+            setChatsList(prevChats => {
+                const updatedChats = prevChats.map(chat => {
+                    if (chat.id === activeChatId) {
+                        return {
+                            ...chat,
+                            lastMessage: newMsg 
+                        };
+                    }
+                    return chat;
+                });
+
+                return updatedChats.sort((a, b) => {
+                    const dateA = a.lastMessage && a.lastMessage.createdAt !== "Чат створено"
+                        ? new Date(a.lastMessage.createdAt)
+                        : new Date(a.createdAt);
+
+                    const dateB = b.lastMessage && b.lastMessage.createdAt !== "Чат створено"
+                        ? new Date(b.lastMessage.createdAt)
+                        : new Date(b.createdAt);
+
+                    return dateB - dateA;
+                });
+            });
         } catch (error) {
             console.error("Помилка відправки:", error);
             alert("Не вдалося відправити повідомлення.");
