@@ -243,6 +243,20 @@ const SchedulePage = () => {
     };
 
     const handleSaveEdit = async () => {
+
+        if (!editFormData.startTime || !editFormData.endTime) {
+            alert("Будь ласка, вкажіть і час початку, і час кінця заняття.");
+            return;
+        }
+
+        const start = new Date(editFormData.startTime);
+        const end = new Date(editFormData.endTime);
+
+        if (start >= end) {
+            alert("Помилка: Час початку не може бути пізніше (або дорівнювати) часу кінця!");
+            return;
+        }
+
         try {
             await api.put(`/schedule/${editingEvent.id}`, editFormData);
             setIsEditMode(false);
@@ -281,6 +295,20 @@ const SchedulePage = () => {
     };
 
     const handleSaveNewRecord = async () => {
+
+        if (!addFormData.startTime || !addFormData.endTime) {
+            alert("Будь ласка, вкажіть і час початку, і час кінця заняття.");
+            return; 
+        }
+
+        const start = new Date(addFormData.startTime);
+        const end = new Date(addFormData.endTime);
+
+        if (start >= end) {
+            alert("Помилка: Час початку не може бути пізніше (або дорівнювати) часу кінця!");
+            return; 
+        }
+
         try {
             await api.post('/schedule', addFormData);
             setIsAddModalOpen(false);
@@ -291,6 +319,14 @@ const SchedulePage = () => {
             alert("Не вдалося створити заняття.");
         }
     };
+
+    const availableGroupsForEdit = editFormData.subjectId 
+        ? groupsList.filter(g => g.subjectId === editFormData.subjectId) 
+        : [];
+
+    const availableGroupsForAdd = addFormData.subjectId 
+        ? groupsList.filter(g => g.subjectId === addFormData.subjectId) 
+        : [];
 
     return (
         <div className="schedule-page-container">
@@ -419,9 +455,10 @@ const SchedulePage = () => {
                                     <select
                                         value={editFormData.groupId}
                                         onChange={e => setEditFormData({ ...editFormData, groupId: e.target.value })}
+                                        disabled={!editFormData.subjectId}
                                     >
-                                        <option value="">Оберіть групу</option>
-                                        {groupsList.map(g => (
+                                        <option value="">{editFormData.subjectId ? "Оберіть групу" : "Спочатку оберіть предмет"}</option>
+                                        {availableGroupsForEdit.map(g => (
                                             <option key={g.id} value={g.id}>{g.name} ({g.id.substring(0, 8)})</option>
                                         ))}
                                     </select>
@@ -537,9 +574,10 @@ const SchedulePage = () => {
                                 <select
                                     value={addFormData.groupId}
                                     onChange={e => setAddFormData({ ...addFormData, groupId: e.target.value })}
+                                    disabled={!addFormData.subjectId}
                                 >
-                                    <option value="">Оберіть групу</option>
-                                    {groupsList.map(g => (
+                                    <option value="">{addFormData.subjectId ? "Оберіть групу" : "Спочатку оберіть предмет"}</option>
+                                    {availableGroupsForAdd.map(g => (
                                         <option key={g.id} value={g.id}>{g.name} ({g.id.substring(0, 8)})</option>
                                     ))}
                                 </select>
