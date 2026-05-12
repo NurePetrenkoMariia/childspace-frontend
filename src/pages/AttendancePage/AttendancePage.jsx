@@ -17,6 +17,7 @@ const AttendancePage = () => {
     const [selectedLessonId, setSelectedLessonId] = useState('');
 
     const [isLoading, setIsLoading] = useState(false);
+    const [notes, setNotes] = useState({});
 
     useEffect(() => {
         const fetchFilterData = async () => {
@@ -79,6 +80,12 @@ const AttendancePage = () => {
         try {
             const response = await api.get(`/attendance/lesson/${lessonId}`);
             setAttendances(response.data);
+
+            const fetchedNotes = {};
+            response.data.forEach(record => {
+                fetchedNotes[record.childId] = record.note || "";
+            });
+            setNotes(fetchedNotes);
         } catch (error) {
             console.error("Помилка завантаження в ідвідуваності:", error);
         }
@@ -102,12 +109,13 @@ const AttendancePage = () => {
             return;
         }
         const existingRecord = attendances.find(a => a.childId === childId);
+        const currentNote = notes[childId] || "";
 
         try {
             if (existingRecord) {
                 const response = await api.put(`/attendance/${existingRecord.id}`, {
                     status: status,
-                    note: existingRecord.note
+                    note: currentNote
                 });
                 setAttendances((prev) => {
                     return prev.map((attendance) => {
@@ -123,7 +131,7 @@ const AttendancePage = () => {
                     lessonId: selectedLessonId,
                     childId: childId,
                     status: status,
-                    note: ""
+                    note: currentNote
                 });
                 setAttendances(prev => [...prev, response.data]);
             }
@@ -136,6 +144,55 @@ const AttendancePage = () => {
     const formatLessonDate = (dateString) => {
         const d = new Date(dateString);
         return d.toLocaleDateString('uk-UA') + ', ' + d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const handleSaveAllChanges = async() => {
+        if(!selectedLessonId){
+            return
+        }
+
+        const childrenWithMissingStatus = childrenList.filter(child => {
+            const existingRecord = attendances.find(a => a.childId === child.id);
+            const currentNote = notes[child.id] || "";
+            
+            return currentNote.trim() !== "" && !existingRecord; 
+        });
+
+        if (childrenWithMissingStatus.length > 0) {
+            const names = childrenWithMissingStatus.map(c => `${c.lastName} ${c.firstName}`).join(', ');
+            alert(`⚠️ Помилка збереження!\n\nВи додали помітку, але не вказали статус (Був/Не був) для:\n${names}.\n\nБудь ласка, оберіть статус перед збереженням.`);
+            return; 
+        }
+
+        setIsLoading(true);
+        
+        try {
+            const promises = childrenList.map(child => {
+                const existingRecord = attendances.find(a => a.childId === child.id);
+                const currentNote = notes[child.id] || "";
+
+                if (existingRecord && (existingRecord.note || "") !== currentNote) {
+                    return api.put(`/attendance/${existingRecord.id}`, {
+                        status: existingRecord.status,
+                        note: currentNote
+                    });
+                }
+                return null; 
+            }).filter(p => p !== null); 
+
+            if (promises.length > 0) {
+                await Promise.all(promises);
+                await fetchAttendances(selectedLessonId); 
+            }
+            
+            alert("Всі нотатки успішно збережено!");
+            
+        } catch (error) {
+            console.error("Помилка масового збереження:", error);
+            alert("Сталася помилка при збереженні.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -213,6 +270,7 @@ const AttendancePage = () => {
                     {isLoading ? (
                         <p style={{ textAlign: 'center', padding: '20px' }}>Завантаження...</p>
                     ) : (
+                        <>
                         <div className='table-rounded-wrapper'>
                             <table className='attendance-table'>
                                 <thead>
@@ -220,6 +278,7 @@ const AttendancePage = () => {
                                         <th>№</th>
                                         <th>Прізвище, ім'я дитини</th>
                                         <th>Присутність</th>
+                                        <th>Нотатка</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -238,22 +297,31 @@ const AttendancePage = () => {
                                                 <td className='child-checkboxes'>
                                                     <label className='checkbox-label'>
                                                         Був/була
-                                                        <input type="radio"
+                                                        <input type='radio'
                                                             name={`attendance-${child.id}`}
                                                             checked={isPresent}
                                                             onChange={() => handleAttendanceChange(child.id, 0)}
                                                         />
-                                                        <span className="custom-radio"></span>
+                                                        <span className='custom-radio'></span>
                                                     </label>
                                                     <label className='checkbox-label'>
                                                         Не був/не була
-                                                        <input type="radio"
+                                                        <input type='radio'
                                                             name={`attendance-${child.id}`}
                                                             checked={isAbsent}
                                                             onChange={() => handleAttendanceChange(child.id, 1)}
                                                         />
-                                                        <span className="custom-radio"></span>
+                                                        <span className='custom-radio'></span>
                                                     </label>
+                                                </td>
+                                                <td className='child-note'>
+                                                    <textarea
+                                                        className='attendance-note-textarea'
+                                                        placeholder='Додати нотатку...'
+                                                        value={notes[child.id] || ''}
+                                                        onChange={(e) => setNotes(prev => ({ ...prev, [child.id]: e.target.value }))}
+                                                        rows={2}
+                                                    />
                                                 </td>
                                             </tr>
                                         );
@@ -265,6 +333,15 @@ const AttendancePage = () => {
                                 </tbody>
                             </table>
                         </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end'}}>
+                            <button 
+                                className="add-entity-btn" 
+                                onClick={handleSaveAllChanges}
+                            >
+                                Зберегти зміни
+                            </button>
+                        </div>
+                        </>
                     )}
                 </div>
             </div>

@@ -70,3 +70,26 @@
     margin: 0 10px; 
     cursor: pointer;
 }
+
+.attendance-note-textarea{
+    width: 85%;
+    min-width: 200px;
+    min-height: 45px;
+    padding: 10px 14px;
+    border: 1px solid #EDE4F5;
+    border-radius: 12px;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    color: #4F169E;
+    font-weight: 500;
+    background-color: #FDFBFF;
+    resize: vertical;
+    line-height: 1.4;
+}
+
+.attendance-note-textarea:focus {
+    border-color: #A779E6;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(167, 121, 230, 0.1);
+}
