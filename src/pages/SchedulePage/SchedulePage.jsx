@@ -162,8 +162,8 @@ const SchedulePage = () => {
 
     const dayNames = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота", "Неділя"];
 
-    const getEventForSlot = (dayDate, hour) => {
-        return schedules.find(sch => {
+    const getEventsForSlot = (dayDate, hour) => {
+        return schedules.filter(sch => {
             const [datePart, timePart] = sch.startTime.split("T");
             const schHour = parseInt(timePart.split(":")[0]);
 
@@ -356,15 +356,21 @@ const SchedulePage = () => {
                                 <tr key={hour}>
                                     <td className="time-cell">{hour}:00</td>
                                     {weekDays.map((day, index) => {
-                                        const event = getEventForSlot(day, hour);
+                                        const events = getEventsForSlot(day, hour);
                                         return (
                                             <td key={index} className="event-cell">
-                                                {event && (
-                                                    <div className="event-pill"
-                                                        onClick={() => setSelectedEvent(event)}
-                                                        style={{ cursor: 'pointer' }}
-                                                    >
-                                                        {event.subjectName}
+                                                {events.length > 0 && (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                        {events.map((event) => (
+                                                            <div
+                                                                key={event.id}
+                                                                className="event-pill"
+                                                                onClick={() => setSelectedEvent(event)}
+                                                                style={{ cursor: 'pointer' }}
+                                                            >
+                                                                {event.subjectName}
+                                                            </div>
+                                                        ))}
                                                     </div>
                                                 )}
                                             </td>
