@@ -31,7 +31,7 @@ const SubjectGrid = ({ titleComponent, getBaseRedirectUrl, centerId }) => {
             {loading ? (
                 <p>Завантаження занять...</p>
             ) : (
-                <div className="courses-grid">
+                <div className='courses-grid'>
                     {subjects.map((subject) => {
                         const redirectUrl = getBaseRedirectUrl(subject.id);
                         return (

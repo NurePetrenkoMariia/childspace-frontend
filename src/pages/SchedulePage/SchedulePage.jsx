@@ -87,12 +87,8 @@ const SchedulePage = () => {
             try {
                 let response;
 
-                if (user.roles.includes('Teacher')) {
+                if (user.roles.includes('Teacher') || user.roles.includes('Parent')) {
                     response = await api.get('/schedule/my');
-                }
-
-                else if (user.roles.includes('Parent')) {
-                    response = await api.get('/schedule/children');
                 }
 
                 else if (user.roles.includes('SuperAdmin') || user.roles.includes('CenterAdmin')) {
@@ -500,7 +496,7 @@ const SchedulePage = () => {
                             <div className="form-group">
                                 <label>Час початку та кінця</label>
                                 {isEditMode ? (
-                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                    <div className='datetime-inputs-group'>
                                         <input
                                             type="datetime-local"
                                             value={editFormData.startTime}
@@ -604,7 +600,7 @@ const SchedulePage = () => {
                             </div>
                             <div className="form-group">
                                 <label>Час початку та кінця</label>
-                                <div style={{ display: 'flex', gap: '10px' }}>
+                                <div className='datetime-inputs-group'>
                                     <input
                                         type="datetime-local"
                                         value={addFormData.startTime}

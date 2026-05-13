@@ -8,3 +8,7 @@ body {
   overflow: hidden;
   font-family: var(--font-main);
 }
+
+body, html {
+    background-color: #EDE4F5;
+}

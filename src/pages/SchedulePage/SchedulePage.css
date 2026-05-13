@@ -105,30 +105,30 @@
 }
 
 .edit-schedule-btn:hover {
-    background-color: #5D1DBF; 
-    transform: translateY(-2px); 
-    box-shadow: 0 6px 15px rgba(79, 22, 158, 0.4); 
+    background-color: #5D1DBF;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(79, 22, 158, 0.4);
 }
 
 .table-container {
     flex: 1;
     overflow: auto;
-    border: 1px solid #4B2C92; 
+    border: 1px solid #4B2C92;
     border-radius: 15px;
     background-color: white;
 }
 
 .schedule-table {
     width: 100%;
-    border-collapse: collapse; 
+    border-collapse: collapse;
     text-align: center;
 }
 
-.schedule-table th, 
+.schedule-table th,
 .schedule-table td {
-    border: 1px solid #4B2C92; 
+    border: 1px solid #4B2C92;
     padding: 8px;
-    height: 50px; 
+    height: 50px;
 }
 
 .schedule-table th {
@@ -136,11 +136,11 @@
     color: #4B2C92;
     font-weight: 700;
     padding: 15px 5px;
-    width: 13%; 
+    width: 13%;
 }
 
 .time-col-header {
-    width: 60px !important; 
+    width: 60px !important;
 }
 
 .day-name {
@@ -149,7 +149,7 @@
 
 .day-date {
     font-size: 12px;
-    color: #7F6B94; 
+    color: #7F6B94;
     margin-top: 4px;
 }
 
@@ -188,7 +188,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000; 
+    z-index: 1000;
 }
 
 .event-modal-content {
@@ -207,6 +207,7 @@
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -247,4 +248,110 @@
     margin: 10px 0;
     color: #333;
     font-size: 15px;
+}
+
+.datetime-inputs-group {
+    display: flex;
+    gap: 10px;
+}
+
+@media screen and (max-width: 1024px) {
+    .schedule-page-container {
+        padding: 15px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        margin-bottom: 15px;
+    }
+
+    .calendar-container {
+        padding: 15px;
+    }
+
+    .schedule-table th {
+        font-size: 13px;
+        padding: 10px 2px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .schedule-page-container {
+        height: calc(100dvh - 110px) !important;
+        min-height: 0 !important;
+        padding: 10px !important;
+        width: 100%;
+        overflow: hidden;
+        max-width: 100vw;
+        box-sizing: border-box;
+    }
+
+    .schedule-filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .center-select {
+        max-width: 100%;
+    }
+
+    .calendar-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .calendar-container {
+        flex: 1;
+        padding: 10px;
+        min-height: 0;
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .add-entity-btn {
+        width: 100%;
+        padding: 12px;
+    }
+
+    .table-container {
+        flex: 1;
+        min-height: 0;
+        overflow: auto !important;
+        -webkit-overflow-scrolling: touch;
+        border: none;
+        border-radius: 0;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .schedule-table {
+        min-width: 800px;
+        width: max-content;
+        border: 1px solid #4B2C92;/
+    }
+
+    .event-modal-content {
+        width: 90vw;
+        padding: 20px;
+    }
+
+    .datetime-inputs-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .event-modal-overlay {
+        width: 100%;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+        gap: 10px;
+        height: 90px;
+    }
+
 }

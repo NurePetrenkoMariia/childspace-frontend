@@ -9,12 +9,11 @@ const CourseCard = ({ id, title, image, redirectUrl }) => {
     };
 
     return (
-        <div className="course-card" onClick={handleCardClick}>
-            <div className="card-image-container" style={{ height: '180px', overflow: 'hidden' }}>
+        <div className='course-card' onClick={handleCardClick}>
+            <div className='card-image-container'>
                 <img 
                     src={image} 
                     alt={title} 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                 />
             </div>
             <div className="card-footer">
