@@ -19,6 +19,7 @@ const Sidebar = () => {
     const location = useLocation();
     const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
     const isGuest = !user;
+    const canViewAttend = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin') || user?.roles?.includes('Teacher');
     const [hasUnreadChats, setHasUnreadChats] = useState(false);
 
     useEffect(() => {
@@ -61,9 +62,11 @@ const Sidebar = () => {
                 <div className={getNavItemClass("/schedule")} onClick={() => navigate("/schedule")}>
                     <img src={scheduleIcon} alt="Schedule" className="sidebar-custom-icon" />
                 </div>
-                <div className={getNavItemClass("/attendance")} onClick={() => navigate("/attendance")}>
-                    <img src={attendanceIcon} alt="Attendance" className="sidebar-custom-icon" />
-                </div>
+                {canViewAttend && (
+                    <div className={getNavItemClass("/attendance")} onClick={() => navigate("/attendance")}>
+                        <img src={attendanceIcon} alt="Attendance" className="sidebar-custom-icon" />
+                    </div>
+                )}
                 <div className={getNavItemClass("/chats")} onClick={() => navigate("/chats")}>
                     <img src={chatIcon} alt="Chat" className="sidebar-custom-icon" />
                     {hasUnreadChats && (

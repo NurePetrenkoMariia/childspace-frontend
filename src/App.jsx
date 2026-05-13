@@ -30,11 +30,13 @@ function App() {
               <Route path="/schedule" element={<SchedulePage />} />
               <Route path="/materials" element={<MaterialsDashboard />} />
               <Route path="/materials/subject/:id" element={<MaterialsPage />} />
-              <Route path="/attendance" element={<AttendancePage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
             <Route element={<ProtectedRoute allowedRoles={['SuperAdmin', 'CenterAdmin']} />}>
               <Route path="/admin" element={<AdminPanel />} />
+            </Route>
+            <Route element={<ProtectedRoute allowedRoles={['SuperAdmin', 'CenterAdmin', 'Teacher']} />}>
+              <Route path="/attendance" element={<AttendancePage />} />
             </Route>
           </Route>
         </Routes>

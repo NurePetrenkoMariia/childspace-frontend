@@ -15,13 +15,16 @@ const MaterialsPage = () => {
     const [loadingName, setLoadingName] = useState(true);
     const [materials, setMaterials] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [groups, setGroups] = useState([]);
+    const [selectedGroupFilter, setSelectedGroupFilter] = useState('');
 
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [newMaterial, setNewMaterial] = useState({
         title: '',
         description: '',
-        file: null
+        file: null,
+        groupId: ''
     });
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -70,6 +73,22 @@ const MaterialsPage = () => {
         fetchMaterials();
     }, [id, refreshTrigger]);
 
+    useEffect(() => {
+        const fetchGroups = async () => {
+            if (!id) {
+                return;
+            }
+            try {
+                const response = await api.get('/group');
+                const subjectGroups = response.data.filter(g => g.subjectId === id);
+                setGroups(subjectGroups);
+            } catch (error) {
+                console.error("Помилка завантаження груп:", error);
+            }
+        };
+        fetchGroups();
+    }, [id]);
+
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('uk-UA', {
@@ -91,17 +110,24 @@ const MaterialsPage = () => {
             formData.append('TeacherId', user.id);
             formData.append('Title', newMaterial.title);
             formData.append('Description', newMaterial.description || "");
+            if (newMaterial.groupId) {
+                formData.append('GroupId', newMaterial.groupId);
+            }
             formData.append('file', newMaterial.file);
             await api.post('/material', formData);
 
             setIsAddModalOpen(false);
-            setNewMaterial({ title: '', description: '', file: null });
+            setNewMaterial({ title: '', description: '', file: null, groupId: '' });
             setRefreshTrigger(prev => prev + 1);
         } catch (err) {
             console.error("Помилка при створенні матеріалу:", err);
             alert("Не вдалося додати матеріал. Перевірте, чи підтримує бекенд завантаження файлів.");
         }
     };
+
+    const filteredMaterials = selectedGroupFilter
+        ? materials.filter(mat => mat.groupId === selectedGroupFilter)
+        : materials;
 
     const handleDeleteMaterial = async (materialId) => {
         if (window.confirm("Ви впевнені, що хочете видалити цей матеріал? Цю дію неможливо скасувати.")) {
@@ -159,22 +185,32 @@ const MaterialsPage = () => {
         <div className="materials-container">
             <h1 className="materials-page-title">Матеріали {loadingName ? '...' : (subjectName ? `> ${subjectName}` : '')} </h1>
             <div className="materials-content-wrapper">
-                {canAddMaterial && (
-                    <div className="materials-actions-top">
+
+                <div className='materials-actions-top'>
+                    <select
+                        className='materials-actions-top-filter'
+                        value={selectedGroupFilter}
+                        onChange={(e) => setSelectedGroupFilter(e.target.value)}
+                    >
+                        <option value="">Всі матеріали гуртка</option>
+                        {groups.map(g => (
+                            <option key={g.id} value={g.id}>{g.name}</option>
+                        ))}
+                    </select>
+                    {canAddMaterial && (
                         <button
                             className="add-material-btn"
                             onClick={() => setIsAddModalOpen(true)}
                         >
                             + Додати матеріал
                         </button>
-                    </div>
-                )}
-
+                    )}
+                </div>
                 <div className="materials-list">
                     {isLoading ? (
                         <p style={{ textAlign: 'center', color: '#6A35C2' }}>Завантаження матеріалів...</p>
-                    ) : materials.length > 0 ? (
-                        materials.map(mat => {
+                    ) : filteredMaterials.length > 0 ? (
+                        filteredMaterials.map(mat => {
                             const isAuthor = mat.teacherId == user?.id;
                             const canManageMaterial = isAdmin || (isTeacher && isAuthor);
                             return (
@@ -252,6 +288,20 @@ const MaterialsPage = () => {
                                 />
                             </div>
 
+                            <div className="form-group">
+                                <label>Для якої групи</label>
+                                <select
+                                    value={newMaterial.groupId}
+                                    onChange={e => setNewMaterial({ ...newMaterial, groupId: e.target.value })}
+                                    style={{ padding: '10px', borderRadius: '12px', border: '1px solid #EBE4F4', width: '100%' }}
+                                >
+                                    <option value="">Для всіх груп цього гуртка</option>
+                                    {groups.map(g => (
+                                        <option key={g.id} value={g.id}>{g.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
                             <div className="form-group" style={{ marginBottom: '20px' }}>
                                 <label>Файл *</label>
                                 <input
@@ -290,7 +340,7 @@ const MaterialsPage = () => {
                                     onChange={e => setEditMaterial({ ...editMaterial, title: e.target.value })}
                                 />
                             </div>
-                    
+
                             <div className="form-group">
                                 <label >Опис</label>
                                 <textarea
