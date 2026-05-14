@@ -223,6 +223,11 @@ const MaterialsPage = () => {
                                             <span className="material-date">
                                                 {formatDate(mat.createdAt)}
                                             </span>
+                                            {mat.groupId && (
+                                                <span className='material-group-badge'>
+                                                    {groups.find(g => g.id === mat.groupId)?.name}
+                                                </span>
+                                            )}
                                         </div>
                                         {canManageMaterial && (
                                             <div className='material-info-right'>

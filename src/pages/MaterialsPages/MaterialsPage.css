@@ -20,6 +20,8 @@
 
 .materials-actions-top {
     margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
 }
 
 .add-material-btn {
@@ -61,8 +63,20 @@
 
 .material-info-left {
     display: flex;
-    gap: 20px;
+    gap: 12px;
     align-items: center;
+    flex-wrap: wrap;
+}
+
+.material-group-badge {
+    background-color: #FDFBFF;
+    color: #4F169E;
+    border: 1px solid #A779E6;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(167, 121, 230, 0.1);
 }
 
 .material-author {

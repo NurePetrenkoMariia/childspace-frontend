@@ -7,6 +7,7 @@ import cancelIcon from '../../assets/icons/cancel.png';
 import editIcon from '../../assets/icons/pencil.png';
 import deleteIcon from '../../assets/icons/trash.png';
 import groupIcon from '../../assets/icons/icons8-group.png';
+import { useAuth } from '../../auth/AuthContext';
 
 const tableConfig = {
     'Центри': {
@@ -75,6 +76,9 @@ const AdminPanel = () => {
 
     const [newUserDetails, setNewUserDetails] = useState(null);
     const [isConfirmClosePasswordOpen, setIsConfirmClosePasswordOpen] = useState(false);
+
+    const { user } = useAuth();
+    const isSuperAdmin = user?.roles?.includes('SuperAdmin');
 
     const endpointMap = {
         'Центри': '/center',
@@ -503,7 +507,7 @@ const AdminPanel = () => {
                 <div className='table-container'>
                     <div className='table-first-row'>
                         <h2 className='table-title'>{activeTab}</h2>
-                        {activeTab !== 'Заявки' && activeTab !== 'Матеріали' && (
+                        {activeTab !== 'Заявки' && activeTab !== 'Матеріали' && (activeTab !== 'Центри' || isSuperAdmin) && (
                             <button className='add-entity-btn' onClick={handleAddClick}>
                                 + Додати запис
                             </button>
@@ -524,7 +528,8 @@ const AdminPanel = () => {
                                             className='column-resizer'
                                             onMouseDown={startResizing}
                                         />
-                                    </th>)}
+                                    </th>
+                                )}
                             </tr>
                         </thead>
                         <tbody>
@@ -654,12 +659,16 @@ const AdminPanel = () => {
                                                         <img src={groupIcon} alt="Group" className="group-btn-icon" />
                                                     </button>
                                                 )}
-                                                <button className='action-btn edit-btn' onClick={() => handleEditClick(item)}>
-                                                    <img src={editIcon} alt="Edit" className="edit-btn-icon" />
-                                                </button>
-                                                <button className='action-btn delete-btn' onClick={() => handleDeleteClick(item.id)}>
-                                                    <img src={deleteIcon} alt="Delete" className="delete-btn-icon" />
-                                                </button>
+                                                {(activeTab !== 'Центри' || isSuperAdmin) && (
+                                                    <>
+                                                        <button className='action-btn edit-btn' onClick={() => handleEditClick(item)}>
+                                                            <img src={editIcon} alt="Edit" className="edit-btn-icon" />
+                                                        </button>
+                                                        <button className='action-btn delete-btn' onClick={() => handleDeleteClick(item.id)}>
+                                                            <img src={deleteIcon} alt="Delete" className="delete-btn-icon" />
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                         )
                                         }

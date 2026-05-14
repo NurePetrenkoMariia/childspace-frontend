@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import searchIcon from '../../assets/icons/search.png';
 import './AttendancePage.css';
 import api from '../../../api/axios';
+import { useAuth } from '../../auth/AuthContext';
 
 const AttendancePage = () => {
+    const { user } = useAuth();
     const [centers, setCenters] = useState([]);
     const [subjects, setSubjects] = useState([]);
     const [groups, setGroups] = useState([]);
@@ -18,6 +20,9 @@ const AttendancePage = () => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [notes, setNotes] = useState({});
+
+    const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
+    const canEdit = isAdmin;
 
     useEffect(() => {
         const fetchFilterData = async () => {
@@ -105,6 +110,10 @@ const AttendancePage = () => {
     };
 
     const handleAttendanceChange = async (childId, status) => {
+        if (!canEdit) {
+            return;
+        }
+
         if (!selectedLessonId) {
             return;
         }
@@ -146,26 +155,30 @@ const AttendancePage = () => {
         return d.toLocaleDateString('uk-UA') + ', ' + d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
     };
 
-    const handleSaveAllChanges = async() => {
-        if(!selectedLessonId){
+    const handleSaveAllChanges = async () => {
+        if (!selectedLessonId) {
             return
+        }
+
+        if (!canEdit) {
+            return;
         }
 
         const childrenWithMissingStatus = childrenList.filter(child => {
             const existingRecord = attendances.find(a => a.childId === child.id);
             const currentNote = notes[child.id] || "";
-            
-            return currentNote.trim() !== "" && !existingRecord; 
+
+            return currentNote.trim() !== "" && !existingRecord;
         });
 
         if (childrenWithMissingStatus.length > 0) {
             const names = childrenWithMissingStatus.map(c => `${c.lastName} ${c.firstName}`).join(', ');
             alert(`⚠️ Помилка збереження!\n\nВи додали помітку, але не вказали статус (Був/Не був) для:\n${names}.\n\nБудь ласка, оберіть статус перед збереженням.`);
-            return; 
+            return;
         }
 
         setIsLoading(true);
-        
+
         try {
             const promises = childrenList.map(child => {
                 const existingRecord = attendances.find(a => a.childId === child.id);
@@ -177,16 +190,16 @@ const AttendancePage = () => {
                         note: currentNote
                     });
                 }
-                return null; 
-            }).filter(p => p !== null); 
+                return null;
+            }).filter(p => p !== null);
 
             if (promises.length > 0) {
                 await Promise.all(promises);
-                await fetchAttendances(selectedLessonId); 
+                await fetchAttendances(selectedLessonId);
             }
-            
+
             alert("Всі нотатки успішно збережено!");
-            
+
         } catch (error) {
             console.error("Помилка масового збереження:", error);
             alert("Сталася помилка при збереженні.");
@@ -271,76 +284,85 @@ const AttendancePage = () => {
                         <p style={{ textAlign: 'center', padding: '20px' }}>Завантаження...</p>
                     ) : (
                         <>
-                        <div className='table-rounded-wrapper'>
-                            <table className='attendance-table'>
-                                <thead>
-                                    <tr>
-                                        <th>№</th>
-                                        <th>Прізвище, ім'я дитини</th>
-                                        <th>Присутність</th>
-                                        <th>Нотатка</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {childrenList.map((child, index) => {
-                                        const record = attendances.find(a => a.childId === child.id);
-                                        const isPresent = record?.status === 0;
-                                        const isAbsent = record?.status === 1;
-                                        return (
-                                            <tr key={child.id}>
-                                                <td className='child-index'>
-                                                    {index + 1}
-                                                </td>
-                                                <td className='child-name'>
-                                                    {child.lastName} {child.firstName}
-                                                </td>
-                                                <td className='child-checkboxes'>
-                                                    <label className='checkbox-label'>
-                                                        Був/була
-                                                        <input type='radio'
-                                                            name={`attendance-${child.id}`}
-                                                            checked={isPresent}
-                                                            onChange={() => handleAttendanceChange(child.id, 0)}
+                            <div className='table-rounded-wrapper'>
+                                <table className='attendance-table'>
+                                    <thead>
+                                        <tr>
+                                            <th>№</th>
+                                            <th>Прізвище, ім'я дитини</th>
+                                            <th>Присутність</th>
+                                            <th>Нотатка</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {childrenList.map((child, index) => {
+                                            const record = attendances.find(a => a.childId === child.id);
+                                            const isPresent = record?.status === 0;
+                                            const isAbsent = record?.status === 1;
+                                            return (
+                                                <tr key={child.id}>
+                                                    <td className='child-index'>
+                                                        {index + 1}
+                                                    </td>
+                                                    <td className='child-name'>
+                                                        {child.lastName} {child.firstName}
+                                                    </td>
+                                                    <td className='child-checkboxes'>
+                                                        <label className='checkbox-label'>
+                                                            Був/була
+                                                            <input type='radio'
+                                                                name={`attendance-${child.id}`}
+                                                                checked={isPresent}
+                                                                onChange={() => handleAttendanceChange(child.id, 0)}
+                                                                disabled={!canEdit}
+                                                            />
+                                                            <span className='custom-radio'></span>
+                                                        </label>
+                                                        <label className='checkbox-label'>
+                                                            Не був/не була
+                                                            <input type='radio'
+                                                                name={`attendance-${child.id}`}
+                                                                checked={isAbsent}
+                                                                onChange={() => handleAttendanceChange(child.id, 1)}
+                                                                disabled={!canEdit}
+                                                            />
+                                                            <span className='custom-radio'></span>
+                                                        </label>
+                                                    </td>
+                                                    <td className='child-note'>
+                                                        <textarea
+                                                            className='attendance-note-textarea'
+                                                            placeholder='Додати нотатку...'
+                                                            value={notes[child.id] || ''}
+                                                            onChange={(e) => setNotes(prev => ({ ...prev, [child.id]: e.target.value }))}
+                                                            rows={2}
+                                                            disabled={!canEdit}
+                                                            style={{
+                                                                backgroundColor: canEdit ? '#FDFBFF' : '#F3EDF7',
+                                                                cursor: canEdit ? 'text' : 'not-allowed'
+                                                            }}
                                                         />
-                                                        <span className='custom-radio'></span>
-                                                    </label>
-                                                    <label className='checkbox-label'>
-                                                        Не був/не була
-                                                        <input type='radio'
-                                                            name={`attendance-${child.id}`}
-                                                            checked={isAbsent}
-                                                            onChange={() => handleAttendanceChange(child.id, 1)}
-                                                        />
-                                                        <span className='custom-radio'></span>
-                                                    </label>
-                                                </td>
-                                                <td className='child-note'>
-                                                    <textarea
-                                                        className='attendance-note-textarea'
-                                                        placeholder='Додати нотатку...'
-                                                        value={notes[child.id] || ''}
-                                                        onChange={(e) => setNotes(prev => ({ ...prev, [child.id]: e.target.value }))}
-                                                        rows={2}
-                                                    />
-                                                </td>
-                                            </tr>
-                                        );
-                                    }
+                                                    </td>
+                                                </tr>
+                                            );
+                                        }
 
-                                    )
+                                        )
 
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end'}}>
-                            <button 
-                                className="add-entity-btn" 
-                                onClick={handleSaveAllChanges}
-                            >
-                                Зберегти зміни
-                            </button>
-                        </div>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            {canEdit && (
+                                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <button
+                                        className="add-entity-btn"
+                                        onClick={handleSaveAllChanges}
+                                    >
+                                        Зберегти зміни
+                                    </button>
+                                </div>
+                            )}
                         </>
                     )}
                 </div>
