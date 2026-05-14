@@ -8,10 +8,15 @@ import './Dashboard.css';
 const Dashboard = () => {
     const { user, loading } = useAuth();
     const navigate = useNavigate();
-
-    const [selectedCenterId, setSelectedCenterId] = useState(null);
     const isSuperAdmin = user?.roles?.includes('SuperAdmin');
     const isGuest = !user;
+
+    const [selectedCenterId, setSelectedCenterId] = useState(() => {
+        if (user?.centerId && !isSuperAdmin) {
+            return user.centerId;
+        }
+        return null;
+    });
 
     useEffect(() => {
         if (!loading && !isGuest && !isSuperAdmin && user?.centerId) {
@@ -24,9 +29,10 @@ const Dashboard = () => {
     }
 
     const greetingText = user ? `Привіт, ${user.firstName} 👋` : 'Привіт, гостю 👋';
-    const mainTitle = selectedCenterId
-        ? "Ось доступні гуртки:"
-        : "Оберіть центр дитячого розвитку:";
+    const showCenterGrid = !selectedCenterId && (isGuest || isSuperAdmin);
+    const mainTitle = showCenterGrid
+        ? "Оберіть центр дитячого розвитку:"
+        : "Ось доступні гуртки:";
 
     const title = (
         <header className="dashboard-header">
@@ -68,7 +74,7 @@ const Dashboard = () => {
                 <SubjectGrid
                     titleComponent={title}
                     getBaseRedirectUrl={getRedirectPath}
-                    centerId={selectedCenterId}
+                    centerId={selectedCenterId || user?.centerId}
                 />
             )}
         </div>
