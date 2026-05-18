@@ -10,7 +10,6 @@ const MaterialsPage = () => {
     const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
     const isTeacher = user?.roles?.includes('Teacher');
 
-    const canAddMaterial = isAdmin || isTeacher;
     const [subjectName, setSubjectName] = useState('');
     const [loadingName, setLoadingName] = useState(true);
     const [materials, setMaterials] = useState([]);
@@ -128,6 +127,8 @@ const MaterialsPage = () => {
     const filteredMaterials = selectedGroupFilter
         ? materials.filter(mat => mat.groupId === selectedGroupFilter)
         : materials;
+
+    const canAddMaterial = isAdmin || (isTeacher && groups.some(g => g.teacherId === user.id));
 
     const handleDeleteMaterial = async (materialId) => {
         if (window.confirm("Ви впевнені, що хочете видалити цей матеріал? Цю дію неможливо скасувати.")) {

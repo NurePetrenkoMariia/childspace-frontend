@@ -77,6 +77,8 @@ const AdminPanel = () => {
     const [newUserDetails, setNewUserDetails] = useState(null);
     const [isConfirmClosePasswordOpen, setIsConfirmClosePasswordOpen] = useState(false);
 
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
     const { user } = useAuth();
     const isSuperAdmin = user?.roles?.includes('SuperAdmin');
 
@@ -116,6 +118,14 @@ const AdminPanel = () => {
         };
         fetchData();
     }, [activeTab]);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const fetchLists = async () => {
         try {
@@ -591,7 +601,7 @@ const AdminPanel = () => {
                                                         <option value="" disabled>Оберіть центр</option>
                                                         {centersList.map(center => (
                                                             <option key={center.id} value={center.id}>
-                                                                {center.name} ({center.id})
+                                                                {center.name} (ID: {isMobile ? `${center.id.substring(0, 8)}...` : center.id})
                                                             </option>
                                                         )
                                                         )}
@@ -709,7 +719,7 @@ const AdminPanel = () => {
                                                 <option value="">Оберіть центр розвитку</option>
                                                 {centersList.map(center => (
                                                     <option key={center.id} value={center.id}>
-                                                        {center.name} (ID: {center.id})
+                                                        {center.name} (ID: {isMobile ? `${center.id.substring(0, 6)}..` : center.id})
                                                     </option>
                                                 ))}
                                             </select>
@@ -722,7 +732,7 @@ const AdminPanel = () => {
                                                 <option value="">Оберіть групу</option>
                                                 {groupsList.map(group => (
                                                     <option key={group.id} value={group.id}>
-                                                        {group.name} (ID: {group.id})
+                                                       {group.name} (ID: {isMobile ? `${group.id.substring(0, 8)}...` : group.id})
                                                     </option>
                                                 ))}
                                             </select>
