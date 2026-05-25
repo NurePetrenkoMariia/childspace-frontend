@@ -23,6 +23,7 @@ const SubjectDetailsPage = () => {
     const [phoneError, setPhoneError] = useState('');
     const [childNameError, setChildNameError] = useState('');
     const [childAgeError, setChildAgeError] = useState('');
+    const [emailError, setEmailError] = useState('');
 
     useEffect(() => {
         const fetchDetails = async () => {
@@ -83,7 +84,21 @@ const SubjectDetailsPage = () => {
                 }
             }
         }
+        if (name === 'email') {
+            if (emailError) setEmailError('');
+        }
         setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleBlur = (e) => {
+        const { name, value } = e.target;
+
+        if (name === 'email' && value.length > 0) {
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailRegex.test(value)) {
+                setEmailError('Введіть коректну адресу (наприклад: name@gmail.com)');
+            }
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -155,7 +170,7 @@ const SubjectDetailsPage = () => {
                 </div>
             </div>
             {isRequestModalOpen && (
-                <div className='event-modal-overlay' onClick={() => setIsAddModalOpen(false)}>
+                <div className='event-modal-overlay' onClick={() => setIsRequestModalOpen(false)}>
                     <div className="event-modal-content trial-modal" onClick={e => e.stopPropagation()}>
                         <div className="event-modal-header">
                             <h3>Заповніть форму для подання заявки</h3>
@@ -207,8 +222,14 @@ const SubjectDetailsPage = () => {
                                     required
                                     value={formData.email}
                                     onChange={handleChange}
+                                    onBlur={handleBlur}
                                     placeholder='Наприклад: name@gmail.com'
                                 />
+                                {emailError && (
+                                    <span style={{ color: '#e74c3c', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                                        {emailError}
+                                    </span>
+                                )}
                             </div>
                             <div className="form-group">
                                 <label>Ім'я та прізвище дитини *</label>

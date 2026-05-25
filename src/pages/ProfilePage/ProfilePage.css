@@ -16,7 +16,7 @@
 
 .profile-content-wrapper {
     display: flex;
-    gap: 30px;
+    gap: 15px;
     align-items: center;
     flex-wrap: wrap;
     flex-direction: column;

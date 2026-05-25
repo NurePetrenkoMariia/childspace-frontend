@@ -124,7 +124,7 @@ const ProfilePage = () => {
                         </div>
                         <div className="detail-group">
                             <span className="detail-label">Телефон:</span>
-                            <span className="detail-value">{userData.phone || 'Не вказано'}</span>
+                            <span className="detail-value">{userData.phoneNumber || 'Не вказано'}</span>
                         </div>
                     </div>
                 </div>

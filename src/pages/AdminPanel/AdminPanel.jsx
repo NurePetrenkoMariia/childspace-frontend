@@ -23,8 +23,8 @@ const tableConfig = {
         keys: ['id', 'firstName', 'lastName', 'birthDate', 'parentId', 'notes']
     },
     'Матеріали': {
-        headers: ['ID', 'Заголовок', 'Створено', 'Дії'],
-        keys: ['id', 'title', 'createdAt']
+        headers: ['ID', 'Центр', 'Предмет', 'Група', 'Назва', 'Опис', 'Автор', 'Створено', 'Дії'],
+        keys: ['id', 'centerId','subjectName', 'groupName', 'title', 'description', 'teacherName', 'createdAt']
     },
     'Групи': {
         headers: ['ID', 'Назва', 'Опис', 'Вчитель', 'Центр', 'Предмет', 'Дії'],
@@ -557,7 +557,7 @@ const AdminPanel = () => {
                                                             style={{ fontSize: '12px', maxWidth: '150px' }}
                                                         />
                                                         <span style={{ fontSize: '10px', color: '#9384A6' }}>
-                                                            Залиште пустим, щоб не змінювати
+                                                            Залиште порожнім, щоб не змінювати
                                                         </span>
                                                     </div>
                                                 ) : key === 'birthDate' ? (
