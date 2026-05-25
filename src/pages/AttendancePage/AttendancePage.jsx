@@ -17,6 +17,7 @@ const AttendancePage = () => {
     const [selectedGroup, setSelectedGroup] = useState('');
     const [appliedGroup, setAppliedGroup] = useState('');
     const [selectedLessonId, setSelectedLessonId] = useState('');
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
     const [isLoading, setIsLoading] = useState(false);
     const [notes, setNotes] = useState({});
@@ -224,7 +225,7 @@ const AttendancePage = () => {
                         <option value="">Оберіть центр дит. розвитку</option>
                         {centers.map(center => (
                             <option key={center.id} value={center.id}>
-                                {center.name} (ID: {center.id})
+                                {center.name} (ID: {isMobile ? `${center.id.substring(0, 8)}...` : center.id})
                             </option>
                         ))}
                     </select>
