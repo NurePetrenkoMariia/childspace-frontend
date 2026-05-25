@@ -272,3 +272,81 @@
     color: #4F169E;
     font-weight: 600;
 }
+
+@media screen and (max-width: 1024px){
+    .profile-card {
+        padding: 25px 20px;
+    }
+}
+
+@media screen and (max-width: 768px){
+    .profile-container{
+        padding: 15px !important;
+        padding-bottom: 90px !important; 
+        height: auto;
+        max-height: 100dvh;
+    }
+
+    .profile-page-title{
+        font-size: 24px;
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .profile-card {
+        padding: 20px 15px;
+        border-radius: 16px;
+    }
+
+    .profile-card-details {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+
+    .detail-group {
+        flex-direction: column; 
+        align-items: center;
+        text-align: center;
+    }
+
+    .detail-value {
+        margin: 5px 0 0 0;
+        width: 100%;
+        box-sizing: border-box;
+        justify-content: center;
+        word-break: break-word; 
+    }
+
+    .password-form .form-group input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .password-form .apply-btn {
+        width: 100%; 
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .password-rules {
+        padding: 15px;
+    }
+
+    .profile-modal-content {
+        max-width: 90vw;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    .profile-modal-actions {
+        flex-direction: column; 
+        gap: 10px;
+    }
+
+    .profile-modal-actions button {
+        margin: 0;
+    }
+
+}
