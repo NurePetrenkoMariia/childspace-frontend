@@ -235,6 +235,8 @@ const ChatsPage = () => {
                     chat.id === activeChatId ? { ...chat, hasUnreadMessages: false } : chat
                 ));
 
+                window.dispatchEvent(new CustomEvent('chats-read-update'));
+
             } catch (error) {
                 console.error("Помилка завантаження повідомлень:", error);
             } finally {

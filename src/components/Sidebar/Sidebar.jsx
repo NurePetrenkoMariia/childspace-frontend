@@ -35,7 +35,16 @@ const Sidebar = () => {
         checkUnread();
 
         const intervalId = setInterval(checkUnread, 30000);
-        return () => clearInterval(intervalId);
+
+        const handleChatRead = () => {
+            checkUnread(); 
+        };
+        window.addEventListener('chats-read-update', handleChatRead);
+
+        return () => {
+            clearInterval(intervalId);
+            window.removeEventListener('chats-read-update', handleChatRead);
+        };
 
     }, []);
 
