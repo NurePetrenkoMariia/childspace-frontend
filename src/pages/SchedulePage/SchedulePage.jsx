@@ -355,8 +355,8 @@ const SchedulePage = () => {
                     <div className="month-navigation">
                         <span className="month-title">{getMonthYearString(weekDays[0])}</span>
                         <div className="nav-arrows">
-                            <button onClick={prevWeek}>&lt;</button>
-                            <button onClick={nextWeek}>&gt;</button>
+                            <button onClick={prevWeek} title='Попередній тиждень'>&lt;</button>
+                            <button onClick={nextWeek} title='Наступний тиждень'>&gt;</button>
                         </div>
                     </div>
                     {isAdmin && (

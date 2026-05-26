@@ -60,38 +60,38 @@ const Sidebar = () => {
     return (
         <div className="sidebar">
             <div className="nav-icons">
-                <div className={getNavItemClass("/")} onClick={() => navigate("/")}>
+                <div className={getNavItemClass("/")} onClick={() => navigate("/")} title="Головна">
                     <img src={homeIcon} alt="Home" className="sidebar-custom-icon" />
                 </div>
                 {isAdmin && (
-                    <div className={getNavItemClass("/admin")} onClick={() => navigate("/admin")}>
+                    <div className={getNavItemClass("/admin")} onClick={() => navigate("/admin")} title='Адмін-панель'>
                         <img src={adminIcon} alt="Admin" className="sidebar-custom-icon" />
                     </div>
                 )}
-                <div className={getNavItemClass("/schedule")} onClick={() => navigate("/schedule")}>
+                <div className={getNavItemClass("/schedule")} onClick={() => navigate("/schedule")} title='Розклад'>
                     <img src={scheduleIcon} alt="Schedule" className="sidebar-custom-icon" />
                 </div>
                 {canViewAttend && (
-                    <div className={getNavItemClass("/attendance")} onClick={() => navigate("/attendance")}>
+                    <div className={getNavItemClass("/attendance")} onClick={() => navigate("/attendance")} title='Відвідування'>
                         <img src={attendanceIcon} alt="Attendance" className="sidebar-custom-icon" />
                     </div>
                 )}
-                <div className={getNavItemClass("/chats")} onClick={() => navigate("/chats")}>
+                <div className={getNavItemClass("/chats")} onClick={() => navigate("/chats")} title='Чати'>
                     <img src={chatIcon} alt="Chat" className="sidebar-custom-icon" />
                     {hasUnreadChats && (
                         <span className="sidebar-unread-dot" title="Є нові повідомлення"></span>
                     )}
                 </div>
-                <div className={getNavItemClass("/materials")} onClick={() => navigate("/materials")}>
+                <div className={getNavItemClass("/materials")} onClick={() => navigate("/materials")} title='Матеріали'>
                     <img src={materialsIcon} alt="Materials" className="sidebar-custom-icon" />
                 </div>
             </div>
             {!isGuest && (
                 <div className='nav-icons-bottom'>
-                    <div className={getNavItemClass("/profile")} onClick={() => navigate("/profile")}>
+                    <div className={getNavItemClass("/profile")} onClick={() => navigate("/profile")} title='Профіль'>
                         <img src={profileIcon} alt="Profile" className="sidebar-custom-icon" />
                     </div>
-                    <button className="logout-btn" onClick={handleLogout}>
+                    <button className="logout-btn" onClick={handleLogout} title='Вихід з акаунта'>
                         <img src={logoutIcon} alt="Logout" className="sidebar-custom-icon" />
                     </button>
                 </div>
