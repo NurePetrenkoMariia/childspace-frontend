@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../../api/axios';
 import { useAuth } from '../../auth/AuthContext';
 import './MaterialsPage.css';
 
 const MaterialsPage = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const { user } = useAuth();
     const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
     const isTeacher = user?.roles?.includes('Teacher');
@@ -184,7 +185,16 @@ const MaterialsPage = () => {
 
     return (
         <div className="materials-container">
-            <h1 className="materials-page-title">Матеріали {loadingName ? '...' : (subjectName ? `> ${subjectName}` : '')} </h1>
+            <h1 className="materials-page-title">
+                <span
+                    onClick={() => navigate(-1)}
+                    style={{ cursor: 'pointer', textDecoration: 'none' }}
+                    title="Повернутися до списку гуртків"
+                    onMouseOver={(e) => e.target.style.textDecoration = 'underline'}
+                    onMouseOut={(e) => e.target.style.textDecoration = 'none'}
+                >
+                    Матеріали
+                </span>{loadingName ? '...' : (subjectName ? `> ${subjectName}` : '')} </h1>
             <div className="materials-content-wrapper">
 
                 <div className='materials-actions-top'>

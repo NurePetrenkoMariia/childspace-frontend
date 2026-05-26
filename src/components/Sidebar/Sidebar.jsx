@@ -54,7 +54,18 @@ const Sidebar = () => {
     };
 
     const getNavItemClass = (path) => {
-        return location.pathname === path ? "nav-item active" : "nav-item";
+        if (path === "/"){
+            const isHomeChild = 
+                location.pathname === "/" || 
+                location.pathname.startsWith("/center") || 
+                location.pathname.startsWith("/subject");
+                
+            return isHomeChild ? "nav-item active" : "nav-item";
+        }
+        if (location.pathname.startsWith(path)) {
+            return "nav-item active";
+        }
+        return "nav-item";
     };
 
     return (
