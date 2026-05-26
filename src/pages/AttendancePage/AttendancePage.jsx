@@ -281,8 +281,26 @@ const AttendancePage = () => {
                             ))}
                         </select>
                     </div>
-                    {isLoading ? (
+                    {!appliedGroup ? (
+                        <div className='attendance-no-group-msg'>
+                            <p className='attendance-error-msg-top'>
+                                Відвідування не вибрано
+                            </p>
+                            <p className='attendance-error-msg-bottom'>
+                                Будь ласка, оберіть центр, гурток та групу з меню вище і натисніть "Застосувати".
+                            </p>
+                        </div>
+                    ) : isLoading ? (
                         <p style={{ textAlign: 'center', padding: '20px' }}>Завантаження...</p>
+                    ) : lessons.length === 0 ? (
+                        <div className='attendance-no-group-msg'>
+                            <p className='attendance-error-msg-top'>
+                                У розкладі ще немає занять
+                            </p>
+                            <p className='attendance-no-group-msg-bottom'>
+                                Для цієї групи не знайдено жодного заняття. Відвідуваність можна відмічати лише для існуючих уроків з розкладу.
+                            </p>
+                        </div>
                     ) : (
                         <>
                             <div className='table-rounded-wrapper'>

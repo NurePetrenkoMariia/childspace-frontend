@@ -327,7 +327,7 @@ const SchedulePage = () => {
     return (
         <div className="schedule-page-container">
             <h1 className="page-title">Розклад</h1>
-            {isAdmin && (
+            {user.roles.includes('SuperAdmin') && (
                 <div className="schedule-filter-bar">
                     <select
                         className="center-select"
@@ -521,7 +521,7 @@ const SchedulePage = () => {
                                         <button className="apply-btn" onClick={() => handleStartEdit(selectedEvent)} style={{ width: '100%' }}>
                                             Редагувати
                                         </button>
-                                        <button className="apply-btn" onClick={() => handleDelete(selectedEvent.id)} style={{ width: '100%' }}>
+                                        <button className="apply-btn schedule-delete-btn" onClick={() => handleDelete(selectedEvent.id)} style={{ width: '100%' }}>
                                             Видалити
                                         </button>
                                     </>

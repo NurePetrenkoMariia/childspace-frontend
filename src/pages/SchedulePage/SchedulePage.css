@@ -255,6 +255,16 @@
     gap: 10px;
 }
 
+.schedule-delete-btn{
+    background-color: #EDE4F5;
+    color: #4F169E;
+}
+
+.schedule-delete-btn:hover{
+    background-color: #E2D5F0;
+    transform: translateY(-2px);
+}
+
 @media screen and (max-width: 1024px) {
     .schedule-page-container {
         padding: 15px;
