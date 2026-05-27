@@ -1,5 +1,6 @@
 .dashboard-header {
     padding-bottom: 15px;
+    flex-shrink: 0;
 }
 
 .dashboard-header-top {

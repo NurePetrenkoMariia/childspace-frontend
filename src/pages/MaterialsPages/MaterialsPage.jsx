@@ -32,7 +32,8 @@ const MaterialsPage = () => {
         id: '',
         title: '',
         description: '',
-        file: null
+        file: null,
+        groupId: ''
     });
 
     useEffect(() => {
@@ -149,6 +150,7 @@ const MaterialsPage = () => {
             id: mat.id,
             title: mat.title,
             description: mat.description || '',
+            groupId: mat.groupId || '',
             file: null
         });
         setIsEditModalOpen(true);
@@ -167,6 +169,12 @@ const MaterialsPage = () => {
 
             if (editMaterial.file) {
                 formData.append('file', editMaterial.file);
+            }
+
+            if (editMaterial.groupId) {
+                formData.append('GroupId', editMaterial.groupId);
+            } else {
+                formData.append('GroupId', '');
             }
 
             await api.put(`/material/${editMaterial.id}`, formData);
@@ -327,8 +335,8 @@ const MaterialsPage = () => {
                             </div>
 
                             <div className='edit-form-btns'>
-                                <button className="cancel-btn" onClick={() => setIsAddModalOpen(false)}>Скасувати</button>
-                                <button className="apply-btn" onClick={handleCreateMaterial}>Завантажити</button>
+                                <button className="cancel-btn" onClick={() => setIsAddModalOpen(false)} style={{ flex: 1 }}>Скасувати</button>
+                                <button className="apply-btn" onClick={handleCreateMaterial} style={{ flex: 1 }}>Завантажити</button>
                             </div>
                         </div>
                     </div>
@@ -365,6 +373,19 @@ const MaterialsPage = () => {
                                     rows="3"
                                 />
                             </div>
+                            <div className="form-group">
+                                <label>Для якої групи</label>
+                                <select
+                                    value={editMaterial.groupId}
+                                    onChange={e => setEditMaterial({ ...editMaterial, groupId: e.target.value })}
+                                    style={{ padding: '10px', borderRadius: '12px', border: '1px solid #EBE4F4', width: '100%' }}
+                                >
+                                    <option value="">Для всіх груп цього гуртка</option>
+                                    {groups.map(g => (
+                                        <option key={g.id} value={g.id}>{g.name}</option>
+                                    ))}
+                                </select>
+                            </div>
                             <div className="form-group" style={{ marginBottom: '20px' }}>
                                 <label>Новий файл (залиште порожнім, щоб не змінювати)</label>
                                 <input
@@ -374,7 +395,7 @@ const MaterialsPage = () => {
                             </div>
                             <div className='edit-form-btns'>
                                 <button className="cancel-btn" onClick={() => setIsEditModalOpen(false)} style={{ flex: 1 }}>Скасувати</button>
-                                <button className="apply-btn" onClick={handleEditMaterial} style={{ flex: 1 }}>Завантажити</button>
+                                <button className="apply-btn" onClick={handleEditMaterial} style={{ flex: 1 }}>Зберегти зміни</button>
                             </div>
                         </div>
                     </div>

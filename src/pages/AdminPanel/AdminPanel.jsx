@@ -24,7 +24,7 @@ const tableConfig = {
     },
     'Матеріали': {
         headers: ['ID', 'Центр', 'Предмет', 'Група', 'Назва', 'Опис', 'Автор', 'Створено', 'Дії'],
-        keys: ['id', 'centerId','subjectName', 'groupName', 'title', 'description', 'teacherName', 'createdAt']
+        keys: ['id', 'centerId', 'subjectName', 'groupName', 'title', 'description', 'teacherName', 'createdAt']
     },
     'Групи': {
         headers: ['ID', 'Назва', 'Опис', 'Вчитель', 'Центр', 'Предмет', 'Дії'],
@@ -94,6 +94,7 @@ const AdminPanel = () => {
 
     const tabs = ['Центри', 'Користувачі', 'Діти', 'Матеріали', 'Групи', 'Гуртки', 'Заявки'];
     const phoneRegex = /^\+?[0-9]{10,13}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
     useEffect(() => {
         const fetchData = async () => {
@@ -274,6 +275,25 @@ const AdminPanel = () => {
                     alert("Введіть коректний номер телефону (наприклад: +380501234567)");
                     return;
                 }
+
+                const emailValue = payload.email;
+                if (emailValue && !emailRegex.test(emailValue)) {
+                    alert("Введіть коректну адресу електронної пошти (наприклад: name@gmail.com)");
+                    return;
+                }
+
+                if (payload.birthDate) {
+                    const selectedDate = new Date(payload.birthDate);
+                    const currentDate = new Date();
+
+                    currentDate.setHours(0, 0, 0, 0);
+
+                    if (selectedDate > currentDate) {
+                        alert("Помилка! Дата народження не може бути у майбутньому.");
+                        return;
+                    }
+                }
+
                 response = await api.put(`${endpointMap[activeTab]}/${id}`, payload);
             }
 
@@ -337,9 +357,28 @@ const AdminPanel = () => {
                     }
                 }
 
-                if (payload.phone && !phoneRegex.test(payload.phone)) {
+                const phoneValue = payload.phone || payload.phoneNumber;
+                if (phoneValue && !phoneRegex.test(phoneValue)) {
                     alert("Введіть коректний номер телефону (наприклад: +380501234567)");
                     return;
+                }
+
+                const emailValue = payload.email;
+                if (emailValue && !emailRegex.test(emailValue)) {
+                    alert("Введіть коректну адресу електронної пошти (наприклад: name@gmail.com)");
+                    return;
+                }
+
+                if (payload.birthDate) {
+                    const selectedDate = new Date(payload.birthDate);
+                    const currentDate = new Date();
+
+                    currentDate.setHours(0, 0, 0, 0);
+
+                    if (selectedDate > currentDate) {
+                        alert("Помилка! Дата народження не може бути у майбутньому.");
+                        return;
+                    }
                 }
 
                 response = await api.post(endpointMap[activeTab], payload);
@@ -565,6 +604,7 @@ const AdminPanel = () => {
                                                         type="date"
                                                         className="edit-input"
                                                         value={editFormData[key] ? editFormData[key].split('T')[0] : ''}
+                                                        max={new Date().toISOString().split('T')[0]}
                                                         onChange={(e) => handleInputChange(e, key)}
                                                     />
                                                 ) : activeTab === 'Користувачі' && key === 'role' ? (
@@ -637,11 +677,11 @@ const AdminPanel = () => {
                                                     </select>
                                                 ) : (
                                                     <input
-                                                        type={key === 'phoneNumber' || key === 'phone' ? 'tel' : 'text'}
+                                                        type={key === 'phoneNumber' || key === 'phone' ? 'tel' : key === 'email' ? 'email' : 'text'}
                                                         className="edit-input"
                                                         value={editFormData[key] || ''}
                                                         onChange={(e) => handleInputChange(e, key)}
-                                                        placeholder={key === 'phoneNumber' || key === 'phone' ? 'Наприклад, +380676767676 або 0676767676' : 'Введіть дані...'}
+                                                        placeholder={key === 'phoneNumber' || key === 'phone' ? 'Наприклад, +380676767676 або 0676767676' : key === 'email' ? 'name@gmail.com' : 'Введіть дані...'}
                                                     />
                                                 )
                                             ) : (
@@ -732,7 +772,7 @@ const AdminPanel = () => {
                                                 <option value="">Оберіть групу</option>
                                                 {groupsList.map(group => (
                                                     <option key={group.id} value={group.id}>
-                                                       {group.name} (ID: {isMobile ? `${group.id.substring(0, 8)}...` : group.id})
+                                                        {group.name} (ID: {isMobile ? `${group.id.substring(0, 8)}...` : group.id})
                                                     </option>
                                                 ))}
                                             </select>
@@ -776,6 +816,7 @@ const AdminPanel = () => {
                                                 type="date"
                                                 className="filter-input"
                                                 onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                max={new Date().toISOString().split('T')[0]}
                                                 value={newData[key] ? newData[key].split('T')[0] : ""}
                                             />
                                         ) : activeTab === 'Групи' && key === 'subjectId' ? (
@@ -793,10 +834,10 @@ const AdminPanel = () => {
                                             </select>
                                         ) : (
                                             <input
-                                                type={key === 'phoneNumber' || key === 'phone' ? 'tel' : 'text'}
+                                                type={key === 'phoneNumber' || key === 'phone' ? 'tel' : key === 'email' ? 'email' : 'text'}
                                                 onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
                                                 value={newData[key] || ""}
-                                                placeholder={key === 'phoneNumber' || key === 'phone' ? 'Наприклад, +380676767676 або 0676767676' : 'Введіть дані...'}
+                                                placeholder={key === 'phoneNumber' || key === 'phone' ? 'Наприклад, +380676767676 або 0676767676' : key === 'email' ? 'name@gmail.com' : 'Введіть дані...'}
                                             />
                                         )}
                                     </div>
