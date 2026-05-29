@@ -2,12 +2,15 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
 import './LoginPage.css'
+import showIcon from '../../assets/icons/login-eye.png';
+import hideIcon from '../../assets/icons/login-closed-eye.png';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
 
@@ -54,13 +57,24 @@ const LoginPage = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         className="login-input"
                     />
-                    <input
-                        type="password"
-                        placeholder="Пароль"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="login-input"
-                    />
+                    <div className='password-input-container'>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Пароль"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="login-input"
+                        />
+                        <button
+                            type="button"
+                            className='show-hide-password-btn'
+                            onClick={() => setShowPassword(!showPassword)}
+                            title={showPassword ? "Сховати пароль" : "Показати пароль"}
+                        >
+                            {showPassword ? <img src={hideIcon} alt='Hide password' className='hide-password-icon' /> : <img src={showIcon} alt='Show password' className='hide-password-icon' />}
+                        </button>
+                    </div>
+
                     <button type="submit" className="login-button">
                         {isLoading ? 'Вхід...' : 'Увійти'}
                     </button>
