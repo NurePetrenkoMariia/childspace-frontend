@@ -50,8 +50,8 @@ const Dashboard = () => {
                 )}
             </div>
             {(isSuperAdmin || isGuest) && selectedCenterId && (
-                <button 
-                className='dashboard-header-center-btn'
+                <button
+                    className='dashboard-header-center-btn'
                     onClick={() => setSelectedCenterId(null)}
                 >
                     ← Обрати інший центр
