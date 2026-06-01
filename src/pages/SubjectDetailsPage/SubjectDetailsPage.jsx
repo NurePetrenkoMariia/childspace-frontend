@@ -24,6 +24,13 @@ const SubjectDetailsPage = () => {
     const [childNameError, setChildNameError] = useState('');
     const [childAgeError, setChildAgeError] = useState('');
     const [emailError, setEmailError] = useState('');
+    const [notification, setNotification] = useState(
+        {
+            isOpen: false,
+            type: '',
+            message: ''
+        }
+    );
 
     useEffect(() => {
         const fetchDetails = async () => {
@@ -114,7 +121,12 @@ const SubjectDetailsPage = () => {
             };
 
             await api.post('/trialrequest', payload);
-            alert('Ваша заявка успішно відправлена! Ми зв\'яжемося з вами найближчим часом.');
+            setNotification({
+                isOpen: true,
+                type: 'success',
+                message: 'Ваша заявка успішно відправлена! Ми зв\'яжемося з вами найближчим часом.'
+            });
+
             setIsRequestModalOpen(false);
             setFormData({
                 parentName: '',
@@ -126,7 +138,11 @@ const SubjectDetailsPage = () => {
             });
         } catch (error) {
             console.error("Помилка відправки заявки:", error);
-            alert('Не вдалося відправити заявку. Перевірте введені дані.');
+            setNotification({
+                isOpen: true,
+                type: 'error',
+                message: 'Не вдалося відправити заявку. Перевірте введені дані.'
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -281,11 +297,41 @@ const SubjectDetailsPage = () => {
                                     className="apply-btn"
                                     disabled={isSubmitting || !!phoneError || !!parentNameError || !!childNameError || !!childAgeError}
                                     style={{ flex: 1 }}>
-                                    {isSubmitting ? 'Відправка...' : 'Відправити заявку'}
+                                    {isSubmitting ? 'Надсилання...' : 'Надіслати заявку'}
                                 </button>
                             </div>
                         </form>
                     </div>
+                </div>
+            )}
+            {notification.isOpen && (
+                <div className="profile-modal-overlay" onClick={() => setNotification({ ...notification, isOpen: false })}>
+                    <div className="profile-modal-content" style={{padding: '15px'}}onClick={e => e.stopPropagation()}>
+                        <h2 
+                            className="modal-title" 
+                            style={{ 
+                                marginTop: 0, 
+                                textAlign: 'center',
+                                color: notification.type === 'error' ? '#e74c3c' : '#4F169E'
+                            }}
+                        >
+                            {notification.type === 'error' ? '⚠️ Помилка' : '✅ Успіх'}
+                        </h2>
+
+                        <p className="profile-modal-text">
+                            {notification.message}
+                        </p>
+                        <div className="profile-modal-actions" style={{ justifyContent: 'center' }}>
+                            <button
+                                className="cancel-btn"
+                                style={{ maxWidth: '200px' }}
+                                onClick={() => setNotification({ ...notification, isOpen: false })}
+                            >
+                                Зрозуміло
+                            </button>
+                        </div>
+                    </div>
+
                 </div>
             )}
         </div>
