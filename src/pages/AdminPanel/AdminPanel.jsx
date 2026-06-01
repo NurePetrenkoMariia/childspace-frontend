@@ -253,6 +253,10 @@ const AdminPanel = () => {
                     formData.append('Photo', editFormData.newPhoto);
                 }
 
+                if (editFormData.deletePhoto) {
+                    formData.append('DeletePhoto', 'true');
+                }
+
                 response = await api.put(`${endpointMap[activeTab]}/${id}`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
@@ -592,9 +596,20 @@ const AdminPanel = () => {
                                                         <input
                                                             type="file"
                                                             accept="image/*"
-                                                            onChange={(e) => setEditFormData({ ...editFormData, newPhoto: e.target.files[0] })}
+                                                            onChange={(e) => setEditFormData({ ...editFormData, newPhoto: e.target.files[0], deletePhoto: false })}
                                                             style={{ fontSize: '12px', maxWidth: '150px' }}
+                                                            disabled={editFormData.deletePhoto}
                                                         />
+                                                        {item.photoUrl && (
+                                                            <label style={{ fontSize: '11px', color: '#D30000', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={!!editFormData.deletePhoto}
+                                                                    onChange={(e) => setEditFormData({ ...editFormData, deletePhoto: e.target.checked, newPhoto: null })}
+                                                                />
+                                                                Видалити обкладинку
+                                                            </label>
+                                                        )}
                                                         <span style={{ fontSize: '10px', color: '#9384A6' }}>
                                                             Залиште порожнім, щоб не змінювати
                                                         </span>
