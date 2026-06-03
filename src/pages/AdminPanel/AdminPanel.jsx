@@ -55,6 +55,8 @@ const AdminPanel = () => {
     const [editFormData, setEditFormData] = useState({});
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newData, setNewData] = useState({});
+    const [formErrors, setFormErrors] = useState({});
+
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredData, setFilteredData] = useState([]);
     const [centersList, setCentersList] = useState([]);
@@ -78,6 +80,10 @@ const AdminPanel = () => {
     const [isConfirmClosePasswordOpen, setIsConfirmClosePasswordOpen] = useState(false);
 
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    const [notification, setNotification] = useState({ isOpen: false, type: '', message: '' });
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
 
     const { user } = useAuth();
     const isSuperAdmin = user?.roles?.includes('SuperAdmin');
@@ -276,13 +282,13 @@ const AdminPanel = () => {
 
                 const phoneValue = payload.phone || payload.phoneNumber;
                 if (phoneValue && !phoneRegex.test(phoneValue)) {
-                    alert("Введіть коректний номер телефону (наприклад: +380501234567)");
+                    setNotification({ isOpen: true, type: 'error', message: "Введіть коректний номер телефону (наприклад: +380501234567)" });
                     return;
                 }
 
                 const emailValue = payload.email;
                 if (emailValue && !emailRegex.test(emailValue)) {
-                    alert("Введіть коректну адресу електронної пошти (наприклад: name@gmail.com)");
+                    setNotification({ isOpen: true, type: 'error', message: "Введіть коректну адресу електронної пошти (наприклад: name@gmail.com)" });
                     return;
                 }
 
@@ -293,7 +299,7 @@ const AdminPanel = () => {
                     currentDate.setHours(0, 0, 0, 0);
 
                     if (selectedDate > currentDate) {
-                        alert("Помилка! Дата народження не може бути у майбутньому.");
+                        setNotification({ isOpen: true, type: 'error', message: "Помилка! Дата народження не може бути у майбутньому." });
                         return;
                     }
                 }
@@ -313,7 +319,7 @@ const AdminPanel = () => {
             setEditingId(null);
         } catch (error) {
             console.error("Помилка при збереженні:", error);
-            alert("Не вдалося зберегти зміни");
+            setNotification({ isOpen: true, type: 'error', message: "Не вдалося зберегти зміни" });
         }
     };
 
@@ -326,8 +332,40 @@ const AdminPanel = () => {
 
     const handleAddClick = async () => {
         setNewData({});
+        setFormErrors({});
         await fetchLists();
         setIsModalOpen(true);
+    };
+
+    const handleNewDataChange = (key, value) => {
+        setNewData(prev => ({ ...prev, [key]: value }));
+
+        if (formErrors[key]) {
+            setFormErrors(prev => ({ ...prev, [key]: '' }));
+        }
+
+        if (key === 'phone' || key === 'phoneNumber') {
+            if (/[^\d+]/.test(value)) {
+                setFormErrors(prev => ({ ...prev, [key]: 'Номер телефону може містити лише цифри та знак "+"' }));
+            }
+        }
+    };
+
+    const handleNewDataBlur = (key, value) => {
+        if (!value) {
+            return;
+        }
+
+        if (key === 'email') {
+            if (!emailRegex.test(value)) {
+                setFormErrors(prev => ({ ...prev, [key]: 'Введіть коректну адресу (наприклад: name@gmail.com)' }));
+            }
+        }
+        if (key === 'phone' || key === 'phoneNumber') {
+            if (!phoneRegex.test(value)) {
+                setFormErrors(prev => ({ ...prev, [key]: 'Введіть коректний номер (наприклад: +380501234567)' }));
+            }
+        }
     };
 
     const handleCreateSave = async () => {
@@ -363,13 +401,13 @@ const AdminPanel = () => {
 
                 const phoneValue = payload.phone || payload.phoneNumber;
                 if (phoneValue && !phoneRegex.test(phoneValue)) {
-                    alert("Введіть коректний номер телефону (наприклад: +380501234567)");
+                    setNotification({ isOpen: true, type: 'error', message: "Введіть коректний номер телефону (наприклад: +380501234567)" });
                     return;
                 }
 
                 const emailValue = payload.email;
                 if (emailValue && !emailRegex.test(emailValue)) {
-                    alert("Введіть коректну адресу електронної пошти (наприклад: name@gmail.com)");
+                    setNotification({ isOpen: true, type: 'error', message: "Введіть коректну адресу електронної пошти (наприклад: name@gmail.com)" });
                     return;
                 }
 
@@ -380,7 +418,7 @@ const AdminPanel = () => {
                     currentDate.setHours(0, 0, 0, 0);
 
                     if (selectedDate > currentDate) {
-                        alert("Помилка! Дата народження не може бути у майбутньому.");
+                        setNotification({ isOpen: true, type: 'error', message: "Помилка! Дата народження не може бути у майбутньому." });
                         return;
                     }
                 }
@@ -405,10 +443,12 @@ const AdminPanel = () => {
                     password: savedItem.generatedPassword,
                     name: `${savedItem.firstName} ${savedItem.lastName}`
                 });
+            } else {
+                setNotification({ isOpen: true, type: 'success', message: "Запис успішно створено!" });
             }
         } catch (error) {
             console.error("Помилка при створенні:", error.response?.data || error.message);
-            alert("Не вдалося створити запис. Перевірте обов'язкові поля.");
+            setNotification({ isOpen: true, type: 'error', message: "Не вдалося створити запис. Перевірте обов'язкові поля." });
         }
     };
 
@@ -451,30 +491,39 @@ const AdminPanel = () => {
         setFilteredData(filtered);
     };
 
-    const handleDeleteClick = async (id) => {
-        if (window.confirm("Ви впевнені, що хочете видалити цей запис?")) {
-            try {
-                await api.delete(`${endpointMap[activeTab]}/${id}`);
-                const updated = data.filter(item => item.id !== id);
-                setData(updated);
-                if (searchTerm) {
-                    setFilteredData(updated.filter(item => {
-                        const term = searchTerm.toLowerCase();
-                        for (let key in item) {
-                            let value = item[key];
-                            if (value && String(value).toLowerCase().includes(term)) {
-                                return true;
-                            }
+    const handleDeleteClick = (id) => {
+        setItemToDelete(id);
+        setIsDeleteConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!itemToDelete) {
+            return;
+        }
+        try {
+            await api.delete(`${endpointMap[activeTab]}/${itemToDelete}`);
+            const updated = data.filter(item => item.id !== itemToDelete);
+            setData(updated);
+            if (searchTerm) {
+                setFilteredData(updated.filter(item => {
+                    const term = searchTerm.toLowerCase();
+                    for (let key in item) {
+                        let value = item[key];
+                        if (value && String(value).toLowerCase().includes(term)) {
+                            return true;
                         }
-                        return false;
-                    }));
-                } else {
-                    setFilteredData(updated);
-                }
-            } catch (error) {
-                console.error("Помилка при видаленні:", error);
-                alert("Не вдалося видалити запис. Можливо, до нього прив'язані інші дані.");
+                    }
+                    return false;
+                }));
+            } else {
+                setFilteredData(updated);
             }
+            setIsDeleteConfirmOpen(false);
+            setItemToDelete(null);
+            setNotification({ isOpen: true, type: 'success', message: "Запис успішно видалено!" });
+        } catch (error) {
+            console.error("Помилка при видаленні:", error);
+            setNotification({ isOpen: true, type: 'error', message: "Не вдалося видалити запис. Можливо, до нього прив'язані інші дані." });
         }
     };
 
@@ -524,6 +573,7 @@ const AdminPanel = () => {
         await handleChangeChildStatusInGroup(childToRemove.id, true);
         setIsRemoveChildModalOpen(false);
         setChildToRemove(null);
+        setNotification({ isOpen: true, type: 'success', message: "Дитину видалено з групи!" });
     };
 
     return (
@@ -757,8 +807,7 @@ const AdminPanel = () => {
                                         {activeTab === 'Користувачі' && key === 'role' ? (
                                             <select
                                                 className="filter-input"
-                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
-                                                value={newData[key] || ""}
+                                                onChange={(e) => handleNewDataChange(key, e.target.value)} value={newData[key] || ""}
                                             >
                                                 <option value="" disabled>Оберіть роль...</option>
                                                 <option value="CenterAdmin">Адмін центру</option>
@@ -768,7 +817,7 @@ const AdminPanel = () => {
                                         ) : key === 'centerId' ? (
                                             <select
                                                 className="filter-input"
-                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                onChange={(e) => handleNewDataChange(key, e.target.value)}
                                                 value={newData[key] || ""}
                                             >
                                                 <option value="">Оберіть центр розвитку</option>
@@ -781,7 +830,7 @@ const AdminPanel = () => {
                                         ) : key == 'groupId' ? (
                                             <select
                                                 className="filter-input"
-                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                onChange={(e) => handleNewDataChange(key, e.target.value)}
                                                 value={newData[key] || ""}
                                             >
                                                 <option value="">Оберіть групу</option>
@@ -793,7 +842,7 @@ const AdminPanel = () => {
                                             </select>
                                         ) : key === 'teacherId' ? (
                                             <select className='filter-input'
-                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                onChange={(e) => handleNewDataChange(key, e.target.value)}
                                                 value={newData[key] || ""}
                                             >
                                                 <option value="">Оберіть вчителя</option>
@@ -806,7 +855,7 @@ const AdminPanel = () => {
                                         ) : key === 'parentId' ? (
                                             <select
                                                 className="filter-input"
-                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                onChange={(e) => handleNewDataChange(key, e.target.value)}
                                                 value={newData[key] || ""}
                                             >
                                                 <option value="">Оберіть представника</option>
@@ -821,7 +870,7 @@ const AdminPanel = () => {
                                                 <input
                                                     type="file"
                                                     accept="image/*"
-                                                    onChange={(e) => setNewData({ ...newData, photo: e.target.files[0] })}
+                                                    onChange={(e) => handleNewDataChange('photo', e.target.files[0])}
                                                 />
                                                 {newData.photo && <p className="file-name-hint">Обрано: {newData.photo.name}</p>}
                                             </div>
@@ -830,15 +879,17 @@ const AdminPanel = () => {
                                             <input
                                                 type="date"
                                                 className="filter-input"
-                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                onChange={(e) => handleNewDataChange(key, e.target.value)}
                                                 max={new Date().toISOString().split('T')[0]}
                                                 value={newData[key] ? newData[key].split('T')[0] : ""}
+                                                style={formErrors[key] ? { borderColor: '#e74c3c', outline: 'none' } : {}}
                                             />
                                         ) : activeTab === 'Групи' && key === 'subjectId' ? (
                                             <select
                                                 className="filter-input"
-                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                onChange={(e) => handleNewDataChange(key, e.target.value)}
                                                 value={newData[key] || ""}
+                                                style={formErrors[key] ? { borderColor: '#e74c3c', outline: 'none' } : {}}
                                             >
                                                 <option value="">Оберіть предмет</option>
                                                 {subjectsList.map(subject => (
@@ -850,10 +901,17 @@ const AdminPanel = () => {
                                         ) : (
                                             <input
                                                 type={key === 'phoneNumber' || key === 'phone' ? 'tel' : key === 'email' ? 'email' : 'text'}
-                                                onChange={(e) => setNewData({ ...newData, [key]: e.target.value })}
+                                                onChange={(e) => handleNewDataChange(key, e.target.value)}
+                                                onBlur={(e) => handleNewDataBlur(key, e.target.value)}
                                                 value={newData[key] || ""}
+                                                style={formErrors[key] ? { borderColor: '#e74c3c', outline: 'none' } : {}}
                                                 placeholder={key === 'phoneNumber' || key === 'phone' ? 'Наприклад, +380676767676 або 0676767676' : key === 'email' ? 'name@gmail.com' : 'Введіть дані...'}
                                             />
+                                        )}
+                                        {formErrors[key] && (
+                                            <span style={{ color: '#e74c3c', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                                                {formErrors[key]}
+                                            </span>
                                         )}
                                     </div>
                                 ))}
@@ -1105,6 +1163,64 @@ const AdminPanel = () => {
                                 }}
                             >
                                 Так, закрити
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {isDeleteConfirmOpen && (
+                <div className="profile-modal-overlay" style={{ zIndex: 3000 }} onClick={() => setIsDeleteConfirmOpen(false)}>
+                    <div className="profile-modal-content" onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '40px', marginBottom: '10px' }}>⚠️</div>
+                        <h2 className="modal-title" style={{ marginTop: 0, textAlign: 'center' }}>
+                            Видалення запису
+                        </h2>
+                        <p className="profile-modal-text">
+                            Ви впевнені, що хочете видалити цей запис? Цю дію неможливо скасувати.
+                        </p>
+                        <div className="profile-modal-actions" style={{ justifyContent: 'center' }}>
+                            <button
+                                className="cancel-btn"
+                                onClick={() => setIsDeleteConfirmOpen(false)}
+                            >
+                                Скасувати
+                            </button>
+                            <button
+                                className="confirm-btn"
+                                onClick={confirmDelete}
+                                style={{ backgroundColor: '#D30000', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
+                            >
+                                Так, видалити
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {notification.isOpen && (
+                <div className="profile-modal-overlay" onClick={() => setNotification({ ...notification, isOpen: false })} style={{ zIndex: 4000 }}>
+                    <div className="profile-modal-content" onClick={e => e.stopPropagation()}>
+                        <h2 
+                            className="modal-title" 
+                            style={{ 
+                                marginTop: 0, 
+                                textAlign: 'center',
+                                color: notification.type === 'error' ? '#e74c3c' : '#4F169E'
+                            }}
+                        >
+                            {notification.type === 'error' ? '⚠️ Помилка' : '✅ Успіх'}
+                        </h2>
+                        
+                        <p className="profile-modal-text">
+                            {notification.message}
+                        </p>
+                        
+                        <div className="profile-modal-actions" style={{ justifyContent: 'center' }}>
+                            <button
+                                className="cancel-btn"
+                                style={{ maxWidth: '200px' }}
+                                onClick={() => setNotification({ ...notification, isOpen: false })}
+                            >
+                                Зрозуміло
                             </button>
                         </div>
                     </div>
