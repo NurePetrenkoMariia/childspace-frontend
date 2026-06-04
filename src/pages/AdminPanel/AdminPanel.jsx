@@ -1111,7 +1111,7 @@ const AdminPanel = () => {
                                 style={{ flex: 1, backgroundColor: '#4F169E', color: 'white' }}
                                 onClick={() => {
                                     navigator.clipboard.writeText(newUserDetails.password);
-                                    alert("Пароль скопійовано!");
+                                    setNotification({ isOpen: true, type: 'success', message: "Пароль скопійовано!" });
                                 }}>
                                 Скопіювати пароль
                             </button>

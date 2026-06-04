@@ -21,6 +21,13 @@ const AttendancePage = () => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [notes, setNotes] = useState({});
+    const [notification, setNotification] = useState(
+        {
+            isOpen: false,
+            type: '',
+            message: ''
+        }
+    );
 
     const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
     const canEdit = isAdmin;
@@ -147,7 +154,7 @@ const AttendancePage = () => {
             }
         } catch (error) {
             console.error("Помилка збереження відвідуваності:", error);
-            alert("Не вдалося зберегти відвідуваність");
+            setNotification({ isOpen: true, type: 'error', message: "Не вдалося зберегти відвідуваність" });
         }
     };
 
@@ -174,7 +181,7 @@ const AttendancePage = () => {
 
         if (childrenWithMissingStatus.length > 0) {
             const names = childrenWithMissingStatus.map(c => `${c.lastName} ${c.firstName}`).join(', ');
-            alert(`⚠️ Помилка збереження!\n\nВи додали помітку, але не вказали статус (Був/Не був) для:\n${names}.\n\nБудь ласка, оберіть статус перед збереженням.`);
+            setNotification({ isOpen: true, type: 'error', message: `Ви додали помітку, але не вказали статус (Був/Не був) для:\n${names}.\nБудь ласка, оберіть статус перед збереженням.` });
             return;
         }
 
@@ -199,11 +206,11 @@ const AttendancePage = () => {
                 await fetchAttendances(selectedLessonId);
             }
 
-            alert("Всі нотатки успішно збережено!");
+            setNotification({ isOpen: true, type: 'success', message: "Всі нотатки успішно збережено!" });
 
         } catch (error) {
             console.error("Помилка масового збереження:", error);
-            alert("Сталася помилка при збереженні.");
+            setNotification({ isOpen: true, type: 'error', message: "Сталася помилка при збереженні." });
         } finally {
             setIsLoading(false);
         }
@@ -386,6 +393,36 @@ const AttendancePage = () => {
                     )}
                 </div>
             </div>
+            {notification.isOpen && (
+                <div className="profile-modal-overlay" onClick={() => setNotification({ ...notification, isOpen: false })} style={{ zIndex: 4000 }}>
+                    <div className="profile-modal-content" onClick={e => e.stopPropagation()}>
+                        <h2 
+                            className="modal-title" 
+                            style={{ 
+                                marginTop: 0, 
+                                textAlign: 'center',
+                                color: notification.type === 'error' ? '#e74c3c' : '#4F169E'
+                            }}
+                        >
+                            {notification.type === 'error' ? '⚠️ Помилка' : '✅ Успіх'}
+                        </h2>
+                        
+                        <p className="profile-modal-text">
+                            {notification.message}
+                        </p>
+                        
+                        <div className="profile-modal-actions" style={{ justifyContent: 'center' }}>
+                            <button
+                                className="cancel-btn"
+                                style={{ maxWidth: '200px' }}
+                                onClick={() => setNotification({ ...notification, isOpen: false })}
+                            >
+                                Зрозуміло
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 };
