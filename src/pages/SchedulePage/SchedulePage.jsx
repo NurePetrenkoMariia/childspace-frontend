@@ -35,6 +35,15 @@ const SchedulePage = () => {
     const [teachersList, setTeachersList] = useState([]);
     const [groupsList, setGroupsList] = useState([]);
     const [subjectsList, setSubjectsList] = useState([]);
+    const [notification, setNotification] = useState(
+        {
+            isOpen: false,
+            type: '',
+            message: ''
+        }
+    );
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
 
     const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
     useEffect(() => {
@@ -241,7 +250,7 @@ const SchedulePage = () => {
     const handleSaveEdit = async () => {
 
         if (!editFormData.startTime || !editFormData.endTime) {
-            alert("Будь ласка, вкажіть і час початку, і час кінця заняття.");
+            setNotification({ isOpen: true, type: 'error', message: "Будь ласка, вкажіть і час початку, і час кінця заняття." });
             return;
         }
 
@@ -249,7 +258,7 @@ const SchedulePage = () => {
         const end = new Date(editFormData.endTime);
 
         if (start >= end) {
-            alert("Помилка: Час початку не може бути пізніше (або дорівнювати) часу кінця!");
+            setNotification({ isOpen: true, type: 'error', message: "Помилка: Час початку не може бути пізніше (або дорівнювати) часу кінця!" });
             return;
         }
 
@@ -258,23 +267,30 @@ const SchedulePage = () => {
             setIsEditMode(false);
             setSelectedEvent(null);
             setRefreshTrigger(prev => prev + 1);
-            alert("Розклад успішно оновлено!");
+            setNotification({ isOpen: true, type: 'success', message: "Розклад успішно оновлено!" });
         } catch (error) {
             console.error("Помилка при оновленні:", error);
-            alert("Не вдалося зберегти зміни");
+            setNotification({ isOpen: true, type: 'error', message: "Не вдалося зберегти зміни." });
         }
     };
 
-    const handleDelete = async (recordId) => {
-        if (window.confirm("Ви впевнені, що хочете видалити цей запис? Цю дію неможливо скасувати.")) {
-            try {
-                await api.delete(`/schedule/${recordId}`);
-                setSelectedEvent(null);
-                setRefreshTrigger(prev => prev + 1);
-            } catch (err) {
-                console.error("Помилка при видаленні запису:", err);
-                alert("Не вдалося видалити матеріал. Спробуйте пізніше.");
-            }
+    const handleDelete = (recordId) => {
+        setItemToDelete(recordId);
+        setIsDeleteConfirmOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await api.delete(`/schedule/${itemToDelete}`);
+            setSelectedEvent(null);
+            setRefreshTrigger(prev => prev + 1);
+            setIsDeleteConfirmOpen(false);
+            setItemToDelete(null);
+            setNotification({ isOpen: true, type: 'success', message: "Запис успішно видалено!" });
+        } catch (err) {
+            console.error("Помилка при видаленні запису:", err);
+            setIsDeleteConfirmOpen(false);
+            setNotification({ isOpen: true, type: 'error', message: "Не вдалося видалити запис. Спробуйте пізніше." });
         }
     };
 
@@ -293,36 +309,39 @@ const SchedulePage = () => {
     const handleSaveNewRecord = async () => {
 
         if (!addFormData.startTime || !addFormData.endTime) {
-            alert("Будь ласка, вкажіть і час початку, і час кінця заняття.");
-            return; 
+            setNotification({ isOpen: true, type: 'error', message: "Будь ласка, вкажіть і час початку, і час кінця заняття." }); 
+            return;
         }
 
         const start = new Date(addFormData.startTime);
         const end = new Date(addFormData.endTime);
 
         if (start >= end) {
-            alert("Помилка: Час початку не може бути пізніше (або дорівнювати) часу кінця!");
-            return; 
+            setNotification({ isOpen: true, type: 'error', message: "Помилка: Час початку не може бути пізніше (або дорівнювати) часу кінця!" });
+            return;
         }
 
         try {
             await api.post('/schedule', addFormData);
             setIsAddModalOpen(false);
             setRefreshTrigger(prev => prev + 1);
-            alert("Нове заняття успішно додано до розкладу!");
+            setNotification({ isOpen: true, type: 'success', message: "Нове заняття успішно додано до розкладу!" });
         } catch (error) {
             console.error("Помилка додавання нового заняття до розкладу:", "");
-            alert("Не вдалося створити заняття.");
+            setNotification({ isOpen: true, type: 'error', message: "Не вдалося створити заняття." });
         }
     };
 
-    const availableGroupsForEdit = editFormData.subjectId 
-        ? groupsList.filter(g => g.subjectId === editFormData.subjectId) 
+    const availableGroupsForEdit = editFormData.subjectId
+        ? groupsList.filter(g => g.subjectId === editFormData.subjectId)
         : [];
 
-    const availableGroupsForAdd = addFormData.subjectId 
-        ? groupsList.filter(g => g.subjectId === addFormData.subjectId) 
+    const availableGroupsForAdd = addFormData.subjectId
+        ? groupsList.filter(g => g.subjectId === addFormData.subjectId)
         : [];
+
+    const filteredSubjects = subjectsList.filter(s => s.centerId === appliedCenter);
+    const filteredTeachers = teachersList.filter(t => t.centerId === appliedCenter);
 
     return (
         <div className="schedule-page-container">
@@ -436,7 +455,7 @@ const SchedulePage = () => {
                                         onChange={e => setEditFormData({ ...editFormData, subjectId: e.target.value })}
                                     >
                                         <option value="">Оберіть предмет</option>
-                                        {subjectsList.map(s => (
+                                        {filteredSubjects.map(s => (
                                             <option key={s.id} value={s.id}>{s.name} ({s.id.substring(0, 8)})</option>
                                         ))}
                                     </select>
@@ -471,7 +490,7 @@ const SchedulePage = () => {
                                         onChange={e => setEditFormData({ ...editFormData, teacherId: e.target.value })}
                                     >
                                         <option value="">Оберіть викладача</option>
-                                        {teachersList.map(t => (
+                                        {filteredTeachers.map(t => (
                                             <option key={t.id} value={t.id}>{t.firstName} {t.lastName} ({t.email})</option>
                                         ))}
                                     </select>
@@ -540,8 +559,7 @@ const SchedulePage = () => {
                         </div>
                     </div>
                 </div>
-            )
-            }
+            )}
 
             {isAddModalOpen && (
                 <div className='event-modal-overlay' onClick={() => setIsAddModalOpen(false)}>
@@ -560,7 +578,7 @@ const SchedulePage = () => {
                                     onChange={e => setAddFormData({ ...addFormData, subjectId: e.target.value })}
                                 >
                                     <option value="">Оберіть предмет</option>
-                                    {subjectsList.map(s => (
+                                    {filteredSubjects.map(s => (
                                         <option key={s.id} value={s.id}>{s.name} ({s.id.substring(0, 8)})</option>
                                     ))}
                                 </select>
@@ -585,7 +603,7 @@ const SchedulePage = () => {
                                     onChange={e => setAddFormData({ ...addFormData, teacherId: e.target.value })}
                                 >
                                     <option value="">Оберіть викладача</option>
-                                    {teachersList.map(t => (
+                                    {filteredTeachers.map(t => (
                                         <option key={t.id} value={t.id}>{t.firstName} {t.lastName} ({t.email})</option>
                                     ))}
                                 </select>
@@ -620,6 +638,64 @@ const SchedulePage = () => {
                             </button>
                             <button className="apply-btn" onClick={handleSaveNewRecord} style={{ flex: 1 }}>
                                 Зберегти
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {isDeleteConfirmOpen && (
+                <div className="profile-modal-overlay" style={{ zIndex: 3000 }} onClick={() => setIsDeleteConfirmOpen(false)}>
+                    <div className="profile-modal-content" onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '40px', marginBottom: '10px' }}>⚠️</div>
+                        <h2 className="modal-title" style={{ marginTop: 0, textAlign: 'center' }}>
+                            Видалення запису
+                        </h2>
+                        <p className="profile-modal-text">
+                            Ви впевнені, що хочете видалити це заняття з розкладу?
+                        </p>
+                        <div className="profile-modal-actions" style={{ justifyContent: 'center' }}>
+                            <button
+                                className="cancel-btn"
+                                onClick={() => setIsDeleteConfirmOpen(false)}
+                            >
+                                Скасувати
+                            </button>
+                            <button
+                                className="confirm-btn"
+                                onClick={confirmDelete}
+                                style={{ backgroundColor: '#D30000', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
+                            >
+                                Так, видалити
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {notification.isOpen && (
+                <div className="profile-modal-overlay" onClick={() => setNotification({ ...notification, isOpen: false })} style={{ zIndex: 4000 }}>
+                    <div className="profile-modal-content" onClick={e => e.stopPropagation()}>
+                        <h2 
+                            className="modal-title" 
+                            style={{ 
+                                marginTop: 0, 
+                                textAlign: 'center',
+                                color: notification.type === 'error' ? '#e74c3c' : '#4F169E'
+                            }}
+                        >
+                            {notification.type === 'error' ? '⚠️ Помилка' : '✅ Успіх'}
+                        </h2>
+                        
+                        <p className="profile-modal-text">
+                            {notification.message}
+                        </p>
+                        
+                        <div className="profile-modal-actions" style={{ justifyContent: 'center' }}>
+                            <button
+                                className="cancel-btn"
+                                style={{ maxWidth: '200px' }}
+                                onClick={() => setNotification({ ...notification, isOpen: false })}
+                            >
+                                Зрозуміло
                             </button>
                         </div>
                     </div>
