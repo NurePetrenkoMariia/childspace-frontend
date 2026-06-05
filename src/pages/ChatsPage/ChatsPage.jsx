@@ -62,6 +62,22 @@ const ChatsPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newChatName, setNewChatName] = useState("");
 
+    const [notification, setNotification] = useState(
+        {
+            isOpen: false,
+            type: '',
+            message: ''
+        }
+    );
+
+    const[deleteConfirm, setDeleteConfirm] = useState({
+        isOpen: false,
+        type: '',
+        id: null,
+        title: '',
+        text: ''
+    });
+
     const filteredChats = chatsList.filter(chat =>
         chat.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -159,11 +175,13 @@ const ChatsPage = () => {
             setNewChatName("");
             setIsModalOpen(false);
             setActiveChatId(newChat.id);
+            setNotification({ isOpen: true, type: 'success', message: "Новий чат успішно створено!" });
         } catch (error) {
             console.error("Помилка при створенні чату:", error);
-            alert("Не вдалося створити чат.");
+            setNotification({ isOpen: true, type: 'error', message: "Не вдалося створити чат." });
         }
     };
+
 
     const startEditingChat = (chat, e) => {
         e.stopPropagation();
@@ -191,24 +209,90 @@ const ChatsPage = () => {
             setEditingChatId(null);
         } catch (error) {
             console.error("Помилка редагування чату:", error);
-            alert("Не вдалося оновити назву чату.");
+            setNotification({ isOpen: true, type: 'error', message: "Не вдалося оновити назву чату." });
         }
     };
 
-    const handleDeleteChat = async (id, e) => {
+    const initiateDeleteChat = (id, e) => {
         e.stopPropagation();
-        if (window.confirm("Ви впевнені, що хочете видалити цей чат? Всі повідомлення будуть втрачені!")) {
-            try {
+        setDeleteConfirm({
+            isOpen: true,
+            type: 'chat',
+            id: id,
+            title: 'Видалення чату',
+            text: 'Ви впевнені, що хочете видалити цей чат? Всі повідомлення будуть безповоротно втрачені!'
+        });
+    };
+
+    const initiateRemoveParticipant = (userId) => {
+        setDeleteConfirm({
+            isOpen: true,
+            type: 'participant',
+            id: userId,
+            title: 'Видалення користувача',
+            text: 'Ви впевнені, що хочете видалити цього користувача з чату?'
+        });
+    };
+
+    const initiateDeleteMessage = (messageId) => {
+        setDeleteConfirm({
+            isOpen: true,
+            type: 'message',
+            id: messageId,
+            title: 'Видалення повідомлення',
+            text: 'Ви впевнені, що хочете видалити це повідомлення?'
+        });
+    };
+
+    /* const handleDeleteChat = async (id, e) => {
+         e.stopPropagation();
+         if (window.confirm("Ви впевнені, що хочете видалити цей чат? Всі повідомлення будуть втрачені!")) {
+             try {
+                 await api.delete(`/chat/${id}`);
+                 setChatsList(prevChats => prevChats.filter(chat => chat.id !== id));
+                 if (activeChatId === id) {
+                     setActiveChatId(null);
+                     setMessages([]);
+                 }
+             } catch (error) {
+                 console.error("Помилка видалення чату:", error);
+                 alert("Не вдалося видалити чат.");
+             }
+         }
+     };*/
+
+    const executeDelete = async () => {
+        const { type, id } = deleteConfirm;
+
+        try {
+            if (type === 'chat') {
                 await api.delete(`/chat/${id}`);
                 setChatsList(prevChats => prevChats.filter(chat => chat.id !== id));
                 if (activeChatId === id) {
                     setActiveChatId(null);
                     setMessages([]);
                 }
-            } catch (error) {
-                console.error("Помилка видалення чату:", error);
-                alert("Не вдалося видалити чат.");
+                setNotification({ isOpen: true, type: 'success', message: "Чат успішно видалено!" });
             }
+            else if (type === 'participant') {
+                await api.delete(`/chat/${activeChatId}/participants/${id}`);
+                setParticipants(prevParticipants => prevParticipants.filter(p => p.id !== id));
+                setChatsList(prevChats => prevChats.map(chat =>
+                    chat.id === activeChatId ? { ...chat, participants: Math.max(0, chat.participants - 1) } : chat
+                ));
+                setNotification({ isOpen: true, type: 'success', message: "Користувача видалено з чату." });
+            }
+            else if (type === 'message') {
+                await api.delete(`/message/${id}`);
+                setMessages(prevMessages => prevMessages.filter(msg => msg.id !== id));
+                setNotification({ isOpen: true, type: 'success', message: "Повідомлення видалено." });
+            }
+        } catch (error) {
+            console.error(`Помилка видалення (${type}):`, error);
+            const errorMessage = error.response?.data?.message || "Не вдалося виконати дію.";
+            setNotification({ isOpen: true, type: 'error', message: errorMessage });
+        } finally {
+            setDeleteConfirm({ isOpen: false, type: '', id: null, title: '', text: '' });
         }
     };
 
@@ -268,7 +352,7 @@ const ChatsPage = () => {
                     if (chat.id === activeChatId) {
                         return {
                             ...chat,
-                            lastMessage: newMsg 
+                            lastMessage: newMsg
                         };
                     }
                     return chat;
@@ -345,38 +429,16 @@ const ChatsPage = () => {
                     ? { ...chat, participants: chat.participants + 1 }
                     : chat
             ));
-
+            setNotification({ isOpen: true, type: 'success', message: "Користувача успішно додано!" });
         } catch (error) {
             console.error("Помилка при додаванні користувача:", error);
-            alert(error.response?.data?.message || "Не вдалося додати користувача до чату.");
+            setNotification({
+                isOpen: true,
+                type: 'error',
+                message: error.response?.data?.message || "Не вдалося додати користувача до чату."
+            });
         }
 
-    };
-
-    const handleRemoveParticipant = async (userIdToRemove) => {
-        if (!activeChatId) {
-            return;
-        }
-
-        if (window.confirm("Ви впевнені, що хочете видалити цього користувача з чату?")) {
-            try {
-                await api.delete(`/chat/${activeChatId}/participants/${userIdToRemove}`);
-
-                setParticipants(prevParticipants =>
-                    prevParticipants.filter(p => p.id !== userIdToRemove)
-                );
-
-                setChatsList(prevChats => prevChats.map(chat =>
-                    chat.id === activeChatId
-                        ? { ...chat, participants: Math.max(0, chat.participants - 1) }
-                        : chat
-                ));
-
-            } catch (error) {
-                console.error("Помилка при видаленні користувача:", error);
-                alert(error.response?.data?.message || "Не вдалося видалити користувача з чату.");
-            }
-        }
     };
 
     const handleScroll = async (e) => {
@@ -401,18 +463,6 @@ const ChatsPage = () => {
                 console.error("Помилка завантаження старих повідомлень:", error);
             } finally {
                 setIsLoadingMore(false);
-            }
-        }
-    };
-
-    const handleDeleteMessage = async (messageId) => {
-        if (window.confirm("Ви впевнені, що хочете видалити це повідомлення?")) {
-            try {
-                await api.delete(`/message/${messageId}`);
-                setMessages(prevMessages => prevMessages.filter(msg => msg.id !== messageId));
-            } catch (error) {
-                console.error("Помилка видалення повідомлення:", error);
-                alert("Не вдалося видалити повідомлення.");
             }
         }
     };
@@ -442,7 +492,7 @@ const ChatsPage = () => {
             setEditingMessageId(null);
         } catch (error) {
             console.error("Помилка редагування повідомлення:", error);
-            alert("Не вдалося зберегти зміни.");
+            setNotification({ isOpen: true, type: 'error', message: "Не вдалося зберегти зміни." });
         }
     };
 
@@ -524,7 +574,7 @@ const ChatsPage = () => {
                                                             </button>
                                                             <button
                                                                 className="chat-edit-icon-btn chat-delete-icon-btn"
-                                                                onClick={(e) => handleDeleteChat(chat.id, e)}
+                                                                onClick={(e) => initiateDeleteChat(chat.id, e)}
                                                                 title="Видалити чат"
                                                             >
                                                                 <img src={isActive ? deleteIcon : deleteIconDark} alt="Delete" />
@@ -650,7 +700,7 @@ const ChatsPage = () => {
                                         {(isMyMessage || isAdmin) && (
                                             <button
                                                 className="message-delete-btn"
-                                                onClick={() => handleDeleteMessage(msg.id)}
+                                                onClick={() => initiateDeleteMessage(msg.id)}
                                                 title="Видалити повідомлення"
                                             >
                                                 <img src={deleteIconDark} alt="Delete" />
@@ -766,7 +816,7 @@ const ChatsPage = () => {
                                             {isAdmin && participant.email !== 'superadmin@childspace.com' && !isMe && (
                                                 <button
                                                     className="remove-participant-btn"
-                                                    onClick={() => handleRemoveParticipant(participant.id)}
+                                                    onClick={() => initiateRemoveParticipant(participant.id)}
                                                 >
                                                     Видалити
                                                 </button>
@@ -852,7 +902,64 @@ const ChatsPage = () => {
                     </div>
                 </div>
             )}
-
+            {deleteConfirm.isOpen && (
+                <div className="profile-modal-overlay" style={{ zIndex: 3000 }} onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })}>
+                    <div className="profile-modal-content" onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '40px', marginBottom: '10px' }}>⚠️</div>
+                        <h2 className="modal-title" style={{ marginTop: 0, textAlign: 'center' }}>
+                            {deleteConfirm.title}
+                        </h2>
+                        <p className="profile-modal-text">
+                            {deleteConfirm.text}
+                        </p>
+                        <div className="profile-modal-actions" style={{ justifyContent: 'center' }}>
+                            <button
+                                className="cancel-btn"
+                                onClick={() => setDeleteConfirm({ ...deleteConfirm, isOpen: false })}
+                            >
+                                Скасувати
+                            </button>
+                            <button
+                                className="confirm-btn"
+                                onClick={executeDelete}
+                                style={{ backgroundColor: '#D30000', color: 'white', border: 'none', borderRadius: '30px' }}
+                            >
+                                Так, видалити
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {notification.isOpen && (
+                <div className="profile-modal-overlay" onClick={() => setNotification({ ...notification, isOpen: false })} style={{ zIndex: 4000 }}>
+                    <div className="profile-modal-content" onClick={e => e.stopPropagation()}>
+                        <h2 
+                            className="modal-title" 
+                            style={{ 
+                                marginTop: 0, 
+                                textAlign: 'center',
+                                color: notification.type === 'error' ? '#e74c3c' : '#4F169E'
+                            }}
+                        >
+                            {notification.type === 'error' ? '⚠️ Помилка' : '✅ Успіх'}
+                        </h2>
+                        
+                        <p className="profile-modal-text">
+                            {notification.message}
+                        </p>
+                        
+                        <div className="profile-modal-actions" style={{ justifyContent: 'center' }}>
+                            <button
+                                className="cancel-btn"
+                                style={{ maxWidth: '200px' }}
+                                onClick={() => setNotification({ ...notification, isOpen: false })}
+                            >
+                                Зрозуміло
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
