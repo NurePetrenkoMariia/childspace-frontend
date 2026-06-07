@@ -1186,9 +1186,8 @@ const AdminPanel = () => {
                                 Скасувати
                             </button>
                             <button
-                                className="confirm-btn"
+                                className="profile-logout-btn"
                                 onClick={confirmDelete}
-                                style={{ backgroundColor: '#D30000', color: 'white', border: 'none', borderRadius: '30px', fontWeight: 'bold', cursor: 'pointer' }}
                             >
                                 Так, видалити
                             </button>

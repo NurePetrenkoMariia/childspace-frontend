@@ -130,7 +130,6 @@ const Sidebar = () => {
                             <button
                                 className="profile-logout-btn confirm-logout-btn"
                                 onClick={confirmLogout}
-                                style={{ marginBottom: '0px' }}
                             >
                                 Так, вийти
                             </button>

@@ -244,23 +244,6 @@ const ChatsPage = () => {
         });
     };
 
-    /* const handleDeleteChat = async (id, e) => {
-         e.stopPropagation();
-         if (window.confirm("Ви впевнені, що хочете видалити цей чат? Всі повідомлення будуть втрачені!")) {
-             try {
-                 await api.delete(`/chat/${id}`);
-                 setChatsList(prevChats => prevChats.filter(chat => chat.id !== id));
-                 if (activeChatId === id) {
-                     setActiveChatId(null);
-                     setMessages([]);
-                 }
-             } catch (error) {
-                 console.error("Помилка видалення чату:", error);
-                 alert("Не вдалося видалити чат.");
-             }
-         }
-     };*/
-
     const executeDelete = async () => {
         const { type, id } = deleteConfirm;
 
@@ -372,7 +355,8 @@ const ChatsPage = () => {
             });
         } catch (error) {
             console.error("Помилка відправки:", error);
-            alert("Не вдалося відправити повідомлення.");
+            setNotification({ isOpen: true, type: 'error', message: "Не вдалося відправити повідомлення." });
+
         }
     };
 
@@ -920,9 +904,8 @@ const ChatsPage = () => {
                                 Скасувати
                             </button>
                             <button
-                                className="confirm-btn"
+                                className="profile-logout-btn"
                                 onClick={executeDelete}
-                                style={{ backgroundColor: '#D30000', color: 'white', border: 'none', borderRadius: '30px' }}
                             >
                                 Так, видалити
                             </button>

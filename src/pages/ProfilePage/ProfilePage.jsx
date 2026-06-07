@@ -219,7 +219,11 @@ const ProfilePage = () => {
                 </div>
 
                 <div className="logout-section">
-                    <button className="profile-logout-btn" onClick={handleLogoutClick}>
+                    <button
+                        className="profile-logout-btn"
+                        onClick={handleLogoutClick}
+                        style={{ marginBottom: '10px' }}
+                    >
                         Вийти з акаунту
                     </button>
                 </div>
@@ -243,7 +247,6 @@ const ProfilePage = () => {
                             <button
                                 className="profile-logout-btn confirm-logout-btn"
                                 onClick={confirmLogout}
-                                style={{marginBottom: '0px'}}
                             >
                                 Так, вийти
                             </button>

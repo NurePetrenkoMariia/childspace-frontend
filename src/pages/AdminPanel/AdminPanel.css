@@ -302,6 +302,8 @@
     box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2);
     border: none;
     border-radius: 9px;
+    font-size: 15px;
+    font-weight: 700;
 }
 
 .confirm-btn:hover {
