@@ -36,6 +36,10 @@ const MaterialsPage = () => {
         groupId: ''
     });
 
+    const [notification, setNotification] = useState({ isOpen: false, type: '', message: '' });
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
+
     useEffect(() => {
         const fetchSubjectDetails = async () => {
             try {
@@ -101,7 +105,7 @@ const MaterialsPage = () => {
 
     const handleCreateMaterial = async () => {
         if (!newMaterial.title || !newMaterial.file) {
-            alert("Будь ласка, введіть назву та оберіть файл!");
+            setNotification({ isOpen: true, type: 'error', message: 'Будь ласка, введіть назву та оберіть файл!' });
             return;
         }
 
@@ -122,7 +126,7 @@ const MaterialsPage = () => {
             setRefreshTrigger(prev => prev + 1);
         } catch (err) {
             console.error("Помилка при створенні матеріалу:", err);
-            alert("Не вдалося додати матеріал. Перевірте, чи підтримує бекенд завантаження файлів.");
+            setNotification({ isOpen: true, type: 'error', message: 'Не вдалося додати матеріал' });
         }
     };
 
@@ -132,16 +136,27 @@ const MaterialsPage = () => {
 
     const canAddMaterial = isAdmin || (isTeacher && groups.some(g => g.teacherId === user.id));
 
-    const handleDeleteMaterial = async (materialId) => {
-        if (window.confirm("Ви впевнені, що хочете видалити цей матеріал? Цю дію неможливо скасувати.")) {
-            try {
-                await api.delete(`/material/${materialId}`);
+    const confirmDeleteMaterial = async (materialId) => {
+        setItemToDelete(materialId);
+        setIsDeleteConfirmOpen(true);
+    };
 
-                setRefreshTrigger(prev => prev + 1);
-            } catch (err) {
-                console.error("Помилка при видаленні матеріалу:", err);
-                alert("Не вдалося видалити матеріал. Спробуйте пізніше.");
-            }
+    const executeDeleteMaterial = async () => {
+        if (!itemToDelete) {
+            return;
+        }
+
+        try {
+            await api.delete(`/material/${materialId}`);
+
+            setRefreshTrigger(prev => prev + 1);
+            setIsDeleteConfirmOpen(false);
+            setItemToDelete(null);
+            setNotification({ isOpen: true, type: 'success', message: 'Матеріал успішно видалено!' });
+        } catch (err) {
+            console.error("Помилка при видаленні матеріалу:", err);
+            setIsDeleteConfirmOpen(false);
+            setNotification({ isOpen: true, type: 'error', message: 'Не вдалося видалити матеріал. Спробуйте пізніше.' });
         }
     };
 
@@ -158,7 +173,7 @@ const MaterialsPage = () => {
 
     const handleEditMaterial = async () => {
         if (!editMaterial.title) {
-            alert("Будь ласка, введіть назву!");
+            setNotification({ isOpen: true, type: 'error', message: 'Будь ласка, введіть назву!' });
             return;
         }
 
@@ -184,9 +199,9 @@ const MaterialsPage = () => {
         } catch (err) {
             console.error("Помилка при оновленні матеріалу:", err);
             if (err.response && err.response.status === 403) {
-                alert("У вас немає прав для редагування цього матеріалу.");
+                setNotification({ isOpen: true, type: 'error', message: 'У вас немає прав для редагування цього матеріалу.' });
             } else {
-                alert("Не вдалося оновити матеріал.");
+                setNotification({ isOpen: true, type: 'error', message: 'Не вдалося оновити матеріал.' });
             }
         }
     };
@@ -219,7 +234,8 @@ const MaterialsPage = () => {
                     {canAddMaterial && (
                         <button
                             className="add-material-btn"
-                            onClick={() => setIsAddModalOpen(true)}
+                            onClick={() => { setIsAddModalOpen(true); setAddErrors({}) }}
+
                         >
                             + Додати матеріал
                         </button>
@@ -251,7 +267,7 @@ const MaterialsPage = () => {
                                         {canManageMaterial && (
                                             <div className='material-info-right'>
                                                 <button className="material-text-btn" onClick={() => handleEditClick(mat)}>Редагувати</button>
-                                                <button className="material-text-btn" onClick={() => handleDeleteMaterial(mat.id)}>Видалити</button>
+                                                <button className="material-text-btn" onClick={() => confirmDeleteMaterial(mat.id)}>Видалити</button>
                                             </div>
                                         )}
                                     </div>
@@ -397,6 +413,63 @@ const MaterialsPage = () => {
                                 <button className="cancel-btn" onClick={() => setIsEditModalOpen(false)} style={{ flex: 1 }}>Скасувати</button>
                                 <button className="apply-btn" onClick={handleEditMaterial} style={{ flex: 1 }}>Зберегти зміни</button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {isDeleteConfirmOpen && (
+                <div className="profile-modal-overlay" style={{ zIndex: 3000 }} onClick={() => setIsDeleteConfirmOpen(false)}>
+                    <div className="profile-modal-content" onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '40px', marginBottom: '10px' }}>⚠️</div>
+                        <h2 className="modal-title" style={{ marginTop: 0, textAlign: 'center' }}>
+                            Видалення матеріалу
+                        </h2>
+                        <p className="profile-modal-text">
+                            Ви впевнені, що хочете видалити цей матеріал? Цю дію неможливо скасувати.
+                        </p>
+                        <div className="profile-modal-actions" style={{ justifyContent: 'center' }}>
+                            <button
+                                className="cancel-btn"
+                                onClick={() => setIsDeleteConfirmOpen(false)}
+                            >
+                                Скасувати
+                            </button>
+                            <button
+                                className="profile-logout-btn"
+                                onClick={executeDeleteMaterial}
+                            >
+                                Так, видалити
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {notification.isOpen && (
+                <div className="profile-modal-overlay" onClick={() => setNotification({ ...notification, isOpen: false })} style={{ zIndex: 4000 }}>
+                    <div className="profile-modal-content" onClick={e => e.stopPropagation()}>
+                        <h2
+                            className="modal-title"
+                            style={{
+                                marginTop: 0,
+                                textAlign: 'center',
+                                color: notification.type === 'error' ? '#e74c3c' : '#4F169E'
+                            }}
+                        >
+                            {notification.type === 'error' ? '⚠️ Помилка' : '✅ Успіх'}
+                        </h2>
+
+                        <p className="profile-modal-text">
+                            {notification.message}
+                        </p>
+
+                        <div className="profile-modal-actions" style={{ justifyContent: 'center' }}>
+                            <button
+                                className="cancel-btn"
+                                style={{ maxWidth: '200px' }}
+                                onClick={() => setNotification({ ...notification, isOpen: false })}
+                            >
+                                Зрозуміло
+                            </button>
                         </div>
                     </div>
                 </div>
