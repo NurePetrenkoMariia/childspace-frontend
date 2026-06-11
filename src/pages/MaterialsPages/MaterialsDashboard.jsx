@@ -3,7 +3,7 @@ import SubjectGrid from '../../components/SubjectGrid/SubjectGrid';
 const MaterialsDashboard = () => {
     const title = (
         <header className="materials-header">
-            <h1 className="materials-title">Матеріали</h1>
+            <h1 className="page-title">Матеріали</h1>
         </header>
     );
 

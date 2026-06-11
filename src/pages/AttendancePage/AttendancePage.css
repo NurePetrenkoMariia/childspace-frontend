@@ -1,3 +1,7 @@
+.attendance-container{
+    padding-bottom: 10px;
+}
+
 .attendance-card {
     background-color: white;
     border-radius: 16px;

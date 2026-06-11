@@ -1,14 +1,13 @@
 .materials-page-title {
-    font-size: 20px;
+    font-size: 26px;
     color: #4F169E;
     margin-bottom: 20px;
-    font-weight: 600;
+    font-weight: 800;
 }
 
 .materials-container {
     display: flex;
     flex-direction: column;
-    padding: 20px;
     height: 100vh;
     box-sizing: border-box;
 }

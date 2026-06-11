@@ -218,7 +218,7 @@ const AttendancePage = () => {
 
     return (
         <div className="attendance-container">
-            <h1 className="materials-page-title">Відвідування</h1>
+            <h1 className="page-title">Відвідування</h1>
             <div className="attendance-card">
                 <div className="attendance-card-filters">
                     <select
