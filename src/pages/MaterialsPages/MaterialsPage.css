@@ -184,17 +184,45 @@
 
 .cancel-btn {
     border-radius: 15px;
+    font-size: 15px;
 }
 
 .apply-btn:hover {
     transform: translateY(-2px);
 }
 
-.materials-actions-top-filter{
+.materials-actions-top-filter {
     padding: 10px 15px;
     border-radius: 12px;
     border: 1px solid #A779E6;
     outline: none;
     color: #4F169E;
     min-width: 200px;
+}
+
+.custom-file-upload {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 5px;
+}
+
+.file-upload-btn {
+    background-color: #EDE4F5;
+    color: #4F169E;
+    border-radius: 12px;
+    cursor: pointer;
+    padding: 10px 20px;
+}
+
+.file-upload-btn:hover {
+    background-color: #E2D5F0;
+    transform: translateY(-1px);
+}
+
+.file-name-display {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 200px;
 }

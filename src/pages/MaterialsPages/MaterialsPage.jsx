@@ -39,6 +39,7 @@ const MaterialsPage = () => {
     const [notification, setNotification] = useState({ isOpen: false, type: '', message: '' });
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
+    const [addErrors, setAddErrors] = useState(null);
 
     useEffect(() => {
         const fetchSubjectDetails = async () => {
@@ -344,10 +345,28 @@ const MaterialsPage = () => {
 
                             <div className="form-group" style={{ marginBottom: '20px' }}>
                                 <label>Файл *</label>
-                                <input
-                                    type="file"
-                                    onChange={e => setNewMaterial({ ...newMaterial, file: e.target.files[0] })}
-                                />
+                                <div className="custom-file-upload">
+                                    <label htmlFor="add-file-input" className="file-upload-btn">
+                                        {newMaterial.file ? "Змінити файл" : "Обрати файл"}
+                                    </label>
+                                    <input
+                                        id="add-file-input"
+                                        type="file"
+                                        onChange={e => {
+                                            setNewMaterial({ ...newMaterial, file: e.target.files[0] });
+                                            if (addErrors.file) setAddErrors({ ...addErrors, file: '' });
+                                        }}
+                                        style={{ display: 'none' }}
+                                    />
+                                    <span className="file-name-display">
+                                        {newMaterial.file ? newMaterial.file.name : "Файл не обрано"}
+                                    </span>
+                                </div>
+                                {addErrors.file && (
+                                    <span style={{ color: '#e74c3c', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                                        {addErrors.file}
+                                    </span>
+                                )}
                             </div>
 
                             <div className='edit-form-btns'>
@@ -404,10 +423,22 @@ const MaterialsPage = () => {
                             </div>
                             <div className="form-group" style={{ marginBottom: '20px' }}>
                                 <label>Новий файл (залиште порожнім, щоб не змінювати)</label>
-                                <input
-                                    type="file"
-                                    onChange={e => setEditMaterial({ ...editMaterial, file: e.target.files[0] })}
-                                />
+                                <div className="custom-file-upload">
+                                    <label htmlFor="edit-file-input" className="file-upload-btn">
+                                        {editMaterial.file ? "Змінити файл" : "Обрати файл"}
+                                    </label>
+
+                                    <input
+                                        id="edit-file-input"
+                                        type="file"
+                                        onChange={e => setEditMaterial({ ...editMaterial, file: e.target.files[0] })}
+                                        style={{ display: 'none' }}
+                                    />
+
+                                    <span className="file-name-display">
+                                        {editMaterial.file ? editMaterial.file.name : "Файл не обрано"}
+                                    </span>
+                                </div>
                             </div>
                             <div className='edit-form-btns'>
                                 <button className="cancel-btn" onClick={() => setIsEditModalOpen(false)} style={{ flex: 1 }}>Скасувати</button>
