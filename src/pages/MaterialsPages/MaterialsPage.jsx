@@ -218,7 +218,8 @@ const MaterialsPage = () => {
                     onMouseOut={(e) => e.target.style.textDecoration = 'none'}
                 >
                     Матеріали
-                </span>{loadingName ? '...' : (subjectName ? ` > ${subjectName}` : '')} </h1>
+                </span>{loadingName ? '...' : (subjectName ? ` > ${subjectName}` : '')}
+            </h1>
             <div className="materials-content-wrapper">
 
                 <div className='materials-actions-top'>
