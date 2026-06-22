@@ -33,7 +33,9 @@ const MaterialsPage = () => {
         title: '',
         description: '',
         file: null,
-        groupId: ''
+        groupId: '',
+        hasExistingFile: false,
+        removeExistingFile: false
     });
 
     const [notification, setNotification] = useState({ isOpen: false, type: '', message: '' });
@@ -105,8 +107,13 @@ const MaterialsPage = () => {
     };
 
     const handleCreateMaterial = async () => {
-        if (!newMaterial.title || !newMaterial.file) {
-            setNotification({ isOpen: true, type: 'error', message: 'Будь ласка, введіть назву та оберіть файл!' });
+        if (!newMaterial.title.trim()) {
+            setNotification({ isOpen: true, type: 'error', message: 'Будь ласка, введіть назву ' });
+            return;
+        }
+
+        if (!newMaterial.file && !newMaterial.description.trim()) {
+            setNotification({ isOpen: true, type: 'error', message: 'Додайте файл або напишіть текстовий опис' });
             return;
         }
 
@@ -148,7 +155,7 @@ const MaterialsPage = () => {
         }
 
         try {
-            await api.delete(`/material/${materialId}`);
+            await api.delete(`/material/${itemToDelete}`);
 
             setRefreshTrigger(prev => prev + 1);
             setIsDeleteConfirmOpen(false);
@@ -167,7 +174,9 @@ const MaterialsPage = () => {
             title: mat.title,
             description: mat.description || '',
             groupId: mat.groupId || '',
-            file: null
+            file: null,
+            hasExistingFile: !!mat.fileUrl,
+            removeExistingFile: false
         });
         setIsEditModalOpen(true);
     };
@@ -185,6 +194,8 @@ const MaterialsPage = () => {
 
             if (editMaterial.file) {
                 formData.append('file', editMaterial.file);
+            } else if (editMaterial.removeExistingFile) {
+                formData.append('LinkUrl', '');
             }
 
             if (editMaterial.groupId) {
@@ -423,7 +434,7 @@ const MaterialsPage = () => {
                                 </select>
                             </div>
                             <div className="form-group" style={{ marginBottom: '20px' }}>
-                                <label>Новий файл (залиште порожнім, щоб не змінювати)</label>
+                                <label>Файл матеріалу</label>
                                 <div className="custom-file-upload">
                                     <label htmlFor="edit-file-input" className="file-upload-btn">
                                         {editMaterial.file ? "Змінити файл" : "Обрати файл"}
@@ -432,14 +443,41 @@ const MaterialsPage = () => {
                                     <input
                                         id="edit-file-input"
                                         type="file"
-                                        onChange={e => setEditMaterial({ ...editMaterial, file: e.target.files[0] })}
+                                        onChange={e => setEditMaterial({
+                                            ...editMaterial,
+                                            file: e.target.files[0],
+                                            removeExistingFile: false
+                                        })}
                                         style={{ display: 'none' }}
                                     />
 
                                     <span className="file-name-display">
-                                        {editMaterial.file ? editMaterial.file.name : "Файл не обрано"}
+                                        {editMaterial.file
+                                            ? editMaterial.file.name
+                                            : (editMaterial.removeExistingFile
+                                                ? "Файл буде видалено"
+                                                : (editMaterial.hasExistingFile ? "Файл збережено" : "Файл не обрано"))}
                                     </span>
                                 </div>
+                                {editMaterial.hasExistingFile && !editMaterial.file && !editMaterial.removeExistingFile && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setEditMaterial({ ...editMaterial, removeExistingFile: true })}
+                                        style={{ marginLeft: '10px', background: 'none', border: 'none', color: '#e74c3c', textDecoration: 'underline', cursor: 'pointer', display: 'flex', justifyContent: 'flex-start' }}
+                                    >
+                                        Видалити файл
+                                    </button>
+                                )}
+
+                                {(editMaterial.file || editMaterial.removeExistingFile) && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setEditMaterial({ ...editMaterial, file: null, removeExistingFile: false })}
+                                        style={{ marginLeft: '10px', background: 'none', border: 'none', color: '#9384A6', textDecoration: 'underline', cursor: 'pointer', display: 'flex', justifyContent: 'flex-start' }}
+                                    >
+                                        Скасувати зміни файлу
+                                    </button>
+                                )}
                             </div>
                             <div className='edit-form-btns'>
                                 <button className="cancel-btn" onClick={() => setIsEditModalOpen(false)} style={{ flex: 1 }}>Скасувати</button>
