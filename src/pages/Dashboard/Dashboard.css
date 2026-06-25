@@ -35,3 +35,174 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 15px rgba(79, 22, 158, 0.4);
 }
+
+.dashboard-container-banner {
+    background-size: cover;
+    background-position: center;
+    width: 100%;
+    min-height: 650px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 10px 20px rgba(79, 22, 158, 0.1);
+    border-radius: 20px;
+}
+
+.banner-content {
+    color: white;
+    width: 100%;
+    margin: 50px;
+}
+
+.banner-title {
+    font-size: 50px;
+    text-align: center;
+    font-weight: 800;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.banner-subtitle {
+    display: flex;
+    justify-self: center;
+    font-size: 30px;
+    line-height: 1.5;
+    margin-bottom: 30px;
+    opacity: 0.9;
+    font-weight: 500;
+    max-width: 850px;
+    text-align: center;
+}
+
+.banner-description {
+    display: flex;
+    font-size: 18px;
+    justify-content: space-between; 
+    gap: 40px; 
+    margin: 40px auto; 
+    max-width: 1000px;
+}
+
+.role-column {
+    flex: 1; 
+    text-align: left; 
+    background: rgba(42, 14, 44, 0.4); 
+    padding: 25px;
+    border-radius: 16px;
+    backdrop-filter: blur(4px);
+}
+
+.role-header {
+    display: flex;
+    align-items: center; 
+    gap: 15px; 
+    font-size: 22px;
+    margin-bottom: 15px;
+}
+
+.banner-description p{
+    font-size: 18px;
+    line-height: 1.5;
+    margin: 0;
+    opacity: 0.9;
+}
+
+.banner-scroll-btn {
+    display: flex;
+    justify-self: center;
+    background-color: white;
+    color: #4F169E;
+    border: none;
+    padding: 14px 28px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.banner-scroll-btn:hover {
+    background-color: #cbb5e0;
+}
+
+.dashboard-container {
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 30px;
+    box-sizing: border-box;
+}
+
+.role-icon{
+    width: 35px;
+    height: 35px;
+    object-fit: contain;
+}
+
+.role-benefits-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.role-benefits-list li {
+    position: relative;
+    padding-left: 28px; 
+    margin-bottom: 12px;
+    font-size: 17px;
+    line-height: 1.4;
+    opacity: 0.95;
+}
+
+.role-benefits-list li:last-child {
+    margin-bottom: 0;
+}
+
+.role-benefits-list li::before {
+    content: "✓"; 
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #E8DEF8; 
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.dashboard-container::-webkit-scrollbar {
+    width: 8px;
+    padding-left: 10px;
+}
+
+.dashboard-container::-webkit-scrollbar-track {
+    background: #F9F6FC;
+    border-radius: 10px;
+}
+
+.dashboard-container::-webkit-scrollbar-thumb {
+    background: #A384D6;
+    border-radius: 10px;
+}
+
+.dashboard-container::-webkit-scrollbar-thumb:hover {
+    background: #7245B1;
+}
+
+@media screen and (max-width: 768px) {
+    .dashboard-container-banner {
+        padding: 30px 20px;
+        min-height: auto;
+    }
+
+    .banner-title {
+        font-size: 36px;
+    }
+
+    .banner-subtitle {
+        font-size: 16px;
+    }
+
+    .banner-description {
+        flex-direction: column;
+        gap: 20px;
+    }
+}
