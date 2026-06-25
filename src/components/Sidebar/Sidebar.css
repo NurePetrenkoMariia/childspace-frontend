@@ -76,6 +76,24 @@
     gap: 10px;
 }
 
+.restricted-item {
+    opacity: 0.5;
+    position: relative;
+}
+
+.nav-item.restricted-item:hover .sidebar-custom-icon {
+    transform: none; 
+}
+
+.restricted-item::after {
+    content: "🔒";
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    font-size: 10px;
+    opacity: 0.8;
+}
+
 @media screen and (max-width: 768px) {
     .sidebar {
         width: 100%;
@@ -125,6 +143,12 @@
     .logout-btn {
         padding: 8px 12px;
         margin: 0;
+    }
+
+    .restricted-item::after {
+        bottom: 2px;
+        right: 2px;
+        font-size: 8px;
     }
 
 }

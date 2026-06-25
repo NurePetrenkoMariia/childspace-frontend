@@ -55,7 +55,26 @@ const Sidebar = () => {
         navigate("/login");
     };
 
-    const getNavItemClass = (path) => {
+    const handleNavigation = (path, isRestricted = false) => {
+        if (isRestricted && isGuest) {
+            navigate("/login", {
+                state: {
+                    from: path,
+                    message: "Будь ласка, увійдіть у систему, щоб отримати доступ до цього розділу."
+                }
+            });
+        } else{
+            navigate(path); 
+        }
+    };
+
+    const getNavItemClass = (path, isRestricted = false) => {
+        let baseClass = "nav-item";
+
+        if (isRestricted && isGuest) {
+            baseClass += " restricted-item";
+        }
+
         if (path === "/") {
             const isHomeChild =
                 location.pathname === "/" ||
@@ -65,44 +84,44 @@ const Sidebar = () => {
             return isHomeChild ? "nav-item active" : "nav-item";
         }
         if (location.pathname.startsWith(path)) {
-            return "nav-item active";
+            return `${baseClass} active`;
         }
-        return "nav-item";
+        return baseClass;
     };
 
     return (
         <>
             <div className="sidebar">
                 <div className="nav-icons">
-                    <div className={getNavItemClass("/")} onClick={() => navigate("/")} title="Головна">
+                    <div className={getNavItemClass("/")} onClick={() => handleNavigation("/")} title="Головна">
                         <img src={homeIcon} alt="Home" className="sidebar-custom-icon" />
                     </div>
                     {isAdmin && (
-                        <div className={getNavItemClass("/admin")} onClick={() => navigate("/admin")} title='Адмін-панель'>
+                        <div className={getNavItemClass("/admin")} onClick={() => handleNavigation("/admin")} title='Адмін-панель'>
                             <img src={adminIcon} alt="Admin" className="sidebar-custom-icon" />
                         </div>
                     )}
-                    <div className={getNavItemClass("/schedule")} onClick={() => navigate("/schedule")} title='Розклад'>
+                    <div className={getNavItemClass("/schedule", true)} onClick={() => handleNavigation("/schedule", true)} title='Розклад'>
                         <img src={scheduleIcon} alt="Schedule" className="sidebar-custom-icon" />
                     </div>
                     {canViewAttend && (
-                        <div className={getNavItemClass("/attendance")} onClick={() => navigate("/attendance")} title='Відвідування'>
+                        <div className={getNavItemClass("/attendance")} onClick={() => handleNavigation("/attendance")} title='Відвідування'>
                             <img src={attendanceIcon} alt="Attendance" className="sidebar-custom-icon" />
                         </div>
                     )}
-                    <div className={getNavItemClass("/chats")} onClick={() => navigate("/chats")} title='Чати'>
+                    <div className={getNavItemClass("/chats", true)} onClick={() => handleNavigation("/chats", true)} title='Чати'>
                         <img src={chatIcon} alt="Chat" className="sidebar-custom-icon" />
                         {hasUnreadChats && (
                             <span className="sidebar-unread-dot" title="Є нові повідомлення"></span>
                         )}
                     </div>
-                    <div className={getNavItemClass("/materials")} onClick={() => navigate("/materials")} title='Матеріали'>
+                    <div className={getNavItemClass("/materials", true)} onClick={() => handleNavigation("/materials", true)} title='Матеріали'>
                         <img src={materialsIcon} alt="Materials" className="sidebar-custom-icon" />
                     </div>
                 </div>
                 {!isGuest && (
                     <div className='nav-icons-bottom'>
-                        <div className={getNavItemClass("/profile")} onClick={() => navigate("/profile")} title='Профіль'>
+                        <div className={getNavItemClass("/profile")} onClick={() => handleNavigation("/profile")} title='Профіль'>
                             <img src={profileIcon} alt="Profile" className="sidebar-custom-icon" />
                         </div>
                         <button className="logout-btn" onClick={() => setIsLogoutModalOpen(true)} title='Вихід з акаунта'>

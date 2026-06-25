@@ -8,6 +8,11 @@
     margin: 0;
     padding: 20px;
     box-sizing: border-box;
+    flex-direction: column;
+}
+
+.dashboard-header-center-btn.login-back-btn{
+    margin: 10px;
 }
 
 .login-card {

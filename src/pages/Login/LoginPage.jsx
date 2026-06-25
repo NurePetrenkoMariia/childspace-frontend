@@ -39,6 +39,12 @@ const LoginPage = () => {
     };
     return (
         <div className="login-container">
+            <button className='dashboard-header-center-btn login-back-btn'
+                onClick={() => navigate(-1)}
+                title='Повернутися на попередню сторінку'
+            >
+                ← Повернутися назад
+            </button>
             <div className="login-card">
                 <h1 className="login-title">Увійдіть у свій акаунт</h1>
 
