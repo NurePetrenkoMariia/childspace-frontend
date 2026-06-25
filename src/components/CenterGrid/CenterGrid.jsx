@@ -32,11 +32,14 @@ const CenterGrid = ({ onCenterSelect, titleComponent }) => {
             ) : (
                 <div className="courses-grid">
                     {centers.map((center) => (
-                       <div key={center.id} onClick={() => onCenterSelect(center.id)} style={{cursor: 'pointer'}}>
+                        <div key={center.id} onClick={() => onCenterSelect(center.id)} style={{ cursor: 'pointer' }}>
                             <CourseCard
                                 id={center.id}
                                 title={center.name}
                                 image={center.photoUrl || defaultCourseImg}
+                                address={center.address}
+                                phone={center.phone}
+                                email={center.email}
                             />
                         </div>
                     ))}

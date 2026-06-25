@@ -3,6 +3,7 @@ import SubjectGrid from '../../components/SubjectGrid/SubjectGrid';
 import CenterGrid from '../../components/CenterGrid/CenterGrid';
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../../api/axios';
 import './Dashboard.css';
 import bannerImg from '../../assets/photos/preschool-banner.jpg';
 import parentImg from '../../assets/icons/parent.png';
@@ -22,6 +23,23 @@ const Dashboard = () => {
         return null;
     });
 
+    const [selectedCenterName, setSelectedCenterName] = useState('');
+    useEffect(() => {
+        const fetchCenterDetails = async () => {
+            if (selectedCenterId) {
+                try {
+                    const response = await api.get(`/center/${selectedCenterId}`);
+                    setSelectedCenterName(response.data.name || ''); 
+                } catch (error) {
+                    console.error("Помилка при завантаженні даних центру:", error);
+                }
+            } else {
+                setSelectedCenterName('');
+            }
+        };
+
+        fetchCenterDetails();
+    }, [selectedCenterId]);
     const centersRef = useRef(null);
 
     useEffect(() => {
@@ -41,8 +59,8 @@ const Dashboard = () => {
     const greetingText = user ? `Привіт, ${user.firstName} 👋` : 'Привіт, гостю 👋';
     const showCenterGrid = !selectedCenterId && (isGuest || isSuperAdmin);
     const mainTitle = showCenterGrid
-        ? "Оберіть центр дитячого розвитку:"
-        : "Ось доступні гуртки:";
+        ? "Оберіть центр дитячого розвитку: "
+        : `Ось доступні гуртки центру ${selectedCenterName}:`;
 
     const sectionTitle = <h1 className="welcome-text" style={{ marginTop: '20px' }}>{mainTitle}</h1>;
 
@@ -63,7 +81,10 @@ const Dashboard = () => {
                 {(isSuperAdmin || isGuest) && selectedCenterId && (
                     <button
                         className='dashboard-header-center-btn'
-                        onClick={() => setSelectedCenterId(null)}
+                        onClick={() => {
+                            setSelectedCenterId(null);
+                            setSelectedCenterName('');
+                        }}
                     >
                         ← Обрати інший центр
                     </button>
