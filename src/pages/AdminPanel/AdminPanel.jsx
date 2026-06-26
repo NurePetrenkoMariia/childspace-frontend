@@ -20,7 +20,7 @@ const tableConfig = {
     },
     'Діти': {
         headers: ['ID', 'Ім\'я', 'Прізвище', 'Дата народження', 'Представник дитини', 'Центр', 'Нотатки', 'Дії'],
-        keys: ['id', 'firstName', 'lastName', 'birthDate',  'parentId', 'centerId', 'notes']
+        keys: ['id', 'firstName', 'lastName', 'birthDate', 'parentId', 'centerId', 'notes']
     },
     'Матеріали': {
         headers: ['ID', 'Центр', 'Предмет', 'Група', 'Назва', 'Опис', 'Автор', 'Створено', 'Дії'],
@@ -87,6 +87,7 @@ const AdminPanel = () => {
 
     const { user } = useAuth();
     const isSuperAdmin = user?.roles?.includes('SuperAdmin');
+    const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
 
     const endpointMap = {
         'Центри': '/center',
@@ -610,11 +611,35 @@ const AdminPanel = () => {
                 <div className='table-container'>
                     <div className='table-first-row'>
                         <h2 className='table-title'>{activeTab}</h2>
-                        {activeTab !== 'Заявки' && activeTab !== 'Матеріали' && (activeTab !== 'Центри' || isSuperAdmin) && (
-                            <button className='add-entity-btn' onClick={handleAddClick}>
-                                + Додати запис
-                            </button>
-                        )}
+                        <div className='table-first-row-right'>
+                            {activeTab == 'Користувачі' && (
+                                <select>
+                                    <option value="" disabled>Оберіть роль...</option>
+                                    <option value="CenterAdmin">Адмін центру</option>
+                                    <option value="Teacher">Вчитель</option>
+                                    <option value="Parent">Батько/Мати</option>
+                                </select>
+                            )}
+
+                            {(activeTab === 'Групи' || activeTab === 'Гуртки') && (
+                                <select>
+                                    <option value="" disabled>Оберіть центр</option>
+                                    {centersList.map(center => (
+                                        <option key={center.id} value={center.id}>
+                                            {center.name} (ID: {isMobile ? `${center.id.substring(0, 8)}...` : center.id})
+                                        </option>
+                                    )
+                                    )}
+                                </select>
+                            )}
+
+                            {activeTab !== 'Заявки' && activeTab !== 'Матеріали' && (activeTab !== 'Центри' || isSuperAdmin) && (
+                                <button className='add-entity-btn' onClick={handleAddClick}>
+                                    + Додати запис
+                                </button>
+                            )}
+
+                        </div>
                     </div>
                     <table className='admin-table'>
                         <thead >
@@ -1198,21 +1223,21 @@ const AdminPanel = () => {
             {notification.isOpen && (
                 <div className="profile-modal-overlay" onClick={() => setNotification({ ...notification, isOpen: false })} style={{ zIndex: 4000 }}>
                     <div className="profile-modal-content" onClick={e => e.stopPropagation()}>
-                        <h2 
-                            className="modal-title" 
-                            style={{ 
-                                marginTop: 0, 
+                        <h2
+                            className="modal-title"
+                            style={{
+                                marginTop: 0,
                                 textAlign: 'center',
                                 color: notification.type === 'error' ? '#e74c3c' : '#4F169E'
                             }}
                         >
                             {notification.type === 'error' ? '⚠️ Помилка' : '✅ Успіх'}
                         </h2>
-                        
+
                         <p className="profile-modal-text">
                             {notification.message}
                         </p>
-                        
+
                         <div className="profile-modal-actions" style={{ justifyContent: 'center' }}>
                             <button
                                 className="cancel-btn"
