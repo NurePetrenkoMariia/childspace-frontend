@@ -31,6 +31,7 @@ const AttendancePage = () => {
 
     const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
     const canEdit = isAdmin;
+    const isSuperAdmin = user?.roles?.includes('SuperAdmin');
 
     useEffect(() => {
         const fetchFilterData = async () => {
@@ -88,6 +89,12 @@ const AttendancePage = () => {
             setIsLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (user && !isSuperAdmin && user.centerId) {
+            setSelectedCenter(user.centerId);
+        }
+    }, [user, isSuperAdmin]);
 
     const fetchAttendances = async (lessonId) => {
         try {
@@ -216,26 +223,32 @@ const AttendancePage = () => {
         }
     };
 
+    const totalChildren = childrenList.length;
+    const presentCount = attendances.filter(a => a.status === 0).length;
+    const absentCount = attendances.filter(a => a.status === 1).length;
+
     return (
         <div className="attendance-container">
             <h1 className="page-title">Відвідування</h1>
             <div className="attendance-card">
                 <div className="attendance-card-filters">
-                    <select
-                        value={selectedCenter}
-                        onChange={e => {
-                            setSelectedCenter(e.target.value);
-                            setSelectedSubject('');
-                            setSelectedGroup('');
-                        }}
-                    >
-                        <option value="">Оберіть центр дит. розвитку</option>
-                        {centers.map(center => (
-                            <option key={center.id} value={center.id}>
-                                {center.name} (ID: {isMobile ? `${center.id.substring(0, 8)}...` : center.id})
-                            </option>
-                        ))}
-                    </select>
+                    {isSuperAdmin && (
+                        <select
+                            value={selectedCenter}
+                            onChange={e => {
+                                setSelectedCenter(e.target.value);
+                                setSelectedSubject('');
+                                setSelectedGroup('');
+                            }}
+                        >
+                            <option value="">Оберіть центр дит. розвитку</option>
+                            {centers.map(center => (
+                                <option key={center.id} value={center.id}>
+                                    {center.name} (ID: {isMobile ? `${center.id.substring(0, 8)}...` : center.id})
+                                </option>
+                            ))}
+                        </select>
+                    )}
                     <select
                         value={selectedSubject}
                         onChange={e => {
@@ -310,6 +323,11 @@ const AttendancePage = () => {
                         </div>
                     ) : (
                         <>
+                            <div className='attendance-analitics'>
+                                <p className='attendance-analitics-instance'>Усього в групі: {totalChildren}</p>
+                                <p className='attendance-analitics-instance' style={{ color: '#1A7540'}}>Присутні: {presentCount}</p>
+                                <p className='attendance-analitics-instance' style={{ color: '#C32918'}}>Відсутні: {absentCount}</p>
+                            </div>
                             <div className='table-rounded-wrapper'>
                                 <table className='attendance-table'>
                                     <thead>
@@ -396,21 +414,21 @@ const AttendancePage = () => {
             {notification.isOpen && (
                 <div className="profile-modal-overlay" onClick={() => setNotification({ ...notification, isOpen: false })} style={{ zIndex: 4000 }}>
                     <div className="profile-modal-content" onClick={e => e.stopPropagation()}>
-                        <h2 
-                            className="modal-title" 
-                            style={{ 
-                                marginTop: 0, 
+                        <h2
+                            className="modal-title"
+                            style={{
+                                marginTop: 0,
                                 textAlign: 'center',
                                 color: notification.type === 'error' ? '#e74c3c' : '#4F169E'
                             }}
                         >
                             {notification.type === 'error' ? '⚠️ Помилка' : '✅ Успіх'}
                         </h2>
-                        
+
                         <p className="profile-modal-text">
                             {notification.message}
                         </p>
-                        
+
                         <div className="profile-modal-actions" style={{ justifyContent: 'center' }}>
                             <button
                                 className="cancel-btn"
