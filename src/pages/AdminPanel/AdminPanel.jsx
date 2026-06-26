@@ -19,15 +19,15 @@ const tableConfig = {
         keys: ['id', 'firstName', 'lastName', 'email', 'centerId', 'phoneNumber', 'role']
     },
     'Діти': {
-        headers: ['ID', 'Ім\'я', 'Прізвище', 'Дата народження', 'Представник дитини', 'Нотатки', 'Дії'],
-        keys: ['id', 'firstName', 'lastName', 'birthDate', 'parentId', 'notes']
+        headers: ['ID', 'Ім\'я', 'Прізвище', 'Дата народження', 'Представник дитини', 'Центр', 'Нотатки', 'Дії'],
+        keys: ['id', 'firstName', 'lastName', 'birthDate',  'parentId', 'centerId', 'notes']
     },
     'Матеріали': {
         headers: ['ID', 'Центр', 'Предмет', 'Група', 'Назва', 'Опис', 'Автор', 'Створено', 'Дії'],
         keys: ['id', 'centerId', 'subjectName', 'groupName', 'title', 'description', 'teacherName', 'createdAt']
     },
     'Групи': {
-        headers: ['ID', 'Назва', 'Опис', 'Вчитель', 'Центр', 'Предмет', 'Дії'],
+        headers: ['ID', 'Назва', 'Опис', 'Вчитель', 'Центр', 'Гурток', 'Дії'],
         keys: ['id', 'name', 'description', 'teacherId', 'centerId', 'subjectId',]
     },
     'Гуртки': {
@@ -811,8 +811,8 @@ const AdminPanel = () => {
                                             >
                                                 <option value="" disabled>Оберіть роль...</option>
                                                 <option value="CenterAdmin">Адмін центру</option>
-                                                <option value="Teacher">Вчитель (Teacher)</option>
-                                                <option value="Parent">Батько/Мати (Parent)</option>
+                                                <option value="Teacher">Вчитель</option>
+                                                <option value="Parent">Батько/Мати</option>
                                             </select>
                                         ) : key === 'centerId' ? (
                                             <select

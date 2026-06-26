@@ -854,7 +854,7 @@ const ChatsPage = () => {
                                                 <div className="participant-avatar">
                                                     {user.firstName.charAt(0)}
                                                 </div>
-                                                <span className="participant-name">{user.firstName} {user.lastName}</span>
+                                                <span className="participant-name">{user.firstName} {user.lastName} ({user.email})</span>
                                             </div>
 
                                             <button
