@@ -1,5 +1,5 @@
 import './AdminPanel.css';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import api from '../../../api/axios';
 import searchIcon from '../../assets/icons/search.png';
 import confirmIcon from '../../assets/icons/checkmark.png';
@@ -85,6 +85,10 @@ const AdminPanel = () => {
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
 
+    const [selectedRole, setSelectedRole] = useState('');
+    const [selectedCenter, setSelectedCenter] = useState('');
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
     const { user } = useAuth();
     const isSuperAdmin = user?.roles?.includes('SuperAdmin');
     const isAdmin = user?.roles?.includes('SuperAdmin') || user?.roles?.includes('CenterAdmin');
@@ -102,12 +106,31 @@ const AdminPanel = () => {
     const tabs = ['Центри', 'Користувачі', 'Діти', 'Матеріали', 'Групи', 'Гуртки', 'Заявки'];
     const phoneRegex = /^\+?[0-9]{10,13}$/;
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const response = await api.get(endpointMap[activeTab]);
+                const queryParams = {};
+                if (activeTab === 'Користувачі' && selectedRole) {
+                    queryParams.role = selectedRole;
+                }
+
+                if ((activeTab === 'Групи' || activeTab === 'Гуртки') && selectedCenter) {
+                    queryParams.centerId = selectedCenter;
+                }
+
+                const response = await api.get(endpointMap[activeTab], {
+                    params: queryParams
+                });
+
                 let loadedData = response.data;
                 if (activeTab === 'Користувачі') {
                     loadedData = loadedData.filter(user =>
@@ -125,7 +148,7 @@ const AdminPanel = () => {
             }
         };
         fetchData();
-    }, [activeTab]);
+    }, [activeTab, selectedRole, selectedCenter]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -227,6 +250,24 @@ const AdminPanel = () => {
 
         return value || '—';
     };
+
+    const sortedData = useMemo(() => {
+        let sortableItems = [...filteredData];
+        if (sortConfig.key !== null) {
+            sortableItems.sort((a, b) => {
+                const valA = a[sortConfig.key] || "";
+                const valB = b[sortConfig.key] || "";
+                if (valA < valB) {
+                    return sortConfig.direction === 'asc' ? -1 : 1;
+                }
+                if (valA > valB) {
+                    return sortConfig.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sortableItems;
+    }, [filteredData, sortConfig])
 
     const handleEditClick = (item) => {
         setEditingId(item.id);
@@ -590,8 +631,7 @@ const AdminPanel = () => {
                             onClick={() => setActiveTab(tab)}>
                             {tab}
                         </button>
-                    )
-                    )}
+                    ))}
 
                 </div>
                 <div className='admin-filters'>
@@ -613,8 +653,11 @@ const AdminPanel = () => {
                         <h2 className='table-title'>{activeTab}</h2>
                         <div className='table-first-row-right'>
                             {activeTab == 'Користувачі' && (
-                                <select>
-                                    <option value="" disabled>Оберіть роль...</option>
+                                <select
+                                    value={selectedRole}
+                                    onChange={e => setSelectedRole(e.target.value)}
+                                >
+                                    <option value="">Всі ролі</option>
                                     <option value="CenterAdmin">Адмін центру</option>
                                     <option value="Teacher">Вчитель</option>
                                     <option value="Parent">Батько/Мати</option>
@@ -622,14 +665,16 @@ const AdminPanel = () => {
                             )}
 
                             {(activeTab === 'Групи' || activeTab === 'Гуртки') && (
-                                <select>
-                                    <option value="" disabled>Оберіть центр</option>
+                                <select
+                                    value={selectedCenter}
+                                    onChange={e => setSelectedCenter(e.target.value)}
+                                >
+                                    <option value="">Всі центри</option>
                                     {centersList.map(center => (
                                         <option key={center.id} value={center.id}>
                                             {center.name} (ID: {isMobile ? `${center.id.substring(0, 8)}...` : center.id})
                                         </option>
-                                    )
-                                    )}
+                                    ))}
                                 </select>
                             )}
 
@@ -644,24 +689,40 @@ const AdminPanel = () => {
                     <table className='admin-table'>
                         <thead >
                             <tr>
-                                {currentConfig.headers.map(h =>
-                                    <th key={h}
-                                        style={{
-                                            width: h === 'Дії' ? (activeTab === 'Групи' ? '155px' : '95px') : 'auto'
-                                        }}
-                                        className='resizable-th'
-                                    >
-                                        {h}
-                                        <div
-                                            className='column-resizer'
-                                            onMouseDown={startResizing}
-                                        />
-                                    </th>
-                                )}
+                                {currentConfig.headers.map((h, index) => {
+                                    const columnKey = currentConfig.keys[index];
+                                    return (
+                                        <th key={h}
+                                            style={{
+                                                width: h === 'Дії' ? (activeTab === 'Групи' ? '155px' : '95px') : 'auto',
+                                                cursor: h !== 'Дії' ? 'pointer' : 'default'
+                                            }}
+                                            className='resizable-th'
+                                            onClick={() => {
+                                                if (h !== 'Дії') {
+                                                    requestSort(columnKey);
+                                                }
+                                            }}
+                                        >
+                                            {h}
+                                            {sortConfig.key === columnKey && (
+                                                <span style={{ marginLeft: '5px' }}>
+                                                    {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                                                </span>
+                                            )}
+                                            <div
+                                                className='column-resizer'
+                                                onMouseDown={startResizing}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        </th>
+                                    );
+                                })}
+
                             </tr>
                         </thead>
                         <tbody>
-                            {!loading && filteredData.map((item) => (
+                            {!loading && sortedData.map((item) => (
                                 <tr key={item.id} className={editingId === item.id ? 'row-editing' : ''}>
                                     {currentConfig.keys.map(key => (
                                         <td key={key}>
