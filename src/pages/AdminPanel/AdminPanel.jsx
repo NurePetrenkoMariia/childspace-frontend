@@ -588,7 +588,7 @@ const AdminPanel = () => {
         const groupId = selectedGroupForManager.id;
         try {
             if (isCurrentlyInGroup) {
-                await api.delete(`/groupchild/group/${groupId}/child/${childId}`);
+                await api.delete(`/Group/${groupId}/child/${childId}`);
                 setGroupChildrenIds(prev => prev.filter(id => id !== childId));
             } else {
                 await api.post(`/groupchild`, {
@@ -597,8 +597,10 @@ const AdminPanel = () => {
                 });
                 setGroupChildrenIds(prev => [...prev, childId]);
             }
+            return true;
         } catch (error) {
             console.error("Помилка зміни складу групи:", error);
+            return false;
         }
     };
 
@@ -612,10 +614,15 @@ const AdminPanel = () => {
             return;
         }
 
-        await handleChangeChildStatusInGroup(childToRemove.id, true);
+        const isSuccess = await handleChangeChildStatusInGroup(childToRemove.id, true);
         setIsRemoveChildModalOpen(false);
         setChildToRemove(null);
+        
+        if (isSuccess) {
         setNotification({ isOpen: true, type: 'success', message: "Дитину видалено з групи!" });
+    } else {
+        setNotification({ isOpen: true, type: 'error', message: "Помилка при видаленні дитини з групи." });
+    }
     };
 
     return (
