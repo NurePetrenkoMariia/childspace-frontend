@@ -617,12 +617,12 @@ const AdminPanel = () => {
         const isSuccess = await handleChangeChildStatusInGroup(childToRemove.id, true);
         setIsRemoveChildModalOpen(false);
         setChildToRemove(null);
-        
+
         if (isSuccess) {
-        setNotification({ isOpen: true, type: 'success', message: "Дитину видалено з групи!" });
-    } else {
-        setNotification({ isOpen: true, type: 'error', message: "Помилка при видаленні дитини з групи." });
-    }
+            setNotification({ isOpen: true, type: 'success', message: "Дитину видалено з групи!" });
+        } else {
+            setNotification({ isOpen: true, type: 'error', message: "Помилка при видаленні дитини з групи." });
+        }
     };
 
     return (
@@ -833,6 +833,20 @@ const AdminPanel = () => {
                                                             </option>
                                                         ))}
                                                     </select>
+                                                ) : key === 'description' ? (
+                                                    <textarea
+                                                        className="edit-input"
+                                                        value={editFormData[key] || ''}
+                                                        onChange={(e) => handleInputChange(e, key)}
+                                                        style={{
+                                                            resize: 'vertical',
+                                                            minHeight: '60px',
+                                                            fontFamily: 'inherit',
+                                                            width: '100%',
+                                                            padding: '8px'
+                                                        }}
+                                                        placeholder="Введіть опис..."
+                                                    />
                                                 ) : (
                                                     <input
                                                         type={key === 'phoneNumber' || key === 'phone' ? 'tel' : key === 'email' ? 'email' : 'text'}
@@ -887,438 +901,468 @@ const AdminPanel = () => {
                     </table>
                 </div>
             </div>
-            {isModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content">
-                        <h2>Заповніть необхідну інформацію</h2>
-                        <div className="modal-form">
-                            {currentConfig.keys
-                                .filter(key => key !== 'id' && !key.includes('At'))
-                                .map(key => (
-                                    <div key={key} className="form-group">
-                                        <label>{currentConfig.headers[currentConfig.keys.indexOf(key)]}</label>
-                                        {activeTab === 'Користувачі' && key === 'role' ? (
-                                            <select
-                                                className="filter-input"
-                                                onChange={(e) => handleNewDataChange(key, e.target.value)} value={newData[key] || ""}
-                                            >
-                                                <option value="" disabled>Оберіть роль...</option>
-                                                <option value="CenterAdmin">Адмін центру</option>
-                                                <option value="Teacher">Вчитель</option>
-                                                <option value="Parent">Батько/Мати</option>
-                                            </select>
-                                        ) : key === 'centerId' ? (
-                                            <select
-                                                className="filter-input"
-                                                onChange={(e) => handleNewDataChange(key, e.target.value)}
-                                                value={newData[key] || ""}
-                                            >
-                                                <option value="">Оберіть центр розвитку</option>
-                                                {centersList.map(center => (
-                                                    <option key={center.id} value={center.id}>
-                                                        {center.name} (ID: {isMobile ? `${center.id.substring(0, 6)}..` : center.id})
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        ) : key == 'groupId' ? (
-                                            <select
-                                                className="filter-input"
-                                                onChange={(e) => handleNewDataChange(key, e.target.value)}
-                                                value={newData[key] || ""}
-                                            >
-                                                <option value="">Оберіть групу</option>
-                                                {groupsList.map(group => (
-                                                    <option key={group.id} value={group.id}>
-                                                        {group.name} (ID: {isMobile ? `${group.id.substring(0, 8)}...` : group.id})
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        ) : key === 'teacherId' ? (
-                                            <select className='filter-input'
-                                                onChange={(e) => handleNewDataChange(key, e.target.value)}
-                                                value={newData[key] || ""}
-                                            >
-                                                <option value="">Оберіть вчителя</option>
-                                                {teachersList.map(teacher => (
-                                                    <option key={teacher.id} value={teacher.id}>
-                                                        {teacher.firstName} {teacher.lastName} ({teacher.email})
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        ) : key === 'parentId' ? (
-                                            <select
-                                                className="filter-input"
-                                                onChange={(e) => handleNewDataChange(key, e.target.value)}
-                                                value={newData[key] || ""}
-                                            >
-                                                <option value="">Оберіть представника</option>
-                                                {parentsList.map(parent => (
-                                                    <option key={parent.id} value={parent.id}>
-                                                        {parent.firstName} {parent.lastName} ({parent.email})
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        ) : activeTab == 'Гуртки' && key == 'photoUrl' ? (
-                                            <div className='file-upload-group'>
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={(e) => handleNewDataChange('photo', e.target.files[0])}
-                                                />
-                                                {newData.photo && <p className="file-name-hint">Обрано: {newData.photo.name}</p>}
-                                            </div>
+            {
+                isModalOpen && (
+                    <div className="modal-overlay">
+                        <div className="modal-content">
+                            <h2>Заповніть необхідну інформацію</h2>
+                            <div className="modal-form">
+                                {currentConfig.keys
+                                    .filter(key => key !== 'id' && !key.includes('At'))
+                                    .map(key => (
+                                        <div key={key} className="form-group">
+                                            <label>{currentConfig.headers[currentConfig.keys.indexOf(key)]}</label>
+                                            {activeTab === 'Користувачі' && key === 'role' ? (
+                                                <select
+                                                    className="filter-input"
+                                                    onChange={(e) => handleNewDataChange(key, e.target.value)} value={newData[key] || ""}
+                                                >
+                                                    <option value="" disabled>Оберіть роль...</option>
+                                                    <option value="CenterAdmin">Адмін центру</option>
+                                                    <option value="Teacher">Вчитель</option>
+                                                    <option value="Parent">Батько/Мати</option>
+                                                </select>
+                                            ) : key === 'centerId' ? (
+                                                <select
+                                                    className="filter-input"
+                                                    onChange={(e) => handleNewDataChange(key, e.target.value)}
+                                                    value={newData[key] || ""}
+                                                >
+                                                    <option value="">Оберіть центр розвитку</option>
+                                                    {centersList.map(center => (
+                                                        <option key={center.id} value={center.id}>
+                                                            {center.name} (ID: {isMobile ? `${center.id.substring(0, 6)}..` : center.id})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : key == 'groupId' ? (
+                                                <select
+                                                    className="filter-input"
+                                                    onChange={(e) => handleNewDataChange(key, e.target.value)}
+                                                    value={newData[key] || ""}
+                                                >
+                                                    <option value="">Оберіть групу</option>
+                                                    {groupsList.map(group => (
+                                                        <option key={group.id} value={group.id}>
+                                                            {group.name} (ID: {isMobile ? `${group.id.substring(0, 8)}...` : group.id})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : key === 'teacherId' ? (
+                                                <select className='filter-input'
+                                                    onChange={(e) => handleNewDataChange(key, e.target.value)}
+                                                    value={newData[key] || ""}
+                                                >
+                                                    <option value="">Оберіть вчителя</option>
+                                                    {teachersList.map(teacher => (
+                                                        <option key={teacher.id} value={teacher.id}>
+                                                            {teacher.firstName} {teacher.lastName} ({teacher.email})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : key === 'parentId' ? (
+                                                <select
+                                                    className="filter-input"
+                                                    onChange={(e) => handleNewDataChange(key, e.target.value)}
+                                                    value={newData[key] || ""}
+                                                >
+                                                    <option value="">Оберіть представника</option>
+                                                    {parentsList.map(parent => (
+                                                        <option key={parent.id} value={parent.id}>
+                                                            {parent.firstName} {parent.lastName} ({parent.email})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : activeTab == 'Гуртки' && key == 'photoUrl' ? (
+                                                <div className='file-upload-group'>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => handleNewDataChange('photo', e.target.files[0])}
+                                                    />
+                                                    {newData.photo && <p className="file-name-hint">Обрано: {newData.photo.name}</p>}
+                                                </div>
 
-                                        ) : key === 'birthDate' ? (
-                                            <input
-                                                type="date"
-                                                className="filter-input"
-                                                onChange={(e) => handleNewDataChange(key, e.target.value)}
-                                                max={new Date().toISOString().split('T')[0]}
-                                                value={newData[key] ? newData[key].split('T')[0] : ""}
-                                                style={formErrors[key] ? { borderColor: '#e74c3c', outline: 'none' } : {}}
-                                            />
-                                        ) : activeTab === 'Групи' && key === 'subjectId' ? (
-                                            <select
-                                                className="filter-input"
-                                                onChange={(e) => handleNewDataChange(key, e.target.value)}
-                                                value={newData[key] || ""}
-                                                style={formErrors[key] ? { borderColor: '#e74c3c', outline: 'none' } : {}}
-                                            >
-                                                <option value="">Оберіть предмет</option>
-                                                {subjectsList.map(subject => (
-                                                    <option key={subject.id} value={subject.id}>
-                                                        {subject.name} (Центр: {subject.centerId})
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        ) : (
-                                            <input
-                                                type={key === 'phoneNumber' || key === 'phone' ? 'tel' : key === 'email' ? 'email' : 'text'}
-                                                onChange={(e) => handleNewDataChange(key, e.target.value)}
-                                                onBlur={(e) => handleNewDataBlur(key, e.target.value)}
-                                                value={newData[key] || ""}
-                                                style={formErrors[key] ? { borderColor: '#e74c3c', outline: 'none' } : {}}
-                                                placeholder={key === 'phoneNumber' || key === 'phone' ? 'Наприклад, +380676767676 або 0676767676' : key === 'email' ? 'name@gmail.com' : 'Введіть дані...'}
-                                            />
-                                        )}
-                                        {formErrors[key] && (
-                                            <span style={{ color: '#e74c3c', fontSize: '12px', marginTop: '4px', display: 'block' }}>
-                                                {formErrors[key]}
-                                            </span>
-                                        )}
-                                    </div>
-                                ))}
-                        </div>
-                        <div className="modal-actions">
-                            <button className="confirm-btn" onClick={handleCreateSave}>Зберегти</button>
-                            <button className="cancel-btn" onClick={() => setIsModalOpen(false)}>Скасувати</button>
+                                            ) : key === 'birthDate' ? (
+                                                <input
+                                                    type="date"
+                                                    className="filter-input"
+                                                    onChange={(e) => handleNewDataChange(key, e.target.value)}
+                                                    max={new Date().toISOString().split('T')[0]}
+                                                    value={newData[key] ? newData[key].split('T')[0] : ""}
+                                                    style={formErrors[key] ? { borderColor: '#e74c3c', outline: 'none' } : {}}
+                                                />
+                                            ) : activeTab === 'Групи' && key === 'subjectId' ? (
+                                                <select
+                                                    className="filter-input"
+                                                    onChange={(e) => handleNewDataChange(key, e.target.value)}
+                                                    value={newData[key] || ""}
+                                                    style={formErrors[key] ? { borderColor: '#e74c3c', outline: 'none' } : {}}
+                                                >
+                                                    <option value="">Оберіть гурток</option>
+                                                    {subjectsList.map(subject => (
+                                                        <option key={subject.id} value={subject.id}>
+                                                            {subject.name} (Центр: {subject.centerId})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : key === 'description' ? (
+                                                <textarea
+                                                    className="filter-input"
+                                                    onChange={(e) => handleNewDataChange(key, e.target.value)}
+                                                    onBlur={(e) => handleNewDataBlur(key, e.target.value)}
+                                                    value={newData[key] || ""}
+                                                    style={{
+                                                        ...(formErrors[key] ? { borderColor: '#e74c3c', outline: 'none' } : {}),
+                                                        resize: 'vertical',
+                                                        minHeight: '100px',
+                                                        fontFamily: 'inherit'
+                                                    }}
+                                                    placeholder="Введіть опис..."
+                                                />
+                                            ) : (
+                                                <input
+                                                    type={key === 'phoneNumber' || key === 'phone' ? 'tel' : key === 'email' ? 'email' : 'text'}
+                                                    onChange={(e) => handleNewDataChange(key, e.target.value)}
+                                                    onBlur={(e) => handleNewDataBlur(key, e.target.value)}
+                                                    value={newData[key] || ""}
+                                                    style={formErrors[key] ? { borderColor: '#e74c3c', outline: 'none' } : {}}
+                                                    placeholder={key === 'phoneNumber' || key === 'phone' ? 'Наприклад, +380676767676 або 0676767676' : key === 'email' ? 'name@gmail.com' : 'Введіть дані...'}
+                                                />
+                                            )}
+                                            {formErrors[key] && (
+                                                <span style={{ color: '#e74c3c', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                                                    {formErrors[key]}
+                                                </span>
+                                            )}
+                                        </div>
+                                    ))}
+                            </div>
+                            <div className="modal-actions">
+                                <button className="confirm-btn" onClick={handleCreateSave}>Зберегти</button>
+                                <button className="cancel-btn" onClick={() => setIsModalOpen(false)}>Скасувати</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-            {isGroupManagerOpen && (
-                <div className='modal-overlay' onClick={() => setIsGroupManagerOpen(false)}>
-                    <div className="modal-content participants-modal" onClick={e => e.stopPropagation()}>
-                        <div className="participants-header">
-                            <h2 className='modal-title'>Склад групи: {selectedGroupForManager?.name}</h2>
-                            <button className="add-entity-btn  add-user-btn"
-                                onClick={() => {
-                                    setChildSearchTerm("")
-                                    setIsAddChildModalOpen(true);
-                                }}
-                            >
-                                + Додати дитину
-                            </button>
-                        </div>
-                        <div className='participants-list'>
-                            {allChildrenList.filter(c => groupChildrenIds.includes(c.id)).length > 0 ? (
-                                allChildrenList.filter(child => groupChildrenIds.includes(child.id))
-                                    .map(child => (
-                                        <div key={child.id} className="participant-item">
-                                            <div className="participant-info">
-                                                <div className="participant-avatar">
-                                                    {child.firstName ? child.firstName.charAt(0).toUpperCase() : '?'}
+                )
+            }
+            {
+                isGroupManagerOpen && (
+                    <div className='modal-overlay' onClick={() => setIsGroupManagerOpen(false)}>
+                        <div className="modal-content participants-modal" onClick={e => e.stopPropagation()}>
+                            <div className="participants-header">
+                                <h2 className='modal-title'>Склад групи: {selectedGroupForManager?.name}</h2>
+                                <button className="add-entity-btn  add-user-btn"
+                                    onClick={() => {
+                                        setChildSearchTerm("")
+                                        setIsAddChildModalOpen(true);
+                                    }}
+                                >
+                                    + Додати дитину
+                                </button>
+                            </div>
+                            <div className='participants-list'>
+                                {allChildrenList.filter(c => groupChildrenIds.includes(c.id)).length > 0 ? (
+                                    allChildrenList.filter(child => groupChildrenIds.includes(child.id))
+                                        .map(child => (
+                                            <div key={child.id} className="participant-item">
+                                                <div className="participant-info">
+                                                    <div className="participant-avatar">
+                                                        {child.firstName ? child.firstName.charAt(0).toUpperCase() : '?'}
+                                                    </div>
+                                                    <span className="participant-name">
+                                                        {child.firstName} {child.lastName}
+                                                    </span>
                                                 </div>
-                                                <span className="participant-name">
-                                                    {child.firstName} {child.lastName}
-                                                </span>
+                                                <button
+                                                    className="remove-participant-btn"
+                                                    onClick={() => handleInitiateRemoveChild(child)}
+                                                >
+                                                    Видалити
+                                                </button>
                                             </div>
-                                            <button
-                                                className="remove-participant-btn"
-                                                onClick={() => handleInitiateRemoveChild(child)}
-                                            >
-                                                Видалити
-                                            </button>
-                                        </div>
-                                    ))
-                            ) : (
-                                <p style={{ textAlign: 'center', color: '#9384A6', padding: '20px' }}>
-                                    У цій групі ще немає дітей
-                                </p>
-                            )}
+                                        ))
+                                ) : (
+                                    <p style={{ textAlign: 'center', color: '#9384A6', padding: '20px' }}>
+                                        У цій групі ще немає дітей
+                                    </p>
+                                )}
+                                <div className="modal-actions">
+                                    <button
+                                        className="cancel-btn"
+                                        onClick={() => setIsGroupManagerOpen(false)}
+                                    >
+                                        Закрити
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+            {
+                isAddChildModalOpen && (
+                    <div className="modal-overlay" style={{ zIndex: 1001 }} onClick={() => setIsAddChildModalOpen(false)}>
+                        <div className="modal-content participants-modal" onClick={e => e.stopPropagation()}>
+                            <div className="participants-header" style={{ marginBottom: '15px' }}>
+                                <h2 className="modal-title">Додати дитину в групу: </h2>
+                            </div>
+                            <div className="form-group" style={{ marginBottom: '15px' }}>
+                                <input
+                                    type="text"
+                                    placeholder="Пошук за іменем чи прізвищем..."
+                                    className="chat-input-field"
+                                    value={childSearchTerm}
+                                    onChange={(e) => setChildSearchTerm(e.target.value)}
+                                    autoFocus
+                                />
+                            </div>
+                            <div className='participants-list'>
+                                {allChildrenList.filter(child =>
+                                    !groupChildrenIds.includes(child.id) &&
+                                    (child.firstName + ' ' + child.lastName).toLowerCase().includes(childSearchTerm.toLowerCase())
+                                ).length > 0 ? (
+                                    allChildrenList
+                                        .filter(child =>
+                                            !groupChildrenIds.includes(child.id) &&
+                                            (child.firstName + ' ' + child.lastName).toLowerCase().includes(childSearchTerm.toLowerCase())
+                                        )
+                                        .map(child => (
+                                            <div key={child.id} className="participant-item">
+                                                <div className="participant-info">
+                                                    <div className="participant-avatar">
+                                                        {child.firstName ? child.firstName.charAt(0).toUpperCase() : '?'}
+                                                    </div>
+                                                    <span className="participant-name">
+                                                        {child.firstName} {child.lastName}
+                                                    </span>
+                                                </div>
+
+                                                <button
+                                                    className="add-participant-btn"
+                                                    onClick={() => handleChangeChildStatusInGroup(child.id, false)}
+                                                >
+                                                    Додати
+                                                </button>
+                                            </div>
+                                        ))
+                                ) : (
+                                    <p style={{ textAlign: 'center', color: '#9384A6', margin: '20px 0' }}>
+                                        Дітей не знайдено
+                                    </p>
+                                )}
+                            </div>
                             <div className="modal-actions">
                                 <button
                                     className="cancel-btn"
-                                    onClick={() => setIsGroupManagerOpen(false)}
+                                    onClick={() => {
+                                        setIsAddChildModalOpen(false);
+                                        setChildSearchTerm("");
+                                    }}
+                                >
+                                    Назад
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+            {
+                isRemoveChildModalOpen && childToRemove && (
+                    <div className="modal-overlay" style={{ zIndex: 1010 }} onClick={() => setIsRemoveChildModalOpen(false)}>
+                        <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center', padding: '30px 20px' }} onClick={e => e.stopPropagation()}>
+
+                            <div className='warning-sign-container'>
+                                <span className='warning-sign'>⚠️</span>
+                            </div>
+
+                            <h2 style={{ color: '#2D3748', marginBottom: '10px', fontSize: '20px' }}>
+                                Видалення з групи
+                            </h2>
+
+                            <p style={{ color: '#718096', marginBottom: '25px', fontSize: '15px', lineHeight: '1.5' }}>
+                                Ви впевнені, що хочете видалити <b>{childToRemove.lastName} {childToRemove.firstName}</b> зі складу групи <b>{selectedGroupForManager?.name}</b>?
+                            </p>
+
+                            <div className="modal-actions" style={{ justifyContent: 'center', gap: '15px' }} >
+                                <button
+                                    className="cancel-btn"
+                                    onClick={() => setIsRemoveChildModalOpen(false)}
+                                    style={{ width: '130px' }}
+                                >
+                                    Скасувати
+                                </button>
+                                <button
+                                    className="confirm-btn"
+                                    onClick={confirmRemoveChild}
+                                    style={{
+                                        width: '130px',
+                                        backgroundColor: '#D30000',
+                                        color: 'white',
+                                        border: 'none'
+                                    }}
+                                >
+                                    Видалити
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+            {
+                newUserDetails && (
+                    <div className="modal-overlay" style={{ zIndex: 2000 }}>
+                        <div className="modal-content" style={{ maxWidth: '450px' }} onClick={e => e.stopPropagation()}>
+                            <div className='user-create-success-header'>
+                                <div className='user-create-success-header-check'>✅</div>
+                                <h2 className="modal-title" style={{ color: '#4F169E', margin: 0 }}>Користувача створено!</h2>
+                            </div>
+
+
+                            <p className='user-create-success-note' >
+                                Обов'язково скопіюйте цей пароль та передайте його користувачу <b>{newUserDetails.name}</b>. З міркувань безпеки, ви більше не зможете його побачити.
+                            </p>
+
+                            <div className='user-create-success-data'>
+                                <div style={{ marginBottom: '15px' }}>
+                                    <span>Email:</span>
+                                    <div className='user-create-success-data-email'>{newUserDetails.email}</div>
+                                </div>
+                                <div>
+                                    <span >Пароль:</span>
+                                    <div className='user-create-success-data-password' >
+                                        {newUserDetails.password}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className='modal-actions'>
+                                <button className='confirm-btn'
+                                    style={{ flex: 1, backgroundColor: '#4F169E', color: 'white' }}
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(newUserDetails.password);
+                                        setNotification({ isOpen: true, type: 'success', message: "Пароль скопійовано!" });
+                                    }}>
+                                    Скопіювати пароль
+                                </button>
+                                <button className='cancel-btn'
+                                    style={{ flex: 1, padding: '12px' }}
+                                    onClick={() => setIsConfirmClosePasswordOpen(true)}
                                 >
                                     Закрити
                                 </button>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-            {isAddChildModalOpen && (
-                <div className="modal-overlay" style={{ zIndex: 1001 }} onClick={() => setIsAddChildModalOpen(false)}>
-                    <div className="modal-content participants-modal" onClick={e => e.stopPropagation()}>
-                        <div className="participants-header" style={{ marginBottom: '15px' }}>
-                            <h2 className="modal-title">Додати дитину в групу: </h2>
-                        </div>
-                        <div className="form-group" style={{ marginBottom: '15px' }}>
-                            <input
-                                type="text"
-                                placeholder="Пошук за іменем чи прізвищем..."
-                                className="chat-input-field"
-                                value={childSearchTerm}
-                                onChange={(e) => setChildSearchTerm(e.target.value)}
-                                autoFocus
-                            />
-                        </div>
-                        <div className='participants-list'>
-                            {allChildrenList.filter(child =>
-                                !groupChildrenIds.includes(child.id) &&
-                                (child.firstName + ' ' + child.lastName).toLowerCase().includes(childSearchTerm.toLowerCase())
-                            ).length > 0 ? (
-                                allChildrenList
-                                    .filter(child =>
-                                        !groupChildrenIds.includes(child.id) &&
-                                        (child.firstName + ' ' + child.lastName).toLowerCase().includes(childSearchTerm.toLowerCase())
-                                    )
-                                    .map(child => (
-                                        <div key={child.id} className="participant-item">
-                                            <div className="participant-info">
-                                                <div className="participant-avatar">
-                                                    {child.firstName ? child.firstName.charAt(0).toUpperCase() : '?'}
-                                                </div>
-                                                <span className="participant-name">
-                                                    {child.firstName} {child.lastName}
-                                                </span>
-                                            </div>
+                )
+            }
+            {
+                isConfirmClosePasswordOpen && (
+                    <div className="modal-overlay" style={{ zIndex: 3000 }} onClick={() => setIsConfirmClosePasswordOpen(false)}>
+                        <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center', padding: '30px 20px' }} onClick={e => e.stopPropagation()}>
 
-                                            <button
-                                                className="add-participant-btn"
-                                                onClick={() => handleChangeChildStatusInGroup(child.id, false)}
-                                            >
-                                                Додати
-                                            </button>
-                                        </div>
-                                    ))
-                            ) : (
-                                <p style={{ textAlign: 'center', color: '#9384A6', margin: '20px 0' }}>
-                                    Дітей не знайдено
-                                </p>
-                            )}
-                        </div>
-                        <div className="modal-actions">
-                            <button
-                                className="cancel-btn"
-                                onClick={() => {
-                                    setIsAddChildModalOpen(false);
-                                    setChildSearchTerm("");
-                                }}
-                            >
-                                Назад
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {isRemoveChildModalOpen && childToRemove && (
-                <div className="modal-overlay" style={{ zIndex: 1010 }} onClick={() => setIsRemoveChildModalOpen(false)}>
-                    <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center', padding: '30px 20px' }} onClick={e => e.stopPropagation()}>
-
-                        <div className='warning-sign-container'>
-                            <span className='warning-sign'>⚠️</span>
-                        </div>
-
-                        <h2 style={{ color: '#2D3748', marginBottom: '10px', fontSize: '20px' }}>
-                            Видалення з групи
-                        </h2>
-
-                        <p style={{ color: '#718096', marginBottom: '25px', fontSize: '15px', lineHeight: '1.5' }}>
-                            Ви впевнені, що хочете видалити <b>{childToRemove.lastName} {childToRemove.firstName}</b> зі складу групи <b>{selectedGroupForManager?.name}</b>?
-                        </p>
-
-                        <div className="modal-actions" style={{ justifyContent: 'center', gap: '15px' }} >
-                            <button
-                                className="cancel-btn"
-                                onClick={() => setIsRemoveChildModalOpen(false)}
-                                style={{ width: '130px' }}
-                            >
-                                Скасувати
-                            </button>
-                            <button
-                                className="confirm-btn"
-                                onClick={confirmRemoveChild}
-                                style={{
-                                    width: '130px',
-                                    backgroundColor: '#D30000',
-                                    color: 'white',
-                                    border: 'none'
-                                }}
-                            >
-                                Видалити
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {newUserDetails && (
-                <div className="modal-overlay" style={{ zIndex: 2000 }}>
-                    <div className="modal-content" style={{ maxWidth: '450px' }} onClick={e => e.stopPropagation()}>
-                        <div className='user-create-success-header'>
-                            <div className='user-create-success-header-check'>✅</div>
-                            <h2 className="modal-title" style={{ color: '#4F169E', margin: 0 }}>Користувача створено!</h2>
-                        </div>
-
-
-                        <p className='user-create-success-note' >
-                            Обов'язково скопіюйте цей пароль та передайте його користувачу <b>{newUserDetails.name}</b>. З міркувань безпеки, ви більше не зможете його побачити.
-                        </p>
-
-                        <div className='user-create-success-data'>
-                            <div style={{ marginBottom: '15px' }}>
-                                <span>Email:</span>
-                                <div className='user-create-success-data-email'>{newUserDetails.email}</div>
+                            <div className='warning-sign-container'>
+                                <span className='warning-sign'>⚠️</span>
                             </div>
-                            <div>
-                                <span >Пароль:</span>
-                                <div className='user-create-success-data-password' >
-                                    {newUserDetails.password}
-                                </div>
+
+                            <h2 style={{ color: '#2D3748', marginBottom: '10px', fontSize: '20px' }}>
+                                Ви впевнені?
+                            </h2>
+
+                            <p className='confirm-close-password' >
+                                Ви точно скопіювали та зберегли пароль? Після закриття цього вікна <b>відновити його буде неможливо</b>, і доведеться скидати пароль.
+                            </p>
+
+                            <div className="modal-actions" style={{ justifyContent: 'center', gap: '15px' }} >
+                                <button
+                                    className="cancel-btn"
+                                    onClick={() => setIsConfirmClosePasswordOpen(false)}
+                                    style={{ flex: 1 }}
+                                >
+                                    Ні, повернутися
+                                </button>
+                                <button
+                                    className="confirm-btn"
+                                    onClick={() => {
+                                        setIsConfirmClosePasswordOpen(false);
+                                        setNewUserDetails(null);
+                                    }}
+                                    style={{
+                                        flex: 1,
+                                        backgroundColor: '#4F169E',
+                                        color: 'white',
+                                        border: 'none'
+                                    }}
+                                >
+                                    Так, закрити
+                                </button>
                             </div>
                         </div>
-
-                        <div className='modal-actions'>
-                            <button className='confirm-btn'
-                                style={{ flex: 1, backgroundColor: '#4F169E', color: 'white' }}
-                                onClick={() => {
-                                    navigator.clipboard.writeText(newUserDetails.password);
-                                    setNotification({ isOpen: true, type: 'success', message: "Пароль скопійовано!" });
-                                }}>
-                                Скопіювати пароль
-                            </button>
-                            <button className='cancel-btn'
-                                style={{ flex: 1, padding: '12px' }}
-                                onClick={() => setIsConfirmClosePasswordOpen(true)}
-                            >
-                                Закрити
-                            </button>
+                    </div>
+                )
+            }
+            {
+                isDeleteConfirmOpen && (
+                    <div className="profile-modal-overlay" style={{ zIndex: 3000 }} onClick={() => setIsDeleteConfirmOpen(false)}>
+                        <div className="profile-modal-content" onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '40px', marginBottom: '10px' }}>⚠️</div>
+                            <h2 className="modal-title" style={{ marginTop: 0, textAlign: 'center' }}>
+                                Видалення запису
+                            </h2>
+                            <p className="profile-modal-text">
+                                Ви впевнені, що хочете видалити цей запис? Цю дію неможливо скасувати.
+                            </p>
+                            <div className="profile-modal-actions" style={{ justifyContent: 'center' }}>
+                                <button
+                                    className="cancel-btn"
+                                    onClick={() => setIsDeleteConfirmOpen(false)}
+                                >
+                                    Скасувати
+                                </button>
+                                <button
+                                    className="profile-logout-btn"
+                                    onClick={confirmDelete}
+                                >
+                                    Так, видалити
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-            {isConfirmClosePasswordOpen && (
-                <div className="modal-overlay" style={{ zIndex: 3000 }} onClick={() => setIsConfirmClosePasswordOpen(false)}>
-                    <div className="modal-content" style={{ maxWidth: '400px', textAlign: 'center', padding: '30px 20px' }} onClick={e => e.stopPropagation()}>
-
-                        <div className='warning-sign-container'>
-                            <span className='warning-sign'>⚠️</span>
-                        </div>
-
-                        <h2 style={{ color: '#2D3748', marginBottom: '10px', fontSize: '20px' }}>
-                            Ви впевнені?
-                        </h2>
-
-                        <p className='confirm-close-password' >
-                            Ви точно скопіювали та зберегли пароль? Після закриття цього вікна <b>відновити його буде неможливо</b>, і доведеться скидати пароль.
-                        </p>
-
-                        <div className="modal-actions" style={{ justifyContent: 'center', gap: '15px' }} >
-                            <button
-                                className="cancel-btn"
-                                onClick={() => setIsConfirmClosePasswordOpen(false)}
-                                style={{ flex: 1 }}
-                            >
-                                Ні, повернутися
-                            </button>
-                            <button
-                                className="confirm-btn"
-                                onClick={() => {
-                                    setIsConfirmClosePasswordOpen(false);
-                                    setNewUserDetails(null);
-                                }}
+                )
+            }
+            {
+                notification.isOpen && (
+                    <div className="profile-modal-overlay" onClick={() => setNotification({ ...notification, isOpen: false })} style={{ zIndex: 4000 }}>
+                        <div className="profile-modal-content" onClick={e => e.stopPropagation()}>
+                            <h2
+                                className="modal-title"
                                 style={{
-                                    flex: 1,
-                                    backgroundColor: '#4F169E',
-                                    color: 'white',
-                                    border: 'none'
+                                    marginTop: 0,
+                                    textAlign: 'center',
+                                    color: notification.type === 'error' ? '#e74c3c' : '#4F169E'
                                 }}
                             >
-                                Так, закрити
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {isDeleteConfirmOpen && (
-                <div className="profile-modal-overlay" style={{ zIndex: 3000 }} onClick={() => setIsDeleteConfirmOpen(false)}>
-                    <div className="profile-modal-content" onClick={e => e.stopPropagation()} style={{ textAlign: 'center' }}>
-                        <div style={{ fontSize: '40px', marginBottom: '10px' }}>⚠️</div>
-                        <h2 className="modal-title" style={{ marginTop: 0, textAlign: 'center' }}>
-                            Видалення запису
-                        </h2>
-                        <p className="profile-modal-text">
-                            Ви впевнені, що хочете видалити цей запис? Цю дію неможливо скасувати.
-                        </p>
-                        <div className="profile-modal-actions" style={{ justifyContent: 'center' }}>
-                            <button
-                                className="cancel-btn"
-                                onClick={() => setIsDeleteConfirmOpen(false)}
-                            >
-                                Скасувати
-                            </button>
-                            <button
-                                className="profile-logout-btn"
-                                onClick={confirmDelete}
-                            >
-                                Так, видалити
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {notification.isOpen && (
-                <div className="profile-modal-overlay" onClick={() => setNotification({ ...notification, isOpen: false })} style={{ zIndex: 4000 }}>
-                    <div className="profile-modal-content" onClick={e => e.stopPropagation()}>
-                        <h2
-                            className="modal-title"
-                            style={{
-                                marginTop: 0,
-                                textAlign: 'center',
-                                color: notification.type === 'error' ? '#e74c3c' : '#4F169E'
-                            }}
-                        >
-                            {notification.type === 'error' ? '⚠️ Помилка' : '✅ Успіх'}
-                        </h2>
+                                {notification.type === 'error' ? '⚠️ Помилка' : '✅ Успіх'}
+                            </h2>
 
-                        <p className="profile-modal-text">
-                            {notification.message}
-                        </p>
+                            <p className="profile-modal-text">
+                                {notification.message}
+                            </p>
 
-                        <div className="profile-modal-actions" style={{ justifyContent: 'center' }}>
-                            <button
-                                className="cancel-btn"
-                                style={{ maxWidth: '200px' }}
-                                onClick={() => setNotification({ ...notification, isOpen: false })}
-                            >
-                                Зрозуміло
-                            </button>
+                            <div className="profile-modal-actions" style={{ justifyContent: 'center' }}>
+                                <button
+                                    className="cancel-btn"
+                                    style={{ maxWidth: '200px' }}
+                                    onClick={() => setNotification({ ...notification, isOpen: false })}
+                                >
+                                    Зрозуміло
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 }
 
